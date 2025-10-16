@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q-Bank - 本地习题库管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU07EWpWzlzY8CwnwKatUOSCMkbeReiN+27HWseWucFMGJVdCeuOxjz" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+    <script src="https://unpkg.com/dexie@3.2.5/dist/dexie.js"></script>
+    <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .katex { font-size: 1.1em; }
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        /* 骨架屏动画 */
+        .skeleton-card {
+            background-color: #374151;
+            border-radius: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .skeleton-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        /* Custom styles for option inputs */
+        .option-input-group input[type="radio"], .option-input-group input[type="checkbox"] {
+            display: none;
+        }
+        .option-input-group label {
+            border: 2px solid #4b5563;
+        }
+        .option-input-group input:checked + label {
+            border-color: #2563eb;
+            background-color: #1e40af;
+        }
+        /* Practice mode correct/incorrect styling */
+        .practice-option-correct {
+            border-color: #22c55e !important;
+            background-color: #166534 !important;
+        }
+        .practice-option-incorrect {
+             border-color: #ef4444 !important;
+            background-color: #991b1b !important;
+        }
+        /* Mobile Specific Styles */
+        @media (max-width: 767px) {
+          #questions-grid {
+            grid-template-columns: 1fr;
+          }
+          .question-card-content {
+            padding: 1.5rem; /* More padding on mobile */
+          }
+        }
+        .btn-mobile-touch {
+          padding: 0.75rem 1rem; /* Equivalent to py-3 px-4 */
+          min-height: 44px;
+          min-width: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .markdown-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            margin-bottom: -1px;
+            padding: 4px 8px;
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-bottom: none;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        .markdown-toolbar button {
+            background-color: transparent;
+            border: 1px solid transparent;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1;
+            transition: all 0.2s;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .markdown-toolbar button:hover {
+            background-color: #4b5563;
+            color: #e5e7eb;
+        }
+        .markdown-toolbar + textarea {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        .markdown-toolbar input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 4px;
+        }
+        .markdown-toolbar input[type="color"]::-webkit-color-swatch {
+            border-radius: 4px;
+            border: 1px solid #6b7280;
+        }
+        .markdown-toolbar input[type="color"]::-moz-color-swatch {
+            border-radius: 4px;
+            border: 1px solid #6b7280;
+        }
+        
+        /* New styles for practice mode */
+        .navigator-btn.active {
+            background-color: #0e7490;
+            color: white;
+            font-weight: bold;
+        }
+        .navigator-btn.answered {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .navigator-btn.correct {
+            background-color: #166534;
+            color: white;
+        }
+        .navigator-btn.incorrect {
+            background-color: #991b1b;
+            color: white;
+        }
+        .mobile-practice-tab.active {
+            border-color: #0891b2;
+            color: #0891b2;
+            background-color: #374151;
+        }
+        .sub-questions-preview p:not(:last-child) {
+            border-bottom: 1px solid #374151;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-800 text-gray-200 antialiased">
+
+    <div id="app" class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-md p-4">
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/><path d="M12.5 7v5.5l4.5 2.5-1 1.73L11 13V7h1.5z" fill="currentColor"/></svg>
+                    <h1 class="text-2xl font-bold text-white">Q-Bank</h1>
+                </div>
+                <div class="flex-1 max-w-xl">
+                    <input type="search" id="search-box" placeholder="搜索题干、解析、标签..." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                </div>
+                <div class="hidden md:flex items-center gap-2">
+                    <button id="start-practice-btn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch" disabled>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>开始练习</span>
+                    </button>
+                    <button id="add-question-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        <span>添加题目</span>
+                    </button>
+                    <button id="io-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200 flex items-center gap-2 btn-mobile-touch">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                        <span>导入/导出</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6 lg:p-8 mb-20 md:mb-0">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-6 flex justify-between items-center">
+                    <div id="filter-tags" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+
+                <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="skeleton-card h-96"></div>
+                    <div class="skeleton-card h-96"></div>
+                    <div class="skeleton-card h-96"></div>
+                    <div class="skeleton-card h-96"></div>
+                    <div class="skeleton-card h-96"></div>
+                    <div class="skeleton-card h-96"></div>
+                </div>
+
+                <div id="questions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>
+                 <div id="no-results" class="text-center py-20 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="mt-2 text-xl font-medium text-gray-300">未找到题目</h3>
+                    <p class="mt-1 text-sm text-gray-500">尝试更换搜索词或清空筛选条件。</p>
+                </div>
+                <!-- Pagination -->
+                <div id="pagination" class="mt-8 flex items-center justify-between hidden">
+                    <div class="text-sm text-gray-400">
+                        显示 <span id="page-start">1</span> - <span id="page-end">9</span> 共 <span id="total-count">0</span> 题
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="first-page-btn" class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition btn-mobile-touch">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+                        </button>
+                        <button id="prev-page-btn" class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition btn-mobile-touch">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <div id="page-numbers" class="flex gap-1">
+                            </div>
+                        <button id="next-page-btn" class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition btn-mobile-touch">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                        <button id="last-page-btn" class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white disabled:opacity-50 disabled:cursor-not-allowed transition btn-mobile-touch">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-400">每页:</label>
+                        <select id="page-size-select" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="9">9</option>
+                            <option value="12">12</option>
+                            <option value="18">18</option>
+                            <option value="24">24</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+     <!-- Mobile Action Bar -->
+     <div id="mobile-action-bar" class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm p-4 flex justify-around items-center border-t border-gray-700 z-30">
+        <button id="mobile-add-question-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <span>添加</span>
+        </button>
+        <button id="mobile-start-practice-btn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch" disabled>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>练习</span>
+        </button>
+    </div>
+
+    <!-- Question Editor Modal -->
+    <div id="question-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                <h2 id="modal-title" class="text-2xl font-bold text-white">添加新题目</h2>
+                <div class="w-1/4">
+                    <select id="question-type" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                        <option value="standard">标准题 (简答/填空)</option>
+                        <option value="single-choice">单选题</option>
+                        <option value="multi-choice">多选题</option>
+                        <option value="material">材料题</option>
+                    </select>
+                </div>
+            </div>
+            <form id="question-form" class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                <input type="hidden" id="question-id">
+                <div class="md:w-1/2 p-6 bg-gray-900 overflow-y-auto">
+                    <h3 class="text-lg font-semibold mb-2">实时预览</h3>
+                    <div id="preview-area" class="prose prose-invert prose-sm max-w-none bg-gray-800 p-4 rounded-lg min-h-[200px] text-gray-300"></div>
+                </div>
+                <div class="md:w-1/2 p-6 space-y-4 overflow-y-auto">
+                    <div>
+                        <label for="question-stem" class="block text-sm font-medium text-gray-300 mb-1">题干 / 材料</label>
+                        <div class="markdown-toolbar">
+                            <button type="button" data-md="bold" title="加粗"><b>B</b></button>
+                            <button type="button" data-md="italic" title="斜体"><i>I</i></button>
+                            <button type="button" data-md="strike" title="删除线"><s>S</s></button>
+                            <button type="button" data-md="code" title="行内代码" class="font-mono text-xs">&lt;/&gt;</button>
+                            <button type="button" data-md="katex" title="行内公式" class="font-mono">Σ</button>
+                            <button type="button" data-md="katex-block" title="块级公式" class="font-mono">[Σ]</button>
+                            <div class="w-px h-5 bg-gray-500 mx-1"></div>
+                            <button type="button" data-md="textcolor" title="文本颜色"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4.143 14.437V4.063h1.385v5.333h3.58V4.063h1.385v10.374H9.108V9.125H5.528v5.312H4.143zM0 15.5V15h16v.5H0z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="textcolor" value="#dd2f58" title="选择文本颜色">
+                            <button type="button" data-md="bgcolor" title="背景高亮"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M12.653 7.564l1.347 1.347-2.653 2.653-1.347-1.347 2.653-2.653zm1.5-1.5L13.106 5.017 9.394 8.729l1.04 1.04 4.719-4.719zM1 14h14v1H1v-1z"/><path d="M9.313 9.408l-4.93-4.93-1.04 1.04 4.93 4.93 1.04-1.04zM3.56 10.82l.849.849 1.326-1.326-.85-.85-1.325 1.327zM2.5 13.5c.076 0 .152-.03.212-.09l1.712-1.712a.5.5 0 0 0-.707-.707L1.995 12.7a.5.5 0 0 0 .212.912z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="bgcolor" value="#FFEB3B" title="选择背景颜色">
+                        </div>
+                        <textarea id="question-stem" rows="8" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" required></textarea>
+                    </div>
+
+                    <div id="options-editor" class="hidden space-y-2">
+                        <label class="block text-sm font-medium text-gray-300">选项</label>
+                        <div id="options-container"></div>
+                        <button type="button" id="add-option-btn" class="text-cyan-400 text-sm hover:text-cyan-300 btn-mobile-touch">+ 添加选项</button>
+                    </div>
+                    
+                    <div id="standard-answer-editor">
+                        <label for="question-answer" class="block text-sm font-medium text-gray-300 mb-1">答案</label>
+                         <div class="markdown-toolbar">
+                            <button type="button" data-md="bold" title="加粗"><b>B</b></button>
+                            <button type="button" data-md="italic" title="斜体"><i>I</i></button>
+                            <button type="button" data-md="strike" title="删除线"><s>S</s></button>
+                            <button type="button" data-md="code" title="行内代码" class="font-mono text-xs">&lt;/&gt;</button>
+                            <button type="button" data-md="katex" title="行内公式" class="font-mono">Σ</button>
+                            <button type="button" data-md="katex-block" title="块级公式" class="font-mono">[Σ]</button>
+                            <div class="w-px h-5 bg-gray-500 mx-1"></div>
+                            <button type="button" data-md="textcolor" title="文本颜色"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4.143 14.437V4.063h1.385v5.333h3.58V4.063h1.385v10.374H9.108V9.125H5.528v5.312H4.143zM0 15.5V15h16v.5H0z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="textcolor" value="#dd2f58" title="选择文本颜色">
+                            <button type="button" data-md="bgcolor" title="背景高亮"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M12.653 7.564l1.347 1.347-2.653 2.653-1.347-1.347 2.653-2.653zm1.5-1.5L13.106 5.017 9.394 8.729l1.04 1.04 4.719-4.719zM1 14h14v1H1v-1z"/><path d="M9.313 9.408l-4.93-4.93-1.04 1.04 4.93 4.93 1.04-1.04zM3.56 10.82l.849.849 1.326-1.326-.85-.85-1.325 1.327zM2.5 13.5c.076 0 .152-.03.212-.09l1.712-1.712a.5.5 0 0 0-.707-.707L1.995 12.7a.5.5 0 0 0 .212.912z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="bgcolor" value="#FFEB3B" title="选择背景颜色">
+                        </div>
+                        <textarea id="question-answer" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"></textarea>
+                    </div>
+
+                    <div id="sub-questions-editor" class="hidden space-y-2">
+                        <label class="block text-sm font-medium text-gray-300">子问题</label>
+                        <div id="sub-questions-container"></div>
+                        <button type="button" id="add-sub-question-btn" class="text-cyan-400 text-sm hover:text-cyan-300 btn-mobile-touch">+ 添加子问题</button>
+                    </div>
+
+                     <div>
+                        <label for="question-analysis" class="block text-sm font-medium text-gray-300 mb-1">解析</label>
+                         <div class="markdown-toolbar">
+                            <button type="button" data-md="bold" title="加粗"><b>B</b></button>
+                            <button type="button" data-md="italic" title="斜体"><i>I</i></button>
+                            <button type="button" data-md="strike" title="删除线"><s>S</s></button>
+                            <button type="button" data-md="code" title="行内代码" class="font-mono text-xs">&lt;/&gt;</button>
+                            <button type="button" data-md="katex" title="行内公式" class="font-mono">Σ</button>
+                            <button type="button" data-md="katex-block" title="块级公式" class="font-mono">[Σ]</button>
+                            <div class="w-px h-5 bg-gray-500 mx-1"></div>
+                            <button type="button" data-md="textcolor" title="文本颜色"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M4.143 14.437V4.063h1.385v5.333h3.58V4.063h1.385v10.374H9.108V9.125H5.528v5.312H4.143zM0 15.5V15h16v.5H0z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="textcolor" value="#dd2f58" title="选择文本颜色">
+                            <button type="button" data-md="bgcolor" title="背景高亮"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M12.653 7.564l1.347 1.347-2.653 2.653-1.347-1.347 2.653-2.653zm1.5-1.5L13.106 5.017 9.394 8.729l1.04 1.04 4.719-4.719zM1 14h14v1H1v-1z"/><path d="M9.313 9.408l-4.93-4.93-1.04 1.04 4.93 4.93 1.04-1.04zM3.56 10.82l.849.849 1.326-1.326-.85-.85-1.325 1.327zM2.5 13.5c.076 0 .152-.03.212-.09l1.712-1.712a.5.5 0 0 0-.707-.707L1.995 12.7a.5.5 0 0 0 .212.912z"/></svg></button>
+                            <input type="color" class="markdown-color-input" data-for="bgcolor" value="#FFEB3B" title="选择背景颜色">
+                        </div>
+                        <textarea id="question-analysis" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"></textarea>
+                    </div>
+                    <div>
+                        <label for="question-tags" class="block text-sm font-medium text-gray-300 mb-1">标签 (逗号分隔)</label>
+                        <input type="text" id="question-tags" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                    </div>
+                </div>
+            </form>
+             <div class="p-6 border-t border-gray-700 flex justify-end gap-4 bg-gray-800/50">
+                <button type="button" id="cancel-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">取消</button>
+                <button type="button" id="save-and-add-another-btn" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">保存并继续添加</button>
+                <button type="submit" form="question-form" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Practice Modal -->
+    <div id="practice-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex-col justify-center items-center hidden p-2 sm:p-4">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl h-[95vh] flex flex-col p-4 sm:p-6">
+            <div class="flex justify-between items-center mb-4">
+                 <div id="practice-progress" class="text-lg font-mono text-cyan-400">1 / 10</div>
+                 <button id="close-practice-btn" class="text-gray-400 hover:text-white text-3xl leading-none btn-mobile-touch">&times;</button>
+            </div>
+            
+            <!-- Mobile Tabs -->
+            <div id="mobile-practice-tabs" class="md:hidden flex border-b border-gray-700 mb-4">
+                <button data-tab="material" class="mobile-practice-tab flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400 active">阅读材料</button>
+                <button data-tab="questions" class="mobile-practice-tab flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400">作答区域</button>
+            </div>
+
+            <!-- Main Practice Content Area -->
+            <div id="practice-content-area" class="flex-1 flex flex-col md:flex-row gap-4 sm:gap-6 overflow-hidden">
+                <!-- Material Pane (Left Column on Desktop) -->
+                <div id="practice-material-pane" class="practice-tab-content prose prose-invert max-w-none bg-gray-900 p-4 rounded-lg overflow-y-auto md:w-5/12">
+                    <div id="practice-stem-content"></div>
+                </div>
+                
+                <!-- Questions Pane (Right Column on Desktop) -->
+                <div id="practice-questions-pane" class="practice-tab-content flex-1 flex flex-col overflow-hidden md:w-7/12 hidden md:flex">
+                    <div id="practice-navigator" class="mb-4 flex flex-wrap gap-2"></div>
+                    <div id="practice-sub-questions-area" class="flex-1 overflow-y-auto space-y-4 pr-2"></div>
+                </div>
+            </div>
+
+            <div id="practice-feedback-area" class="my-2 text-center"></div>
+            <div id="practice-answer-area" class="flex-1 overflow-y-auto p-4 bg-gray-900 rounded-lg prose prose-invert max-w-none hidden"></div>
+            
+            <!-- Action Buttons -->
+            <div class="mt-auto pt-4 sm:pt-6 flex justify-between items-center">
+                <button id="check-answer-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition btn-mobile-touch">检查答案</button>
+                <button id="show-answer-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-lg transition btn-mobile-touch">显示答案</button>
+                <div id="review-buttons" class="hidden w-full flex items-center gap-2 md:gap-4">
+                    <button data-status="mastered" class="review-btn flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">掌握</button>
+                    <button data-status="reviewing" class="review-btn flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">模糊</button>
+                    <button data-status="new" class="review-btn flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">忘记</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <h3 id="confirm-title" class="text-xl font-bold text-white mb-2">确认删除？</h3>
+            <p id="confirm-message" class="text-gray-400 mb-6">此操作不可撤销。</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-cancel-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">取消</button>
+                <button id="confirm-ok-btn" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IO Modal -->
+    <div id="io-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl p-6">
+             <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">数据管理</h3>
+                 <button id="io-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none btn-mobile-touch">&times;</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4 bg-gray-900 p-4 rounded-lg">
+                    <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">导入</h4>
+                    <p class="text-sm text-gray-400">支持 .json, .docx 文件。重复 ID 的题目将被更新。</p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">从 JSON</label>
+                        <input type="file" id="import-json-input" accept=".json" class="import-file-input"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1">从 Word (.docx)</label>
+                        <input type="file" id="import-docx-input" accept=".docx" class="import-file-input"/>
+                    </div>
+                </div>
+                 <div class="space-y-4 bg-gray-900 p-4 rounded-lg">
+                    <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">导出</h4>
+                    <p class="text-sm text-gray-400">将当前筛选的题目导出。</p>
+                    <button id="export-json-btn" class="export-btn btn-mobile-touch">导出为 JSON</button>
+                    <button id="export-csv-btn" class="export-btn btn-mobile-touch">导出为 CSV</button>
+                    <button id="export-docx-btn" class="export-btn btn-mobile-touch">导出为 Word</button>
+                </div>
+            </div>
+            <div class="mt-6 bg-gray-900 p-4 rounded-lg">
+                <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">下载模板</h4>
+                <p class="text-sm text-gray-400 mb-4">使用标准模板确保题目格式正确，以便顺利导入。</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <button id="download-json-template-btn" class="template-download-btn btn-mobile-touch">JSON 模板</button>
+                    <button id="download-csv-template-btn" class="template-download-btn btn-mobile-touch">CSV 模板</button>
+                    <button id="download-docx-template-btn" class="template-download-btn btn-mobile-touch">Word 模板</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        .import-file-input{ all: unset; display: block; width:100%; font-size: 0.875rem; color: #9ca3af; } .import-file-input::file-selector-button { all: unset; cursor: pointer; margin-right: 1rem; padding: 0.5rem 1rem; border-radius: 9999px; border: 0; font-size: 0.875rem; font-weight: 600; background-color: #0891b2; color: white; } .import-file-input::file-selector-button:hover { background-color: #06b6d4; } 
+        .export-btn { display: block; width: 100%; text-align: center; background-color: #374151; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; } .export-btn:hover { background-color: #4b5563; }
+        .template-download-btn { display: block; width: 100%; text-align: center; background-color: #374151; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.2s; font-size: 0.875rem; } .template-download-btn:hover { background-color: #4b5563; }
+    </style>
+
+    <script type="module">
+        // --- 1. SETUP ---
+        const db = new Dexie("QBankDB");
+        db.version(3).stores({
+            questions: '++id, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions',
+        });
+
+        // --- 2. STATE MANAGEMENT ---
+        let state = {
+            questions: [],
+            filters: { search: '', tags: [] },
+            practice: { questions: [], currentIndex: 0, intersectionObserver: null },
+            pagination: {
+                currentPage: 1,
+                pageSize: 9,
+            }
+        };
+
+        // --- 3. DOM ELEMENTS ---
+        const DOMElements = {
+            loader: document.getElementById('skeleton-loader'),
+            grid: document.getElementById('questions-grid'),
+            noResults: document.getElementById('no-results'),
+            addBtn: document.getElementById('add-question-btn'),
+            modal: document.getElementById('question-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            form: document.getElementById('question-form'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            saveAndAddAnotherBtn: document.getElementById('save-and-add-another-btn'),
+            previewArea: document.getElementById('preview-area'),
+            questionIdInput: document.getElementById('question-id'),
+            questionTypeSelect: document.getElementById('question-type'),
+            questionStemInput: document.getElementById('question-stem'),
+            standardAnswerEditor: document.getElementById('standard-answer-editor'),
+            questionAnswerInput: document.getElementById('question-answer'),
+            questionAnalysisInput: document.getElementById('question-analysis'),
+            questionTagsInput: document.getElementById('question-tags'),
+            optionsEditor: document.getElementById('options-editor'),
+            optionsContainer: document.getElementById('options-container'),
+            addOptionBtn: document.getElementById('add-option-btn'),
+            subQuestionsEditor: document.getElementById('sub-questions-editor'),
+            subQuestionsContainer: document.getElementById('sub-questions-container'),
+            addSubQuestionBtn: document.getElementById('add-sub-question-btn'),
+            searchBox: document.getElementById('search-box'),
+            filterTagsContainer: document.getElementById('filter-tags'),
+            startPracticeBtn: document.getElementById('start-practice-btn'),
+            practiceModal: document.getElementById('practice-modal'),
+            practiceProgress: document.getElementById('practice-progress'),
+            practiceContentArea: document.getElementById('practice-content-area'),
+            practiceMaterialPane: document.getElementById('practice-material-pane'),
+            practiceQuestionsPane: document.getElementById('practice-questions-pane'),
+            practiceStemContent: document.getElementById('practice-stem-content'),
+            practiceNavigator: document.getElementById('practice-navigator'),
+            practiceSubQuestionsArea: document.getElementById('practice-sub-questions-area'),
+            practiceFeedbackArea: document.getElementById('practice-feedback-area'),
+            practiceAnswerArea: document.getElementById('practice-answer-area'),
+            showAnswerBtn: document.getElementById('show-answer-btn'),
+            checkAnswerBtn: document.getElementById('check-answer-btn'),
+            reviewButtons: document.getElementById('review-buttons'),
+            closePracticeBtn: document.getElementById('close-practice-btn'),
+            mobilePracticeTabs: document.getElementById('mobile-practice-tabs'),
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmOkBtn: document.getElementById('confirm-ok-btn'),
+            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            ioBtn: document.getElementById('io-btn'),
+            ioModal: document.getElementById('io-modal'),
+            ioCloseBtn: document.getElementById('io-close-btn'),
+            importJsonInput: document.getElementById('import-json-input'),
+            importDocxInput: document.getElementById('import-docx-input'),
+            exportJsonBtn: document.getElementById('export-json-btn'),
+            exportCsvBtn: document.getElementById('export-csv-btn'),
+            exportDocxBtn: document.getElementById('export-docx-btn'),
+            downloadJsonTemplateBtn: document.getElementById('download-json-template-btn'),
+            downloadCsvTemplateBtn: document.getElementById('download-csv-template-btn'),
+            downloadDocxTemplateBtn: document.getElementById('download-docx-template-btn'),
+            paginationContainer: document.getElementById('pagination'),
+            pageStart: document.getElementById('page-start'),
+            pageEnd: document.getElementById('page-end'),
+            totalCount: document.getElementById('total-count'),
+            firstPageBtn: document.getElementById('first-page-btn'),
+            prevPageBtn: document.getElementById('prev-page-btn'),
+            pageNumbers: document.getElementById('page-numbers'),
+            nextPageBtn: document.getElementById('next-page-btn'),
+            lastPageBtn: document.getElementById('last-page-btn'),
+            pageSizeSelect: document.getElementById('page-size-select'),
+            mobileAddBtn: document.getElementById('mobile-add-question-btn'),
+            mobilePracticeBtn: document.getElementById('mobile-start-practice-btn'),
+        };
+
+        // --- 4. UTILS & HELPERS ---
+        const debounce = (func, delay) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+        
+        const generateUUID = () => crypto.randomUUID();
+
+        const triggerHapticFeedback = () => {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        };
+
+        const applyMarkdown = (textarea, prefix, suffix) => {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const finalSuffix = suffix === undefined ? prefix : suffix;
+            const replacement = `${prefix}${selectedText}${finalSuffix}`;
+            textarea.setRangeText(replacement, start, end);
+            textarea.selectionStart = start + prefix.length;
+            textarea.selectionEnd = end + prefix.length;
+            textarea.focus();
+            const inputEvent = new Event('input', { bubbles: true });
+            textarea.dispatchEvent(inputEvent);
+        };
+
+        const applyStyleSpan = (textarea, styleProperty, styleValue) => {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const prefix = `<span style="${styleProperty}: ${styleValue}">`;
+            const suffix = `</span>`;
+
+            if (!selectedText) {
+                textarea.setRangeText(`${prefix}${suffix}`, start, end);
+                textarea.selectionStart = start + prefix.length;
+                textarea.selectionEnd = textarea.selectionStart;
+            } else {
+                const replacement = `${prefix}${selectedText}${suffix}`;
+                textarea.setRangeText(replacement, start, end);
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + replacement.length;
+            }
+
+            textarea.focus();
+            const inputEvent = new Event('input', { bubbles: true });
+            textarea.dispatchEvent(inputEvent);
+        };
+        
+        const renderMarkdown = (text) => {
+             if (!text) return '';
+            const dirtyHtml = marked.parse(text, { breaks: true, gfm: true });
+            const cleanHtml = DOMPurify.sanitize(dirtyHtml, { ADD_TAGS: ['span'], ADD_ATTR: ['style'] });
+            
+            return cleanHtml.replace(/\$\$(.*?)\$\$/g, (match, expression) => {
+                try {
+                    return katex.renderToString(expression, { throwOnError: false, displayMode: true });
+                } catch (e) { console.error("KaTeX rendering error:", e); return match; }
+            }).replace(/\$(.*?)\$/g, (match, expression) => {
+                try {
+                    return katex.renderToString(expression, { throwOnError: false });
+                } catch (e) { console.error("KaTeX rendering error:", e); return match; }
+            });
+        };
+        
+        // --- 5. UI RENDERING (MODAL EDITORS) ---
+        const createSubQuestionNode = (sq = { id: generateUUID(), type: 'standard', stem: '', answer: '', analysis: '', options: [{text: '', isCorrect: false}] }) => {
+            const div = document.createElement('div');
+            div.className = 'p-3 border border-gray-700 rounded-lg space-y-3 bg-gray-900/50';
+            div.dataset.sqId = sq.id;
+
+            div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <select class="sub-question-type-select w-2/5 bg-gray-600 border border-gray-500 rounded-md p-1 text-xs">
+                        <option value="standard" ${sq.type === 'standard' ? 'selected' : ''}>标准题</option>
+                        <option value="single-choice" ${sq.type === 'single-choice' ? 'selected' : ''}>单选题</option>
+                        <option value="multi-choice" ${sq.type === 'multi-choice' ? 'selected' : ''}>多选题</option>
+                    </select>
+                    <button type="button" class="remove-sub-question-btn text-red-500 hover:text-red-400 text-xs">删除</button>
+                </div>
+                <textarea data-field="stem" placeholder="子问题题干" class="w-full bg-gray-700 p-2 rounded-md text-sm">${sq.stem}</textarea>
+                <div class="sub-question-answer-area" ${sq.type !== 'standard' ? 'style="display: none;"' : ''}>
+                    <textarea data-field="answer" placeholder="子问题答案" class="w-full bg-gray-700 p-2 rounded-md text-sm">${sq.answer || ''}</textarea>
+                </div>
+                <div class="sub-question-options-area space-y-2" ${sq.type === 'standard' ? 'style="display: none;"' : ''}></div>
+                <textarea data-field="analysis" placeholder="子问题解析" class="w-full bg-gray-700 p-2 rounded-md text-sm mt-2">${sq.analysis || ''}</textarea>
+            `;
+            
+            const optionsArea = div.querySelector('.sub-question-options-area');
+            if (sq.type !== 'standard') {
+                const options = sq.options || [{text: '', isCorrect: false}];
+                const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
+                options.forEach((opt, index) => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'flex items-center gap-2';
+                    optDiv.innerHTML = `
+                        <input type="${inputType}" name="sub-question-correct-${sq.id}" value="${index}" ${opt.isCorrect ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
+                        <input type="text" data-field="option-text" value="${opt.text}" placeholder="选项内容" class="flex-1 bg-gray-700 border border-gray-600 rounded-md p-1 text-sm">
+                        <button type="button" class="remove-sub-option-btn text-red-500 hover:text-red-400 text-xs">&times;</button>
+                    `;
+                    optionsArea.appendChild(optDiv);
+                });
+                const addOptBtn = document.createElement('button');
+                addOptBtn.type = 'button';
+                addOptBtn.className = 'add-sub-option-btn text-cyan-400 text-xs hover:text-cyan-300 mt-1';
+                addOptBtn.textContent = '+ 添加选项';
+                optionsArea.appendChild(addOptBtn);
+            }
+            return div;
+        };
+
+        const renderSubQuestionsEditor = (subQuestions = []) => {
+            DOMElements.subQuestionsContainer.innerHTML = '';
+            const initialSQ = [{ id: generateUUID(), type: 'standard', stem: '', answer: '', analysis: '', options: [] }];
+            const questionsToRender = subQuestions.length > 0 ? subQuestions : initialSQ;
+            questionsToRender.forEach(sq => {
+                DOMElements.subQuestionsContainer.appendChild(createSubQuestionNode(sq));
+            });
+        };
+
+        const renderOptionsEditor = (type, options = [{text: '', isCorrect: false}]) => {
+            DOMElements.optionsContainer.innerHTML = '';
+            const inputType = type === 'single-choice' ? 'radio' : 'checkbox';
+            options.forEach((option, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2';
+                div.innerHTML = `
+                    <input type="${inputType}" id="option-correct-${index}" name="option-correct" value="${index}" ${option.isCorrect ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500">
+                    <input type="text" value="${option.text}" placeholder="选项内容" class="flex-1 bg-gray-700 border border-gray-600 rounded-md p-2 text-white">
+                    <button type="button" class="remove-option-btn text-red-500 hover:text-red-400">&times;</button>
+                `;
+                DOMElements.optionsContainer.appendChild(div);
+            });
+        };
+
+        // --- 6. UI RENDERING (MAIN) ---
+        const renderQuestionCard = (q) => {
+            const card = document.createElement('div');
+            card.className = 'bg-gray-900 rounded-xl shadow-lg flex flex-col transition duration-300 hover:shadow-cyan-500/20 hover:-translate-y-1 min-h-[24rem]';
+            card.dataset.id = q.id;
+
+            const tagsHTML = q.tags.map(tag => `<span class="bg-gray-700 text-cyan-400 text-xs font-medium px-2.5 py-1 rounded-full">${tag}</span>`).join(' ');
+            let statusColor = q.reviewStatus === 'mastered' ? 'bg-green-500' : q.reviewStatus === 'reviewing' ? 'bg-yellow-500' : 'bg-blue-500';
+            
+            let contentHTML = `<div class="prose prose-invert prose-sm max-w-none rendered-content">${renderMarkdown(q.stem)}</div>`;
+            
+            let materialActions = '';
+            if (q.type === 'material') {
+                try {
+                    const subQs = JSON.parse(q.subQuestions);
+                    materialActions = `<button class="expand-btn text-sm text-cyan-400 hover:text-cyan-300">展开 ${subQs.length} 个子问题</button>`;
+                } catch(e) {}
+            }
+            
+            let answerPanelHTML = '';
+            if (q.type === 'material') {
+                try {
+                    const subQs = JSON.parse(q.subQuestions || '[]');
+                    let subQHTML = subQs.map((sq, index) => {
+                        let answerContent = '';
+                        if (sq.type !== 'standard') {
+                            answerContent = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
+                        } else {
+                            answerContent = sq.answer;
+                        }
+                        return `
+                            <div class="mt-4 pt-4 border-t border-gray-700">
+                                <div class="prose prose-invert prose-sm max-w-none font-semibold">${renderMarkdown(`(${index + 1}) ${sq.stem}`)}</div>
+                                <div class="mt-2">
+                                    <span class="text-cyan-400 font-bold">答案：</span>
+                                    <span>${answerContent}</span>
+                                </div>
+                                ${sq.analysis ? `
+                                <div class="mt-2">
+                                    <span class="text-yellow-400 font-bold">解析：</span>
+                                    <div class="prose prose-invert prose-sm max-w-none text-gray-400">${renderMarkdown(sq.analysis)}</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+
+                    answerPanelHTML = `
+                        <div class="answer-panel bg-gray-900/50 p-5 border-t-2 border-cyan-800 hidden">
+                            ${subQHTML}
+                            ${q.analysis ? `
+                             <h4 class="font-bold text-purple-400 mt-6 pt-4 border-t border-dashed border-gray-600 mb-2">材料总解析</h4>
+                             <div class="prose prose-invert prose-sm max-w-none rendered-content">${renderMarkdown(q.analysis)}</div>
+                            ` : ''}
+                        </div>
+                    `;
+                } catch (e) { console.error("Error parsing subquestions for answer panel", e)}
+            } else {
+                 answerPanelHTML = `
+                    <div class="answer-panel bg-gray-900/50 p-5 border-t-2 border-cyan-800 hidden">
+                         <h4 class="font-bold text-cyan-400 mb-2">答案</h4>
+                         <div class="prose prose-invert prose-sm max-w-none rendered-content" data-source="answer">${renderMarkdown(q.answer)}</div>
+                         <h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4>
+                         <div class="prose prose-invert prose-sm max-w-none rendered-content" data-source="analysis">${renderMarkdown(q.analysis || '暂无解析')}</div>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="p-5 flex-1 overflow-y-auto question-card-content">
+                    <div class="flex justify-between items-start mb-2">
+                         <h3 class="font-semibold text-gray-200">${q.type === 'material' ? '材料题' : '题目'}</h3>
+                         <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-md ml-2 whitespace-nowrap">${q.type}</span>
+                    </div>
+                    ${contentHTML}
+                </div>
+                <div class="px-5 pb-5 mt-auto">
+                    ${materialActions ? `<div class="flex justify-end mb-3">${materialActions}</div>` : ''}
+                    <div class="sub-questions-preview hidden prose prose-invert prose-sm max-w-none text-gray-400 mb-4 p-3 bg-gray-800 rounded-md space-y-2"></div>
+                    <div class="flex flex-wrap gap-2 mb-4">${tagsHTML}</div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                             <span class="relative flex h-3 w-3"><span class="relative inline-flex rounded-full h-3 w-3 ${statusColor}"></span></span>
+                            <span class="text-xs text-gray-400">${q.reviewStatus || 'new'}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="edit-btn text-gray-400 hover:text-white transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
+                            <button class="delete-btn text-gray-400 hover:text-red-500 transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                             <button class="toggle-answer-btn text-gray-400 hover:text-cyan-400 transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                        </div>
+                    </div>
+                </div>
+                ${answerPanelHTML}
+            `;
+            return card;
+        };
+        
+        const renderPagination = (totalItems) => {
+            const { currentPage, pageSize } = state.pagination;
+            const totalPages = Math.ceil(totalItems / pageSize);
+
+            if (totalPages <= 1) {
+                DOMElements.paginationContainer.classList.add('hidden');
+                return;
+            }
+            DOMElements.paginationContainer.classList.remove('hidden');
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(startItem + pageSize - 1, totalItems);
+            DOMElements.pageStart.textContent = startItem;
+            DOMElements.pageEnd.textContent = endItem;
+            DOMElements.totalCount.textContent = totalItems;
+
+            DOMElements.firstPageBtn.disabled = currentPage === 1;
+            DOMElements.prevPageBtn.disabled = currentPage === 1;
+            DOMElements.nextPageBtn.disabled = currentPage === totalPages;
+            DOMElements.lastPageBtn.disabled = currentPage === totalPages;
+            
+            DOMElements.pageNumbers.innerHTML = '';
+            const pagesToShow = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pagesToShow.push(i);
+            } else {
+                pagesToShow.push(1);
+                if (currentPage > 3) pagesToShow.push('...');
+                let start = Math.max(2, currentPage - 1);
+                let end = Math.min(totalPages - 1, currentPage + 1);
+                for (let i = start; i <= end; i++) pagesToShow.push(i);
+                if (currentPage < totalPages - 2) pagesToShow.push('...');
+                pagesToShow.push(totalPages);
+            }
+
+            pagesToShow.forEach(page => {
+                 const pageBtn = document.createElement('button');
+                 pageBtn.className = `px-4 py-2 rounded-lg text-sm font-medium transition btn-mobile-touch`;
+                if (page === '...') {
+                    pageBtn.textContent = '...';
+                    pageBtn.disabled = true;
+                    pageBtn.className += ' text-gray-400';
+                } else {
+                    pageBtn.textContent = page;
+                    pageBtn.dataset.page = page;
+                    pageBtn.className += page === currentPage ? ' bg-cyan-600 text-white' : ' bg-gray-700 hover:bg-gray-600 text-white';
+                }
+                 DOMElements.pageNumbers.appendChild(pageBtn);
+            });
+        };
+
+        const renderAllQuestions = () => {
+            DOMElements.loader.classList.add('hidden');
+            DOMElements.grid.classList.remove('hidden');
+            DOMElements.grid.innerHTML = '';
+            
+            const filteredQuestions = getFilteredQuestions();
+            const { currentPage, pageSize } = state.pagination;
+            const totalItems = filteredQuestions.length;
+            const totalPages = Math.ceil(totalItems / pageSize);
+
+            if (currentPage > totalPages && totalPages > 0) {
+                state.pagination.currentPage = totalPages;
+            }
+            
+            const paginatedQuestions = filteredQuestions.slice((state.pagination.currentPage - 1) * pageSize, state.pagination.currentPage * pageSize);
+
+            if (filteredQuestions.length === 0) {
+                DOMElements.noResults.classList.remove('hidden');
+                DOMElements.grid.classList.add('hidden');
+                DOMElements.paginationContainer.classList.add('hidden');
+            } else {
+                 DOMElements.noResults.classList.add('hidden');
+                 DOMElements.grid.classList.remove('hidden');
+                paginatedQuestions.forEach(q => {
+                    DOMElements.grid.appendChild(renderQuestionCard(q));
+                });
+            }
+            renderPagination(totalItems);
+            DOMElements.startPracticeBtn.disabled = filteredQuestions.length === 0;
+            DOMElements.mobilePracticeBtn.disabled = filteredQuestions.length === 0;
+        };
+        
+        const renderTagsForFiltering = () => {
+            const allTags = [...new Set(state.questions.flatMap(q => q.tags))];
+            DOMElements.filterTagsContainer.innerHTML = '';
+            allTags.forEach(tag => {
+                const button = document.createElement('button');
+                button.textContent = tag;
+                button.dataset.tag = tag;
+                const isActive = state.filters.tags.includes(tag);
+                button.className = `px-3 py-1 rounded-full text-sm font-medium transition btn-mobile-touch ${isActive ? 'bg-cyan-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`;
+                DOMElements.filterTagsContainer.appendChild(button);
+            });
+        };
+
+        // --- 7. DATA & DB LOGIC ---
+        const fetchAndRender = async () => {
+            DOMElements.loader.classList.remove('hidden');
+            DOMElements.grid.classList.add('hidden');
+            state.questions = await db.questions.orderBy('createdAt').reverse().toArray();
+            setTimeout(() => {
+                renderAllQuestions();
+                renderTagsForFiltering();
+            }, 300);
+        };
+        
+        const getFilteredQuestions = () => {
+            return state.questions.filter(q => {
+                const searchMatch = state.filters.search ? 
+                    (q.stem?.toLowerCase().includes(state.filters.search) ||
+                    q.analysis?.toLowerCase().includes(state.filters.search) ||
+                    q.tags.some(t => t.toLowerCase().includes(state.filters.search))) 
+                    : true;
+                const tagsMatch = state.filters.tags.length > 0 ? state.filters.tags.every(ft => q.tags.includes(ft)) : true;
+                return searchMatch && tagsMatch;
+            });
+        };
+
+        // --- 8. MODAL & FORM HANDLING ---
+        const updateFormUIForType = (type) => {
+            const isChoice = ['single-choice', 'multi-choice'].includes(type);
+            const isMaterial = type === 'material';
+            
+            DOMElements.optionsEditor.classList.toggle('hidden', !isChoice);
+            DOMElements.subQuestionsEditor.classList.toggle('hidden', !isMaterial);
+            DOMElements.standardAnswerEditor.classList.toggle('hidden', isChoice || isMaterial);
+        };
+        
+        const resetModalForNewQuestion = (typeToSet = 'single-choice') => {
+            DOMElements.form.reset();
+            DOMElements.questionIdInput.value = '';
+            DOMElements.modalTitle.textContent = '添加新题目';
+            DOMElements.questionTypeSelect.value = typeToSet;
+            updateFormUIForType(typeToSet);
+            if (['single-choice', 'multi-choice'].includes(typeToSet)) {
+                renderOptionsEditor(typeToSet);
+            }
+            if (typeToSet === 'material'){
+                renderSubQuestionsEditor();
+            }
+            updatePreview();
+            DOMElements.questionStemInput.focus();
+        };
+
+        const openModal = (question = null) => {
+            if (question) {
+                DOMElements.form.reset();
+                DOMElements.modalTitle.textContent = '编辑题目';
+                DOMElements.questionIdInput.value = question.id;
+                DOMElements.questionStemInput.value = question.stem;
+                DOMElements.questionAnswerInput.value = question.answer;
+                DOMElements.questionAnalysisInput.value = question.analysis;
+                DOMElements.questionTagsInput.value = question.tags.join(', ');
+                DOMElements.questionTypeSelect.value = question.type;
+                updateFormUIForType(question.type);
+                if (['single-choice', 'multi-choice'].includes(question.type)) {
+                    renderOptionsEditor(question.type, JSON.parse(question.options || '[]'));
+                }
+                if (question.type === 'material') {
+                    renderSubQuestionsEditor(JSON.parse(question.subQuestions || '[]'));
+                }
+            } else {
+                resetModalForNewQuestion();
+            }
+            updatePreview();
+            DOMElements.modal.classList.remove('hidden');
+        };
+
+        const closeModal = () => DOMElements.modal.classList.add('hidden');
+        
+        const parseAndPopulateFields = (rawText) => {
+            const answerMatch = rawText.match(/【答案】\s*([A-Z]+)/);
+            const analysisMatch = rawText.match(/【解析】\s*([\s\S]+)/);
+
+            if (!answerMatch) return;
+
+            let textBeforeAnswerAndAnalysis = rawText;
+            if (analysisMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【解析】')[0];
+            if (answerMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【答案】')[0];
+            textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.trim();
+            
+            const optionsRegex = /([A-Z])\.([\s\S]*?)(?=\s*[A-Z]\.|$)/g;
+            const allMatches = [...textBeforeAnswerAndAnalysis.matchAll(optionsRegex)];
+            
+            if (allMatches.length === 0) return;
+
+            const firstOptionMatch = allMatches[0];
+            const optionsStartIndex = firstOptionMatch.index;
+            
+            const stem = textBeforeAnswerAndAnalysis.substring(0, optionsStartIndex).replace(/^\d+\.\s*/, '').trim();
+            const optionsBlock = textBeforeAnswerAndAnalysis.substring(optionsStartIndex);
+
+            const optionsMatches = [...optionsBlock.matchAll(optionsRegex)];
+
+            if (optionsMatches.length === 0) return;
+
+            if (analysisMatch) {
+                DOMElements.questionAnalysisInput.value = analysisMatch[1].trim();
+            } else {
+                DOMElements.questionAnalysisInput.value = '';
+            }
+
+            const correctAnswers = answerMatch[1].trim();
+            const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+            DOMElements.questionTypeSelect.value = newType;
+            updateFormUIForType(newType);
+
+            const options = optionsMatches.map(match => {
+                const letter = match[1];
+                const text = match[2].trim();
+                return { text, isCorrect: correctAnswers.includes(letter) };
+            }).filter(opt => opt.text);
+
+            if (options.length > 0) {
+                 renderOptionsEditor(newType, options);
+            }
+            
+            DOMElements.questionStemInput.value = stem;
+
+            updatePreview();
+        };
+
+        const parseAndPopulateSubQuestion = (sqNode) => {
+            const stemTextarea = sqNode.querySelector('textarea[data-field="stem"]');
+            const rawText = stemTextarea.value;
+
+            const answerMatch = rawText.match(/【答案】\s*([^\n]+)/); 
+            const analysisMatch = rawText.match(/【解析】\s*([\s\S]+)/); 
+
+            if (!answerMatch) return;
+
+            let textBeforeAnswerAndAnalysis = rawText;
+            if (analysisMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【解析】')[0];
+            if (answerMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【答案】')[0];
+            textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.trim();
+
+            const optionsRegex = /([A-Z])\.([\s\S]*?)(?=\s*[A-Z]\.|$)/g;
+            const allMatches = [...textBeforeAnswerAndAnalysis.matchAll(optionsRegex)];
+
+            const typeSelect = sqNode.querySelector('.sub-question-type-select');
+            const optionsArea = sqNode.querySelector('.sub-question-options-area');
+            const answerTextarea = sqNode.querySelector('textarea[data-field="answer"]');
+            const analysisTextarea = sqNode.querySelector('textarea[data-field="analysis"]');
+
+            if (analysisMatch) {
+                analysisTextarea.value = analysisMatch[1].trim();
+            } else {
+                analysisTextarea.value = '';
+            }
+
+            if (allMatches.length > 0) { // It's a choice question
+                const firstOptionMatch = allMatches[0];
+                const optionsStartIndex = firstOptionMatch.index;
+                
+                const stem = textBeforeAnswerAndAnalysis.substring(0, optionsStartIndex).replace(/^\d+\.\s*/, '').trim();
+                const optionsBlock = textBeforeAnswerAndAnalysis.substring(optionsStartIndex);
+                const optionsMatches = [...optionsBlock.matchAll(optionsRegex)];
+                
+                const correctAnswers = answerMatch[1].trim();
+                const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+                
+                stemTextarea.value = stem;
+                typeSelect.value = newType;
+                
+                typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+
+                optionsArea.innerHTML = ''; 
+                const inputType = newType === 'single-choice' ? 'radio' : 'checkbox';
+                const sqId = sqNode.dataset.sqId;
+
+                optionsMatches.forEach((match, index) => {
+                    const letter = match[1];
+                    const text = match[2].trim();
+                    const isCorrect = correctAnswers.includes(letter);
+
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'flex items-center gap-2';
+                    optDiv.innerHTML = `
+                        <input type="${inputType}" name="sub-question-correct-${sqId}" value="${index}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
+                        <input type="text" data-field="option-text" value="${text}" placeholder="选项内容" class="flex-1 bg-gray-700 border border-gray-600 rounded-md p-1 text-sm">
+                        <button type="button" class="remove-sub-option-btn text-red-500 hover:text-red-400 text-xs">&times;</button>
+                    `;
+                    optionsArea.appendChild(optDiv);
+                });
+                
+                const addOptBtn = document.createElement('button');
+                addOptBtn.type = 'button';
+                addOptBtn.className = 'add-sub-option-btn text-cyan-400 text-xs hover:text-cyan-300 mt-1';
+                addOptBtn.textContent = '+ 添加选项';
+                optionsArea.appendChild(addOptBtn);
+
+            } else { // It's a standard question
+                const stem = textBeforeAnswerAndAnalysis.replace(/^\d+\.\s*/, '').trim();
+                const answer = answerMatch[1].trim();
+
+                stemTextarea.value = stem;
+                answerTextarea.value = answer;
+                typeSelect.value = 'standard';
+                typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        };
+
+        const updatePreview = () => {
+            const type = DOMElements.questionTypeSelect.value;
+            const stem = DOMElements.questionStemInput.value;
+            
+            let previewHTML = renderMarkdown(stem);
+            
+            if (['single-choice', 'multi-choice'].includes(type)) {
+                const options = [];
+                DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div) => {
+                    const text = div.querySelector('input[type="text"]').value;
+                    if(text) options.push(text);
+                });
+                if (options.length > 0) {
+                     previewHTML += '<ul class="list-disc list-inside mt-2 space-y-1">' + options.map(o => `<li>${o}</li>`).join('') + '</ul>';
+                }
+            }
+
+            DOMElements.previewArea.innerHTML = previewHTML;
+        };
+        
+        const saveQuestionData = async () => {
+            const id = parseInt(DOMElements.questionIdInput.value);
+            const type = DOMElements.questionTypeSelect.value;
+            
+            const questionData = {
+                type: type,
+                stem: DOMElements.questionStemInput.value.trim(),
+                analysis: DOMElements.questionAnalysisInput.value.trim(),
+                tags: DOMElements.questionTagsInput.value.split(/,|，/).map(t => t.trim()).filter(Boolean),
+                updatedAt: new Date(),
+            };
+            if (!questionData.stem) {
+                alert("题干不能为空！");
+                return;
+            }
+            if (['single-choice', 'multi-choice'].includes(type)) {
+                const options = [];
+                let hasCorrect = false;
+                DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div) => {
+                    const text = div.querySelector('input[type="text"]').value;
+                    const isCorrect = div.querySelector('input[type="radio"], input[type="checkbox"]').checked;
+                    if (isCorrect) hasCorrect = true;
+                    options.push({ text, isCorrect });
+                });
+                if (!hasCorrect) {
+                    alert("选择题必须至少有一个正确答案！");
+                    return;
+                }
+                questionData.options = JSON.stringify(options);
+                questionData.answer = options.filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + i)).join(', ');
+            } else if (type === 'material') {
+                const subQuestions = [];
+                DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
+                    const sq = {
+                        id: sqNode.dataset.sqId,
+                        type: sqNode.querySelector('.sub-question-type-select').value,
+                        stem: sqNode.querySelector('textarea[data-field="stem"]').value,
+                        analysis: sqNode.querySelector('textarea[data-field="analysis"]').value,
+                        options: []
+                    };
+                    
+                    if (sq.type !== 'standard') {
+                         sqNode.querySelectorAll('.sub-question-options-area > .flex').forEach((optDiv, idx) => {
+                            const input = optDiv.querySelector('input[type="text"]');
+                            const checkbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                            if (input && input.value) {
+                                sq.options.push({
+                                    text: input.value,
+                                    isCorrect: checkbox ? checkbox.checked : false
+                                });
+                            }
+                        });
+                        sq.answer = sq.options.filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + sq.options.findIndex(opt => opt.text === o.text))).join(', ');
+                    } else {
+                        sq.answer = sqNode.querySelector('textarea[data-field="answer"]')?.value || '';
+                    }
+                    
+                    subQuestions.push(sq);
+                });
+                questionData.subQuestions = JSON.stringify(subQuestions);
+                questionData.answer = '见子问题解析';
+            } else {
+                questionData.answer = DOMElements.questionAnswerInput.value.trim();
+            }
+
+            if (id) {
+                await db.questions.update(id, questionData);
+            } else {
+                questionData.createdAt = new Date();
+                questionData.reviewStatus = 'new';
+                await db.questions.add(questionData);
+            }
+            return true;
+        };
+
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            const success = await saveQuestionData();
+            if (success) {
+                closeModal();
+                await fetchAndRender();
+            }
+        };
+        
+        DOMElements.saveAndAddAnotherBtn.addEventListener('click', async () => {
+            triggerHapticFeedback();
+            const currentType = DOMElements.questionTypeSelect.value;
+            const success = await saveQuestionData();
+            if (success) {
+                resetModalForNewQuestion(currentType);
+                await fetchAndRender();
+            }
+        });
+
+        // --- 9. EVENT LISTENERS (DYNAMIC & DELEGATED) ---
+        DOMElements.subQuestionsContainer.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-sub-question-btn')) {
+                e.target.closest('[data-sq-id]').remove();
+            }
+            if (e.target.classList.contains('add-sub-option-btn')) {
+                const sqId = e.target.closest('[data-sq-id]').dataset.sqId;
+                const type = e.target.closest('[data-sq-id]').querySelector('.sub-question-type-select').value;
+                const inputType = type === 'single-choice' ? 'radio' : 'checkbox';
+                const optDiv = document.createElement('div');
+                optDiv.className = 'flex items-center gap-2';
+                optDiv.innerHTML = `
+                    <input type="${inputType}" name="sub-question-correct-${sqId}" class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
+                    <input type="text" data-field="option-text" placeholder="选项内容" class="flex-1 bg-gray-700 border-gray-600 rounded-md p-1 text-sm">
+                    <button type="button" class="remove-sub-option-btn text-red-500 hover:text-red-400 text-xs">&times;</button>
+                `;
+                e.target.before(optDiv);
+            }
+            if (e.target.classList.contains('remove-sub-option-btn')) {
+                e.target.closest('.flex').remove();
+            }
+        });
+
+        DOMElements.subQuestionsContainer.addEventListener('change', e => {
+            if (e.target.classList.contains('sub-question-type-select')) {
+                const sqNode = e.target.closest('[data-sq-id]');
+                const type = e.target.value;
+                sqNode.querySelector('.sub-question-answer-area').style.display = type === 'standard' ? '' : 'none';
+                const optionsArea = sqNode.querySelector('.sub-question-options-area');
+                optionsArea.style.display = type !== 'standard' ? '' : 'none';
+                if (type !== 'standard' && !optionsArea.querySelector('.add-sub-option-btn')) {
+                    optionsArea.innerHTML = '';
+                    const addOptBtn = document.createElement('button');
+                    addOptBtn.type = 'button';
+                    addOptBtn.className = 'add-sub-option-btn text-cyan-400 text-xs hover:text-cyan-300 mt-1';
+                    addOptBtn.textContent = '+ 添加选项';
+                    optionsArea.appendChild(addOptBtn);
+                }
+            }
+        });
+        
+        const debouncedSubQuestionParse = debounce((sqNode) => {
+            parseAndPopulateSubQuestion(sqNode);
+        }, 500);
+
+        DOMElements.subQuestionsContainer.addEventListener('input', e => {
+            if (e.target.matches('textarea[data-field="stem"]')) {
+                const sqNode = e.target.closest('[data-sq-id]');
+                if (sqNode) {
+                    debouncedSubQuestionParse(sqNode);
+                }
+            }
+        });
+        
+        // --- 10. EVENT LISTENERS (STATIC) ---
+        const openAddModal = () => {
+            triggerHapticFeedback();
+            openModal();
+        }
+        DOMElements.addBtn.addEventListener('click', openAddModal);
+        DOMElements.mobileAddBtn.addEventListener('click', openAddModal);
+
+        DOMElements.cancelBtn.addEventListener('click', closeModal);
+        DOMElements.modal.addEventListener('click', (e) => { if (e.target === DOMElements.modal) closeModal(); });
+        DOMElements.form.addEventListener('submit', handleFormSubmit);
+        DOMElements.questionTypeSelect.addEventListener('change', (e) => {
+            const type = e.target.value;
+            updateFormUIForType(type);
+            if(['single-choice', 'multi-choice'].includes(type)) {
+                renderOptionsEditor(type);
+            }
+            updatePreview();
+        });
+
+        const debouncedPreviewUpdate = debounce(updatePreview, 300);
+        DOMElements.form.addEventListener('input', (e) => {
+            if (e.target.matches('#question-stem, #options-container input, #question-answer, #question-analysis')) {
+                debouncedPreviewUpdate();
+            }
+        });
+
+        DOMElements.form.addEventListener('click', e => {
+            const button = e.target.closest('button[data-md]');
+            if (!button) return;
+
+            e.preventDefault();
+            const mdType = button.dataset.md;
+            const toolbar = button.closest('.markdown-toolbar');
+            const textarea = toolbar ? toolbar.nextElementSibling : null;
+            if (!textarea || textarea.tagName !== 'TEXTAREA') return;
+
+            switch(mdType) {
+                case 'bold': applyMarkdown(textarea, '**'); break;
+                case 'italic': applyMarkdown(textarea, '*'); break;
+                case 'strike': applyMarkdown(textarea, '~~'); break;
+                case 'code': applyMarkdown(textarea, '`'); break;
+                case 'katex': applyMarkdown(textarea, '$'); break;
+                case 'katex-block': applyMarkdown(textarea, '$$'); break;
+                case 'textcolor': {
+                    const colorInput = toolbar.querySelector('input[data-for="textcolor"]');
+                    if (colorInput) applyStyleSpan(textarea, 'color', colorInput.value);
+                    break;
+                }
+                case 'bgcolor': {
+                    const colorInput = toolbar.querySelector('input[data-for="bgcolor"]');
+                    if (colorInput) applyStyleSpan(textarea, 'background-color', colorInput.value);
+                    break;
+                }
+            }
+        });
+        
+        DOMElements.addOptionBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const type = DOMElements.questionTypeSelect.value;
+            const inputType = type === 'single-choice' ? 'radio' : 'checkbox';
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2';
+            div.innerHTML = `
+                <input type="${inputType}" name="option-correct" class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded focus:ring-cyan-500">
+                <input type="text" placeholder="选项内容" class="flex-1 bg-gray-700 border-gray-600 rounded-md p-2 text-white">
+                <button type="button" class="remove-option-btn text-red-500 hover:text-red-400">&times;</button>
+            `;
+            DOMElements.optionsContainer.appendChild(div);
+        });
+        
+        DOMElements.optionsContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-option-btn')) {
+                e.target.closest('.flex').remove();
+            }
+        });
+
+        DOMElements.addSubQuestionBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            DOMElements.subQuestionsContainer.appendChild(createSubQuestionNode());
+        });
+
+        const debouncedAutoParse = debounce((event) => {
+            if (!DOMElements.questionIdInput.value) {
+                parseAndPopulateFields(event.target.value);
+            }
+        }, 500);
+        DOMElements.questionStemInput.addEventListener('input', debouncedAutoParse);
+
+
+        const debouncedSearch = debounce(() => {
+            state.pagination.currentPage = 1;
+            renderAllQuestions();
+        }, 300);
+        DOMElements.searchBox.addEventListener('input', (e) => {
+            state.filters.search = e.target.value.toLowerCase();
+            debouncedSearch();
+        });
+        
+        DOMElements.grid.addEventListener('click', async (e) => {
+            const card = e.target.closest('[data-id]');
+            if (!card) return;
+            const id = parseInt(card.dataset.id);
+
+            const buttonClicked = e.target.closest('button');
+            if (buttonClicked) triggerHapticFeedback();
+            
+            if (e.target.closest('.expand-btn')) {
+                const previewDiv = card.querySelector('.sub-questions-preview');
+                const isHidden = previewDiv.classList.contains('hidden');
+                if (isHidden && previewDiv.innerHTML === '') {
+                    // Populate on first click
+                    const question = await db.questions.get(id);
+                    const subQs = JSON.parse(question.subQuestions || '[]');
+                    previewDiv.innerHTML = subQs.map((sq, i) => `<p><strong class="mr-2">${i+1}.</strong>${sq.stem}</p>`).join('');
+                }
+                previewDiv.classList.toggle('hidden');
+                e.target.textContent = isHidden ? '收起子问题' : `展开 ${JSON.parse((await db.questions.get(id)).subQuestions).length} 个子问题`;
+                return;
+            }
+
+
+            if (e.target.closest('.edit-btn')) {
+                const question = await db.questions.get(id);
+                openModal(question);
+            }
+            if (e.target.closest('.delete-btn')) {
+                showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
+                    await db.questions.delete(id);
+                    await fetchAndRender();
+                });
+            }
+            if (e.target.closest('.toggle-answer-btn')) {
+                card.querySelector('.answer-panel').classList.toggle('hidden');
+            }
+        });
+
+        DOMElements.filterTagsContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                triggerHapticFeedback();
+                const tag = e.target.dataset.tag;
+                const tagIndex = state.filters.tags.indexOf(tag);
+                if (tagIndex > -1) state.filters.tags.splice(tagIndex, 1);
+                else state.filters.tags.push(tag);
+                
+                state.pagination.currentPage = 1;
+                renderAllQuestions();
+                renderTagsForFiltering();
+            }
+        });
+
+        // --- 10.1. PAGINATION EVENT LISTENERS ---
+        DOMElements.pageSizeSelect.addEventListener('change', (e) => {
+            state.pagination.pageSize = parseInt(e.target.value);
+            state.pagination.currentPage = 1;
+            renderAllQuestions();
+        });
+        const navigatePage = (page) => {
+            if (page !== state.pagination.currentPage) {
+                 triggerHapticFeedback();
+                 state.pagination.currentPage = page;
+                 renderAllQuestions();
+            }
+        }
+        DOMElements.firstPageBtn.addEventListener('click', () => navigatePage(1));
+        DOMElements.prevPageBtn.addEventListener('click', () => navigatePage(state.pagination.currentPage - 1));
+        DOMElements.nextPageBtn.addEventListener('click', () => navigatePage(state.pagination.currentPage + 1));
+        DOMElements.lastPageBtn.addEventListener('click', () => {
+             const totalItems = getFilteredQuestions().length;
+             const totalPages = Math.ceil(totalItems / state.pagination.pageSize);
+             navigatePage(totalPages);
+        });
+        DOMElements.pageNumbers.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.page) {
+                navigatePage(parseInt(e.target.dataset.page));
+            }
+        });
+        
+        // --- 11. PRACTICE MODE LOGIC ---
+        const startPractice = () => {
+            triggerHapticFeedback();
+            state.practice.questions = getFilteredQuestions();
+            state.practice.currentIndex = 0;
+            if (state.practice.questions.length > 0) {
+                DOMElements.practiceModal.classList.add('flex');
+                DOMElements.practiceModal.classList.remove('hidden');
+                loadPracticeQuestion();
+            }
+        };
+
+        const setupScrollSpy = () => {
+             if (state.practice.intersectionObserver) {
+                state.practice.intersectionObserver.disconnect();
+            }
+            const options = {
+                root: DOMElements.practiceSubQuestionsArea,
+                rootMargin: '0px',
+                threshold: 0.5 
+            };
+            const callback = (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const index = entry.target.dataset.sqIndex;
+                        DOMElements.practiceNavigator.querySelectorAll('.navigator-btn').forEach(btn => {
+                            btn.classList.toggle('active', btn.dataset.index === index);
+                        });
+                    }
+                });
+            };
+            state.practice.intersectionObserver = new IntersectionObserver(callback, options);
+            DOMElements.practiceSubQuestionsArea.querySelectorAll('[data-sq-index]').forEach(el => {
+                state.practice.intersectionObserver.observe(el);
+            });
+        };
+
+        const loadPracticeQuestion = () => {
+            DOMElements.practiceFeedbackArea.innerHTML = '';
+            const q = state.practice.questions[state.practice.currentIndex];
+            DOMElements.practiceProgress.textContent = `${state.practice.currentIndex + 1} / ${state.practice.questions.length}`;
+            DOMElements.practiceAnswerArea.classList.add('hidden');
+            DOMElements.reviewButtons.classList.add('hidden');
+            DOMElements.practiceSubQuestionsArea.innerHTML = '';
+            DOMElements.practiceNavigator.innerHTML = '';
+
+            // Reset layout to default (single column)
+            DOMElements.mobilePracticeTabs.classList.add('hidden');
+            DOMElements.practiceMaterialPane.classList.add('hidden');
+            DOMElements.practiceQuestionsPane.classList.add('hidden');
+
+            if (q.type === 'material') {
+                // Activate two-column layout for material questions
+                DOMElements.mobilePracticeTabs.classList.remove('hidden');
+                DOMElements.practiceMaterialPane.classList.remove('hidden');
+                DOMElements.practiceQuestionsPane.classList.remove('hidden');
+                document.querySelector('.mobile-practice-tab[data-tab="material"]').click();
+
+                DOMElements.practiceStemContent.innerHTML = renderMarkdown(q.stem);
+                DOMElements.checkAnswerBtn.classList.remove('hidden');
+                DOMElements.showAnswerBtn.classList.add('hidden');
+                
+                const subQs = JSON.parse(q.subQuestions || '[]');
+                subQs.forEach((sq, index) => {
+                    // Render navigator
+                    const navBtn = document.createElement('button');
+                    navBtn.className = 'navigator-btn w-8 h-8 rounded-md bg-gray-700 hover:bg-gray-600 transition';
+                    navBtn.textContent = index + 1;
+                    navBtn.dataset.index = index;
+                    navBtn.onclick = () => {
+                         DOMElements.practiceSubQuestionsArea.querySelector(`[data-sq-index="${index}"]`).scrollIntoView({ behavior: 'smooth' });
+                    };
+                    DOMElements.practiceNavigator.appendChild(navBtn);
+                    
+                    // Render sub-question cards
+                    const sqDiv = document.createElement('div');
+                    sqDiv.className = 'p-4 bg-gray-700/50 rounded-lg';
+                    sqDiv.dataset.sqIndex = index;
+                    let optionsHTML = '';
+                    if (sq.type !== 'standard') {
+                        const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
+                        optionsHTML = sq.options.map((opt, optIndex) => `
+                            <div class="option-input-group">
+                                <input type="${inputType}" name="practice-sq-option-${index}" id="practice-sq-${index}-opt-${optIndex}" value="${optIndex}" data-sq-index="${index}">
+                                <label for="practice-sq-${index}-opt-${optIndex}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${opt.text}</label>
+                            </div>
+                        `).join('');
+                    }
+                    sqDiv.innerHTML = `
+                        <div class="prose prose-invert max-w-none mb-3">${renderMarkdown(`**(${index + 1})** ${sq.stem}`)}</div>
+                        <div class="space-y-3">${optionsHTML}</div>
+                        <div class="practice-sq-feedback text-sm mt-2"></div>
+                    `;
+                    DOMElements.practiceSubQuestionsArea.appendChild(sqDiv);
+                });
+                setupScrollSpy();
+
+            } else {
+                // Standard single-column layout for other question types
+                DOMElements.practiceMaterialPane.classList.remove('hidden'); // Use this pane as the single column
+                DOMElements.practiceStemContent.innerHTML = renderMarkdown(q.stem);
+                
+                if (['single-choice', 'multi-choice'].includes(q.type)) {
+                    DOMElements.checkAnswerBtn.classList.remove('hidden');
+                    DOMElements.showAnswerBtn.classList.add('hidden');
+                    const options = JSON.parse(q.options || '[]');
+                    const inputType = q.type === 'single-choice' ? 'radio' : 'checkbox';
+                    options.forEach((opt, index) => {
+                        const optDiv = document.createElement('div');
+                        optDiv.className = 'option-input-group';
+                        optDiv.innerHTML = `
+                            <input type="${inputType}" name="practice-option" id="practice-option-${index}" value="${index}">
+                            <label for="practice-option-${index}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${opt.text}</label>
+                        `;
+                         DOMElements.practiceSubQuestionsArea.appendChild(optDiv);
+                    });
+                    DOMElements.practiceQuestionsPane.classList.remove('hidden');
+                } else {
+                    DOMElements.checkAnswerBtn.classList.add('hidden');
+                    DOMElements.showAnswerBtn.classList.remove('hidden');
+                }
+            }
+        };
+        
+        const checkPracticeAnswer = () => {
+            triggerHapticFeedback();
+            const q = state.practice.questions[state.practice.currentIndex];
+            DOMElements.checkAnswerBtn.classList.add('hidden');
+            DOMElements.reviewButtons.classList.remove('hidden');
+
+            if (q.type === 'material') {
+                const subQs = JSON.parse(q.subQuestions || '[]');
+                subQs.forEach((sq, index) => {
+                    const sqDiv = DOMElements.practiceSubQuestionsArea.querySelector(`[data-sq-index="${index}"]`);
+                    const feedbackDiv = sqDiv.querySelector('.practice-sq-feedback');
+                    let isCorrect = false;
+
+                    if (sq.type !== 'standard') {
+                        const selectedIndexes = [...sqDiv.querySelectorAll('input:checked')].map(el => parseInt(el.value));
+                        const correctIndexes = sq.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
+                        isCorrect = selectedIndexes.length === correctIndexes.length && selectedIndexes.every(idx => correctIndexes.includes(idx));
+                        
+                        const correctOptionsText = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
+                        
+                        let feedbackHTML = isCorrect
+                            ? `<p class="text-green-400 font-bold">回答正确</p>`
+                            : `<p class="text-red-400 font-bold">回答错误。正确答案: ${correctOptionsText}</p>`;
+                        
+                        if (sq.analysis) {
+                            feedbackHTML += `<div class="mt-2 text-left text-gray-400 text-xs p-2 bg-gray-800 rounded">${renderMarkdown(sq.analysis)}</div>`;
+                        }
+                        feedbackDiv.innerHTML = feedbackHTML;
+
+                        sqDiv.querySelectorAll('label').forEach((label, labelIndex) => {
+                            const input = document.getElementById(`practice-sq-${index}-opt-${labelIndex}`);
+                            if(correctIndexes.includes(labelIndex)) {
+                                label.classList.add('practice-option-correct');
+                            }
+                            if(input.checked && !correctIndexes.includes(labelIndex)) {
+                                label.classList.add('practice-option-incorrect');
+                            }
+                        });
+                    } else {
+                       let feedbackHTML = `<p class="text-cyan-400">参考答案: ${sq.answer}</p>`;
+                       if (sq.analysis) {
+                            feedbackHTML += `<div class="mt-2 text-left text-gray-400 text-xs p-2 bg-gray-800 rounded">${renderMarkdown(sq.analysis)}</div>`;
+                        }
+                       feedbackDiv.innerHTML = feedbackHTML;
+                    }
+                    // Update navigator state
+                    const navBtn = DOMElements.practiceNavigator.querySelector(`[data-index="${index}"]`);
+                    navBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                });
+
+            } else if (['single-choice', 'multi-choice'].includes(q.type)) {
+                const options = JSON.parse(q.options);
+                const selectedIndexes = [...DOMElements.practiceSubQuestionsArea.querySelectorAll('input:checked')].map(el => parseInt(el.value));
+                const correctIndexes = options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
+                const isCorrect = selectedIndexes.length === correctIndexes.length && selectedIndexes.every(idx => correctIndexes.includes(idx));
+
+                DOMElements.practiceFeedbackArea.innerHTML = isCorrect
+                    ? `<p class="text-green-400 font-bold text-lg">正确!</p>`
+                    : `<p class="text-red-400 font-bold text-lg">错误!</p>`;
+                
+                DOMElements.practiceAnswerArea.innerHTML = `<h4 class="font-bold text-cyan-400 mb-2">答案</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.answer)}</div><h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.analysis || '暂无解析')}</div>`;
+                DOMElements.practiceAnswerArea.classList.remove('hidden');
+            }
+        };
+
+        const endPractice = () => {
+            if (state.practice.intersectionObserver) state.practice.intersectionObserver.disconnect();
+            DOMElements.practiceModal.classList.add('hidden');
+            DOMElements.practiceModal.classList.remove('flex');
+            fetchAndRender();
+        };
+
+        DOMElements.startPracticeBtn.addEventListener('click', startPractice);
+        DOMElements.mobilePracticeBtn.addEventListener('click', startPractice);
+        DOMElements.closePracticeBtn.addEventListener('click', endPractice);
+        DOMElements.checkAnswerBtn.addEventListener('click', checkPracticeAnswer);
+        DOMElements.showAnswerBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            DOMElements.practiceAnswerArea.innerHTML = `<h4 class="font-bold text-cyan-400 mb-2">答案</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(state.practice.questions[state.practice.currentIndex].answer)}</div><h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(state.practice.questions[state.practice.currentIndex].analysis || '暂无解析')}</div>`;
+            DOMElements.practiceAnswerArea.classList.remove('hidden');
+            DOMElements.showAnswerBtn.classList.add('hidden');
+            DOMElements.reviewButtons.classList.remove('hidden');
+        });
+
+        DOMElements.reviewButtons.addEventListener('click', async (e) => {
+            const button = e.target.closest('.review-btn');
+            if (!button) return;
+            triggerHapticFeedback();
+            const status = button.dataset.status;
+            const currentQuestion = state.practice.questions[state.practice.currentIndex];
+            await db.questions.update(currentQuestion.id, { reviewStatus: status });
+            state.practice.currentIndex++;
+            if (state.practice.currentIndex < state.practice.questions.length) {
+                loadPracticeQuestion();
+            } else {
+                endPractice();
+            }
+        });
+        
+        DOMElements.practiceSubQuestionsArea.addEventListener('change', (e) => {
+            if (e.target.matches('input[type="radio"], input[type="checkbox"]')) {
+                const sqIndex = e.target.dataset.sqIndex;
+                if (sqIndex) {
+                    const navBtn = DOMElements.practiceNavigator.querySelector(`[data-index="${sqIndex}"]`);
+                    navBtn.classList.add('answered');
+                }
+            }
+        });
+        
+        DOMElements.mobilePracticeTabs.addEventListener('click', (e) => {
+            const button = e.target.closest('.mobile-practice-tab');
+            if (!button) return;
+            const tab = button.dataset.tab;
+
+            DOMElements.mobilePracticeTabs.querySelectorAll('.mobile-practice-tab').forEach(t => t.classList.remove('active'));
+            button.classList.add('active');
+            
+            document.querySelectorAll('.practice-tab-content').forEach(p => p.classList.add('hidden'));
+            if (tab === 'material') {
+                DOMElements.practiceMaterialPane.classList.remove('hidden');
+            } else {
+                 DOMElements.practiceQuestionsPane.classList.remove('hidden');
+            }
+        });
+
+
+        // --- 12. CONFIRMATION MODAL LOGIC ---
+        const showConfirmation = (title, message, onConfirm) => {
+            DOMElements.confirmModal.querySelector('#confirm-title').textContent = title;
+            DOMElements.confirmModal.querySelector('#confirm-message').textContent = message;
+            DOMElements.confirmModal.classList.remove('hidden');
+            DOMElements.confirmOkBtn.onclick = () => {
+                triggerHapticFeedback();
+                onConfirm();
+                hideConfirmation();
+            };
+        };
+        const hideConfirmation = () => DOMElements.confirmModal.classList.add('hidden');
+        DOMElements.confirmCancelBtn.addEventListener('click', hideConfirmation);
+        DOMElements.confirmModal.addEventListener('click', (e) => { if (e.target === DOMElements.confirmModal) hideConfirmation(); });
+
+        // --- 13. IMPORT/EXPORT & TEMPLATE LOGIC ---
+        const openIOModal = () => {
+            triggerHapticFeedback();
+            DOMElements.ioModal.classList.remove('hidden');
+        }
+        const closeIOModal = () => DOMElements.ioModal.classList.add('hidden');
+        DOMElements.ioBtn.addEventListener('click', openIOModal);
+        DOMElements.ioCloseBtn.addEventListener('click', closeIOModal);
+        
+        const parseDocxContent = (text) => {
+            const questions = [];
+            const normalizedText = text.replace(/\r\n/g, '\n').replace(/(\s*\n\s*){2,}/g, '\n\n').trim();
+            const sections = normalizedText.split(/^[一二三四五六七八九十]+、.+题\s*$/m);
+            const titles = normalizedText.match(/^[一二三四五六七八九十]+、.+题\s*$/gm);
+
+            if (!titles) {
+                console.error("Could not find any section titles like '一、单项选择题'.");
+                return [];
+            }
+            
+            titles.forEach((title, index) => {
+                const sectionContent = sections[index + 1];
+                if (!sectionContent || !sectionContent.trim()) return;
+
+                let questionType = 'standard';
+                if (title.includes('单项选择')) questionType = 'single-choice';
+                if (title.includes('多项选择')) questionType = 'multi-choice';
+                if (title.includes('判断')) questionType = 'judgment';
+                
+                const questionBlocks = sectionContent.trim().split(/\n(?=\d+\.)/);
+
+                questionBlocks.forEach(block => {
+                    if (!block.trim()) return;
+
+                    const q = {
+                        type: questionType, reviewStatus: 'new', createdAt: new Date(), updatedAt: new Date(),
+                        tags: [], options: null, subQuestions: null
+                    };
+
+                    const answerMatch = block.match(/【答案】\s*([^\n]+)/);
+                    const analysisMatch = block.match(/【解析】\s*([\s\S]+)/);
+                    const answer = answerMatch ? answerMatch[1].trim() : '';
+                    q.analysis = analysisMatch ? analysisMatch[1].trim() : '';
+                    
+                    let stem = block.replace(/【答案】[^\n]+/, '').replace(/【解析】[\s\S]+/, '').trim();
+
+                    if (questionType === 'single-choice' || questionType === 'multi-choice') {
+                        const optionsArray = [];
+                        const optionLines = stem.match(/^[A-Z]\.[\s\S]+/gm) || [];
+                        stem = stem.replace(/^[A-Z]\.[\s\S]+/gm, '').trim();
+                        const correctAnswers = answer.split('');
+                        
+                        optionLines.forEach(line => {
+                            const optionLetter = line.charAt(0);
+                            const optionText = line.substring(2).trim();
+                            optionsArray.push({ text: optionText, isCorrect: correctAnswers.includes(optionLetter) });
+                        });
+                        q.options = JSON.stringify(optionsArray);
+                        q.answer = optionsArray.filter(opt => opt.isCorrect).map(opt => opt.text).join(', ');
+                    } else {
+                        q.answer = answer;
+                    }
+                    
+                    q.stem = stem;
+                    questions.push(q);
+                });
+            });
+            return questions;
+        };
+
+
+        DOMElements.importJsonInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (!Array.isArray(data)) throw new Error('JSON is not an array.');
+                    await db.questions.bulkPut(data);
+                    alert(`${data.length} 条题目导入/更新成功!`);
+                    await fetchAndRender();
+                    closeIOModal();
+                } catch (error) { alert('导入失败: ' + error.message); }
+            };
+            reader.readAsText(file);
+        });
+
+        DOMElements.importDocxInput.addEventListener('change', async (e) => {
+             const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const arrayBuffer = event.target.result;
+                    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                    const text = result.value;
+                    const questions = parseDocxContent(text);
+                    if (questions.length === 0) throw new Error("未能从文件中解析出有效题目。请检查模板格式。");
+                    await db.questions.bulkAdd(questions);
+                    alert(`${questions.length} 条题目从DOCX导入成功!`);
+                    await fetchAndRender();
+                    closeIOModal();
+                } catch(error) { alert('DOCX 导入失败: ' + error.message); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        const downloadFile = (blob, filename) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+        
+        DOMElements.exportJsonBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions();
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.json`);
+        });
+
+        DOMElements.exportCsvBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions().map(q => ({
+                ...q, 
+                tags: q.tags.join(','), 
+                subQuestions: q.subQuestions ? JSON.stringify(q.subQuestions) : '', 
+                options: q.options ? JSON.stringify(q.options) : ''
+            }));
+            const csvString = Papa.unparse(data);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.csv`);
+        });
+
+        DOMElements.exportDocxBtn.addEventListener('click', async () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions();
+            let htmlContent = ``;
+            data.forEach(q => {
+                htmlContent += `<div>${renderMarkdown(q.stem)}</div><br><p><strong>答案:</strong></p><div>${renderMarkdown(q.answer)}</div><br><p><strong>解析:</strong></p><div>${renderMarkdown(q.analysis || '')}</div><hr>`;
+            });
+            const blob = htmlDocx.asBlob(htmlContent);
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.docx`);
+        });
+
+        DOMElements.downloadJsonTemplateBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const jsonTemplate = [
+              {
+                "type": "standard",
+                "stem": "标准题题干示例：\n\n中国首都是哪里？",
+                "answer": "北京",
+                "analysis": "这是一个常识性问题。",
+                "tags": ["地理", "常识"],
+                "reviewStatus": "new",
+                "options": null,
+                "subQuestions": null
+              },
+              {
+                "type": "single-choice",
+                "stem": "单选题题干示例：\n\n以下哪个是前端框架？",
+                "answer": "React",
+                "analysis": "React 是一个流行的前端JavaScript库。",
+                "tags": ["编程", "前端"],
+                "options": [
+                  {"text": "Django", "isCorrect": false},
+                  {"text": "React", "isCorrect": true},
+                  {"text": "Flask", "isCorrect": false}
+                ],
+                "subQuestions": null,
+                "reviewStatus": "new"
+              },
+              {
+                  "type": "material",
+                  "stem": "材料题题干示例：\n\n阅读以下关于太阳系的描述，并回答问题。",
+                  "answer": "见子问题解析",
+                  "subQuestions": [
+                      { "id": "uuid-1", "type": "standard", "stem": "太阳系中最大的行星是哪颗？", "answer": "木星" },
+                      { "id": "uuid-2", "type": "single-choice", "stem": "哪颗行星被称为“红色星球”？", "options": [{"text": "地球", "isCorrect": false}, {"text": "火星", "isCorrect": true}], "answer": "火星" }
+                  ],
+                  "analysis": "这是关于整个材料的整体解析。",
+                  "tags": ["综合", "天文"],
+                  "reviewStatus": "new",
+                  "options": null
+              }
+            ];
+            const jsonString = JSON.stringify(jsonTemplate, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            downloadFile(blob, `q-bank-template.json`);
+        });
+
+        DOMElements.downloadCsvTemplateBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const csvTemplateData = [
+              {
+                type: 'standard',
+                stem: '标准题题干：中国首都是哪里？',
+                answer: '北京',
+                analysis: '这是一个常识性问题。',
+                tags: '地理,常识',
+                options: '',
+                subQuestions: ''
+              },
+              {
+                type: 'single-choice',
+                stem: '单选题题干：以下哪个是前端框架？',
+                answer: 'React',
+                analysis: 'React 是一个流行的前端JavaScript库。',
+                tags: '编程,前端',
+                options: '[{"text":"Django","isCorrect":false},{"text":"React","isCorrect":true}]',
+                subQuestions: ''
+              }
+            ];
+            const csvString = Papa.unparse(csvTemplateData);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(blob, `q-bank-template.csv`);
+        });
+
+        DOMElements.downloadDocxTemplateBtn.addEventListener('click', async () => {
+            triggerHapticFeedback();
+            const docxTemplateHtml = `
+              <h1>Q-Bank Word 导入模板</h1>
+              <p>请严格遵循以下格式来组织您的题目。每个题目以 "<strong>Q:</strong>" 开头，以 "<strong>---END---</strong>" 结尾。</p>
+              <hr>
+              
+              <h2>标准题 (Standard)</h2>
+              <p><strong>Q:</strong> 中国的首都是哪里？</p>
+              <p><strong>A:</strong> 北京</p>
+              <p><strong>T:</strong> 地理, 常识</p>
+              <p><strong>Analysis:</strong> 这是北京的介绍。</p>
+              <p><strong>---END---</strong></p>
+              <hr>
+
+              <h2>单选题 (Single-Choice)</h2>
+              <p><em>(在正确选项后用 <strong>(Correct)</strong> 标记)</em></p>
+              <p><strong>Q:</strong> 以下哪个不是前端框架？</p>
+              <p><strong>Options:</strong></p>
+              <p>* React</p>
+              <p>* Vue</p>
+              <p>* Django (Correct)</p>
+              <p><strong>T:</strong> 编程, 前端</p>
+              <p><strong>---END---</strong></p>
+              <hr>
+
+              <h2>多选题 (Multi-Choice)</h2>
+              <p><em>(在所有正确选项后用 <strong>(Correct)</strong> 标记)</em></p>
+              <p><strong>Q:</strong> 以下哪些是编程语言？</p>
+              <p><strong>Options:</strong></p>
+              <p>* Python (Correct)</p>
+              <p>* HTML</p>
+              <p>* Java (Correct)</p>
+              <p><strong>---END---</strong></p>
+              <hr>
+
+              <h2>材料题 (Material)</h2>
+              <p><em>(在主问题 "<strong>Q:</strong>" 后跟上子问题块 "<strong>SubQuestions:</strong>"，子问题之间用 "<strong>---</strong>" 分隔)</em></p>
+              <p><strong>Q:</strong> 阅读以下唐诗，并回答问题。<br><strong>春晓</strong><br><em>孟浩然</em><br>春眠不觉晓，处处闻啼鸟。<br>夜来风雨声，花落知多少。</p>
+              <p><strong>SubQuestions:</strong></p>
+              <p><strong>SQ:</strong> 这首诗的作者是谁？</p>
+              <p><strong>SA:</strong> 孟浩然</p>
+              <p>---</p>
+              <p><strong>SQ:</strong> 这首诗描写的哪个季节？</p>
+              <p><strong>SQ_Options:</strong></p>
+              <p>* 春季 (Correct)</p>
+              <p>* 夏季</p>
+              <p>* 秋季</p>
+              <p><strong>T:</strong> 文学, 唐诗</p>
+              <p><strong>Analysis:</strong> 这是对整道材料题的统一解析。</p>
+              <p><strong>---END---</strong></p>
+            `;
+            const blob = htmlDocx.asBlob(docxTemplateHtml);
+            downloadFile(blob, `q-bank-template.docx`);
+        });
+
+        // --- 14. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', fetchAndRender);
+    </script>
+</body>
+</html>
+
