@@ -72,6 +72,428 @@
             padding: 1.5rem; /* More padding on mobile */
           }
         }
+        /* ===== 移动端题目详情模态框优化 ===== */
+        @media (max-width: 767px) {
+            #view-question-modal {
+                align-items: flex-end;
+            }
+            
+            .view-modal-wrapper {
+                width: 100%;
+                max-width: 100%;
+                max-height: 90vh;
+                border-radius: 1rem 1rem 0 0;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            #view-question-modal .bg-gray-800 {
+                border-radius: 1rem 1rem 0 0;
+                max-height: 85vh;
+            }
+            
+            #view-modal-content {
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+            
+            #view-modal-content h4 {
+                font-size: 1rem;
+                margin-top: 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            #view-modal-content .prose {
+                font-size: 0.9rem;
+            }
+            
+            #view-modal-content .prose h1,
+            #view-modal-content .prose h2,
+            #view-modal-content .prose h3 {
+                font-size: 1rem;
+            }
+            
+            /* 选项卡片在移动端优化 */
+            #view-modal-content .bg-gray-800\/50 {
+                padding: 0.75rem;
+                border-radius: 0.375rem;
+                margin-top: 0.75rem;
+            }
+            
+            #view-modal-content .space-y-1 > div {
+                padding: 0.5rem 0;
+                word-break: break-word;
+            }
+        }
+
+        /* ===== 分页控件移动端优化 ===== */
+        @media (max-width: 767px) {
+            #pagination {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+            
+            #pagination > div:first-child {
+                text-align: center;
+                order: 3;
+                font-size: 0.85rem;
+            }
+            
+            #pagination > div:nth-child(2) {
+                order: 1;
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+            
+            #pagination > div:last-child {
+                order: 2;
+                display: flex;
+                justify-content: center;
+                gap: 0.75rem;
+                align-items: center;
+            }
+            
+            #pagination label {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            #pagination select {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+            
+            /* 按钮大小优化 */
+            #pagination button {
+                padding: 0.4rem 0.6rem !important;
+                min-height: auto !important;
+                min-width: auto !important;
+            }
+            
+            #pagination button svg {
+                width: 1rem;
+                height: 1rem;
+            }
+            
+            /* 页码按钮 */
+            #page-numbers {
+                gap: 0.25rem;
+            }
+            
+            #page-numbers button {
+                padding: 0.4rem 0.6rem !important;
+                font-size: 0.8rem;
+                min-width: 28px;
+                min-height: 28px;
+            }
+        }
+
+        /* ===== 平板端优化 ===== */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #view-modal-content {
+                font-size: 0.95rem;
+            }
+            
+            #view-modal-content .prose {
+                font-size: 0.9rem;
+            }
+            
+            #pagination {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+        }
+
+        /* ===== 模态框头部优化 ===== */
+        @media (max-width: 767px) {
+            #view-question-modal .p-6.border-b {
+                padding: 1rem;
+            }
+            
+            #view-modal-title {
+                font-size: 1.25rem;
+            }
+            
+            #view-modal-close-btn {
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        /* ===== 增强的响应式内容 ===== */
+        @media (max-width: 767px) {
+            #view-modal-content .mt-4 {
+                margin-top: 0.75rem;
+            }
+            
+            #view-modal-content .mb-2 {
+                margin-bottom: 0.5rem;
+            }
+            
+            #view-modal-content .border-t {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+            }
+            
+            /* 改进的文本颜色对比 */
+            #view-modal-content .text-green-400 {
+                color: #4ade80;
+            }
+            
+            #view-modal-content .text-cyan-400 {
+                color: #22d3ee;
+            }
+            
+            #view-modal-content .text-yellow-400 {
+                color: #facc15;
+            }
+            
+            #view-modal-content .text-purple-400 {
+                color: #c084fc;
+            }
+        }
+        /* ===== IO模态框移动端优化 ===== */
+        @media (max-width: 767px) {
+            #io-modal {
+                align-items: flex-end;
+            }
+            
+            #io-modal .bg-gray-800 {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 1.5rem 1.5rem 0 0;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            #io-modal .flex.justify-between {
+                padding: 1rem;
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            #io-modal h3 {
+                font-size: 1.25rem;
+            }
+            
+            #io-modal #io-close-btn {
+                font-size: 1.75rem;
+            }
+            
+            /* 网格布局改为单列 */
+            #io-modal .grid.grid-cols-1.md\\:grid-cols-2 {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            /* 导入导出卡片优化 */
+            #io-modal .space-y-4.bg-gray-900 {
+                padding: 1rem;
+            }
+            
+            #io-modal h4 {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            #io-modal p {
+                font-size: 0.85rem;
+                line-height: 1.4;
+                margin-bottom: 0.75rem;
+            }
+            
+            /* 文件输入优化 */
+            #io-modal .import-file-input {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+            
+            #io-modal .import-file-input::file-selector-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                margin-right: 0.5rem;
+            }
+            
+            /* 按钮优化 */
+            #io-modal .export-btn,
+            #io-modal .template-download-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+                border-radius: 0.5rem;
+                min-height: 44px;
+                transition: all 0.2s;
+            }
+            
+            #io-modal .export-btn:active,
+            #io-modal .template-download-btn:active {
+                background-color: #6b7280;
+                transform: scale(0.98);
+            }
+            
+            #io-modal .template-download-btn {
+                font-size: 0.85rem;
+                padding: 0.65rem 0.8rem;
+            }
+            
+            /* 模板下载网格 */
+            #io-modal .grid.grid-cols-3 {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 0.75rem;
+            }
+            
+            #io-modal .grid.grid-cols-3 button {
+                padding: 0.65rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            /* 危险操作区域 */
+            #io-modal .bg-red-900\\\/50 {
+                padding: 1rem;
+                margin: 1rem 0 0 0;
+            }
+            
+            #io-modal .bg-red-900\\\/50 h4 {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            #io-modal .bg-red-900\\\/50 p {
+                margin-bottom: 0.75rem;
+            }
+            
+            #io-modal #delete-all-questions-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+                min-height: 44px;
+                border-radius: 0.5rem;
+            }
+            
+            /* 内容间距优化 */
+            #io-modal .space-y-4 > * {
+                margin-bottom: 0.75rem;
+            }
+            
+            #io-modal .mt-6 {
+                margin-top: 1rem;
+            }
+        }
+
+        /* ===== 平板端优化 ===== */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            #io-modal .bg-gray-800 {
+                max-height: 85vh;
+            }
+            
+            #io-modal .grid.grid-cols-1.md\\:grid-cols-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            #io-modal .grid.grid-cols-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            #io-modal .export-btn,
+            #io-modal .template-download-btn {
+                font-size: 0.9rem;
+                padding: 0.65rem;
+            }
+        }
+
+        /* ===== 桌面端保持 ===== */
+        @media (min-width: 1025px) {
+            #io-modal {
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #io-modal .bg-gray-800 {
+                border-radius: 0.75rem;
+                max-width: 48rem;
+                max-height: 80vh;
+            }
+        }
+        /* ===== 通用响应式改进 ===== */
+        #io-modal .bg-gray-800 {
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        #io-modal > div > * {
+            flex-shrink: 0;
+        }
+
+        #io-modal > div > div:last-child {
+            flex-shrink: 1;
+            overflow-y: auto;
+        }
+
+        /* 滚动优化 */
+        #io-modal .bg-gray-800 {
+            scrollbar-width: thin;
+            scrollbar-color: #4b5563 #1f2937;
+        }
+
+        #io-modal .bg-gray-800::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #io-modal .bg-gray-800::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+
+        #io-modal .bg-gray-800::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
+        }
+
+        #io-modal .bg-gray-800::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* 文件输入自定义样式 */
+        .import-file-input {
+            display: block;
+            width: 100%;
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+
+        .import-file-input::file-selector-button {
+            all: unset;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            border: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background-color: #0891b2;
+            color: white;
+            margin-right: 1rem;
+            transition: background-color 0.2s;
+            min-height: 36px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .import-file-input::file-selector-button:hover {
+            background-color: #06b6d4;
+        }
+
+        .import-file-input::file-selector-button:active {
+            background-color: #0a8096;
+        }
+
+        @media (max-width: 767px) {
+            .import-file-input::file-selector-button {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                margin-right: 0.5rem;
+                min-height: 36px;
+            }
+        }
         .btn-mobile-touch {
           padding: 0.75rem 1rem; /* Equivalent to py-3 px-4 */
           min-height: 44px;
@@ -430,42 +852,73 @@
             </div>
         </div>
     </div>
+    
+    <!-- View Question Modal -->
+    <div id="view-question-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-gray-800 rounded-xl md:rounded-xl rounded-b-none md:rounded-b-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col view-modal-wrapper">
+            <div class="p-4 md:p-6 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
+                <h2 id="view-modal-title" class="text-xl md:text-2xl font-bold text-white flex-1">查看题目详情</h2>
+                <button id="view-modal-close-btn" class="text-gray-400 hover:text-white text-2xl md:text-3xl leading-none btn-mobile-touch flex-shrink-0 ml-2">&times;</button>
+            </div>
+            <div id="view-modal-content" class="flex-1 p-4 md:p-6 overflow-y-auto prose prose-invert max-w-none">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
 
     <!-- IO Modal -->
     <div id="io-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl p-6">
-             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white">数据管理</h3>
-                 <button id="io-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none btn-mobile-touch">&times;</button>
+        <div class="bg-gray-800 rounded-xl md:rounded-xl rounded-b-none md:rounded-b-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] md:max-h-[80vh]">
+            <!-- 头部 -->
+            <div class="flex justify-between items-center p-4 md:p-6 border-b border-gray-700 flex-shrink-0">
+                <h3 class="text-xl md:text-2xl font-bold text-white flex-1">数据管理</h3>
+                <button id="io-close-btn" class="text-gray-400 hover:text-white text-2xl md:text-3xl leading-none btn-mobile-touch flex-shrink-0 ml-2">&times;</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4 bg-gray-900 p-4 rounded-lg">
-                    <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">导入</h4>
-                    <p class="text-sm text-gray-400">支持 .json, .docx 文件。重复 ID 的题目将被更新。</p>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">从 JSON</label>
-                        <input type="file" id="import-json-input" accept=".json" class="import-file-input"/>
+
+            <!-- 内容 - 可滚动 -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
+                <!-- 导入导出两列布局 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <!-- 导入部分 -->
+                    <div class="space-y-3 md:space-y-4 bg-gray-900 p-4 rounded-lg">
+                        <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2">导入</h4>
+                        <p class="text-xs md:text-sm text-gray-400">支持 .json, .docx 文件。重复 ID 的题目将被更新。</p>
+                        <div>
+                            <label class="block text-xs md:text-sm font-medium text-gray-300 mb-2">从 JSON</label>
+                            <input type="file" id="import-json-input" accept=".json" class="import-file-input"/>
+                        </div>
+                        <div>
+                            <label class="block text-xs md:text-sm font-medium text-gray-300 mb-2">从 Word (.docx)</label>
+                            <input type="file" id="import-docx-input" accept=".docx" class="import-file-input"/>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">从 Word (.docx)</label>
-                        <input type="file" id="import-docx-input" accept=".docx" class="import-file-input"/>
+
+                    <!-- 导出部分 -->
+                    <div class="space-y-3 md:space-y-4 bg-gray-900 p-4 rounded-lg">
+                        <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2">导出</h4>
+                        <p class="text-xs md:text-sm text-gray-400">将当前筛选的题目导出。</p>
+                        <button id="export-json-btn" class="export-btn w-full">导出为 JSON</button>
+                        <button id="export-csv-btn" class="export-btn w-full">导出为 CSV</button>
+                        <button id="export-docx-btn" class="export-btn w-full">导出为 Word</button>
                     </div>
                 </div>
-                 <div class="space-y-4 bg-gray-900 p-4 rounded-lg">
-                    <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">导出</h4>
-                    <p class="text-sm text-gray-400">将当前筛选的题目导出。</p>
-                    <button id="export-json-btn" class="export-btn btn-mobile-touch">导出为 JSON</button>
-                    <button id="export-csv-btn" class="export-btn btn-mobile-touch">导出为 CSV</button>
-                    <button id="export-docx-btn" class="export-btn btn-mobile-touch">导出为 Word</button>
+
+                <!-- 模板下载部分 -->
+                <div class="bg-gray-900 p-4 rounded-lg">
+                    <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2 mb-3">下载模板</h4>
+                    <p class="text-xs md:text-sm text-gray-400 mb-4">使用标准模板确保题目格式正确，以便顺利导入。</p>
+                    <div class="grid grid-cols-3 gap-2 md:gap-3">
+                        <button id="download-json-template-btn" class="template-download-btn btn-mobile-touch">JSON</button>
+                        <button id="download-csv-template-btn" class="template-download-btn btn-mobile-touch">CSV</button>
+                        <button id="download-docx-template-btn" class="template-download-btn btn-mobile-touch">Word</button>
+                    </div>
                 </div>
-            </div>
-            <div class="mt-6 bg-gray-900 p-4 rounded-lg">
-                <h4 class="font-semibold mb-2 text-cyan-400 border-b border-gray-700 pb-2">下载模板</h4>
-                <p class="text-sm text-gray-400 mb-4">使用标准模板确保题目格式正确，以便顺利导入。</p>
-                <div class="grid grid-cols-3 gap-4">
-                    <button id="download-json-template-btn" class="template-download-btn btn-mobile-touch">JSON 模板</button>
-                    <button id="download-csv-template-btn" class="template-download-btn btn-mobile-touch">CSV 模板</button>
-                    <button id="download-docx-template-btn" class="template-download-btn btn-mobile-touch">Word 模板</button>
+
+                <!-- 危险操作区域 -->
+                <div class="bg-red-900/50 p-4 rounded-lg border border-red-700">
+                    <h4 class="font-semibold text-red-400 mb-2">危险操作</h4>
+                    <p class="text-xs md:text-sm text-gray-400 mb-4">此操作将永久删除您的所有题目，且无法恢复。</p>
+                    <button id="delete-all-questions-btn" class="w-full text-center bg-red-600 hover:bg-red-500 active:bg-red-700 text-white p-3 rounded-lg font-bold transition btn-mobile-touch">删除所有题目</button>
                 </div>
             </div>
         </div>
@@ -540,6 +993,10 @@
             confirmModal: document.getElementById('confirm-modal'),
             confirmOkBtn: document.getElementById('confirm-ok-btn'),
             confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            viewQuestionModal: document.getElementById('view-question-modal'),
+            viewModalTitle: document.getElementById('view-modal-title'),
+            viewModalContent: document.getElementById('view-modal-content'),
+            viewModalCloseBtn: document.getElementById('view-modal-close-btn'),
             ioBtn: document.getElementById('io-btn'),
             ioModal: document.getElementById('io-modal'),
             ioCloseBtn: document.getElementById('io-close-btn'),
@@ -548,6 +1005,7 @@
             exportJsonBtn: document.getElementById('export-json-btn'),
             exportCsvBtn: document.getElementById('export-csv-btn'),
             exportDocxBtn: document.getElementById('export-docx-btn'),
+            deleteAllQuestionsBtn: document.getElementById('delete-all-questions-btn'),
             downloadJsonTemplateBtn: document.getElementById('download-json-template-btn'),
             downloadCsvTemplateBtn: document.getElementById('download-csv-template-btn'),
             downloadDocxTemplateBtn: document.getElementById('download-docx-template-btn'),
@@ -708,13 +1166,28 @@
         // --- 6. UI RENDERING (MAIN) ---
         const renderQuestionCard = (q) => {
             const card = document.createElement('div');
-            card.className = 'bg-gray-900 rounded-xl shadow-lg flex flex-col transition duration-300 hover:shadow-cyan-500/20 hover:-translate-y-1 min-h-[24rem]';
+            card.className = 'relative group bg-gray-900 rounded-xl shadow-lg flex flex-col transition duration-300 hover:shadow-cyan-500/20 hover:-translate-y-1 h-96 cursor-pointer';
             card.dataset.id = q.id;
 
             const tagsHTML = q.tags.map(tag => `<span class="bg-gray-700 text-cyan-400 text-xs font-medium px-2.5 py-1 rounded-full">${tag}</span>`).join(' ');
             let statusColor = q.reviewStatus === 'mastered' ? 'bg-green-500' : q.reviewStatus === 'reviewing' ? 'bg-yellow-500' : 'bg-blue-500';
             
             let contentHTML = `<div class="prose prose-invert prose-sm max-w-none rendered-content">${renderMarkdown(q.stem)}</div>`;
+            
+            // 为选择题添加选项显示
+            if (['single-choice', 'multi-choice'].includes(q.type)) {
+                try {
+                    const options = JSON.parse(q.options || '[]');
+                    if (options.length > 0) {
+                        const optionsHTML = options.map((opt, idx) => {
+                            const label = String.fromCharCode(65 + idx);
+                            const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
+                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                        }).join('');
+                        contentHTML += `<div class="mt-3 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div>`;
+                    }
+                } catch(e) { console.error("Error parsing options:", e); }
+            }
             
             let materialActions = '';
             if (q.type === 'material') {
@@ -723,61 +1196,12 @@
                     materialActions = `<button class="expand-btn text-sm text-cyan-400 hover:text-cyan-300">展开 ${subQs.length} 个子问题</button>`;
                 } catch(e) {}
             }
-            
-            let answerPanelHTML = '';
-            if (q.type === 'material') {
-                try {
-                    const subQs = JSON.parse(q.subQuestions || '[]');
-                    let subQHTML = subQs.map((sq, index) => {
-                        let answerContent = '';
-                        if (sq.type !== 'standard') {
-                            answerContent = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
-                        } else {
-                            answerContent = sq.answer;
-                        }
-                        return `
-                            <div class="mt-4 pt-4 border-t border-gray-700">
-                                <div class="prose prose-invert prose-sm max-w-none font-semibold">${renderMarkdown(`(${index + 1}) ${sq.stem}`)}</div>
-                                <div class="mt-2">
-                                    <span class="text-cyan-400 font-bold">答案：</span>
-                                    <span>${answerContent}</span>
-                                </div>
-                                ${sq.analysis ? `
-                                <div class="mt-2">
-                                    <span class="text-yellow-400 font-bold">解析：</span>
-                                    <div class="prose prose-invert prose-sm max-w-none text-gray-400">${renderMarkdown(sq.analysis)}</div>
-                                </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    }).join('');
-
-                    answerPanelHTML = `
-                        <div class="answer-panel bg-gray-900/50 p-5 border-t-2 border-cyan-800 hidden">
-                            ${subQHTML}
-                            ${q.analysis ? `
-                             <h4 class="font-bold text-purple-400 mt-6 pt-4 border-t border-dashed border-gray-600 mb-2">材料总解析</h4>
-                             <div class="prose prose-invert prose-sm max-w-none rendered-content">${renderMarkdown(q.analysis)}</div>
-                            ` : ''}
-                        </div>
-                    `;
-                } catch (e) { console.error("Error parsing subquestions for answer panel", e)}
-            } else {
-                 answerPanelHTML = `
-                    <div class="answer-panel bg-gray-900/50 p-5 border-t-2 border-cyan-800 hidden">
-                         <h4 class="font-bold text-cyan-400 mb-2">答案</h4>
-                         <div class="prose prose-invert prose-sm max-w-none rendered-content" data-source="answer">${renderMarkdown(q.answer)}</div>
-                         <h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4>
-                         <div class="prose prose-invert prose-sm max-w-none rendered-content" data-source="analysis">${renderMarkdown(q.analysis || '暂无解析')}</div>
-                    </div>
-                `;
-            }
 
             card.innerHTML = `
                 <div class="p-5 flex-1 overflow-y-auto question-card-content">
                     <div class="flex justify-between items-start mb-2">
-                         <h3 class="font-semibold text-gray-200">${q.type === 'material' ? '材料题' : '题目'}</h3>
-                         <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-md ml-2 whitespace-nowrap">${q.type}</span>
+                        <h3 class="font-semibold text-gray-200">${q.type === 'material' ? '材料题' : '题目'}</h3>
+                        <span class="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-md ml-2 whitespace-nowrap">${q.type}</span>
                     </div>
                     ${contentHTML}
                 </div>
@@ -787,17 +1211,15 @@
                     <div class="flex flex-wrap gap-2 mb-4">${tagsHTML}</div>
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                             <span class="relative flex h-3 w-3"><span class="relative inline-flex rounded-full h-3 w-3 ${statusColor}"></span></span>
+                            <span class="relative flex h-3 w-3"><span class="relative inline-flex rounded-full h-3 w-3 ${statusColor}"></span></span>
                             <span class="text-xs text-gray-400">${q.reviewStatus || 'new'}</span>
                         </div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                             <button class="edit-btn text-gray-400 hover:text-white transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
                             <button class="delete-btn text-gray-400 hover:text-red-500 transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                             <button class="toggle-answer-btn text-gray-400 hover:text-cyan-400 transition btn-mobile-touch"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
                         </div>
                     </div>
                 </div>
-                ${answerPanelHTML}
             `;
             return card;
         };
@@ -922,6 +1344,97 @@
         };
 
         // --- 8. MODAL & FORM HANDLING ---
+        const openViewModal = async (id) => {
+            const q = await db.questions.get(id);
+            if (!q) return;
+
+            let contentHTML = `<div class="mb-6 pb-6 border-b border-gray-700">${renderMarkdown(q.stem)}</div>`;
+            
+            if (q.type === 'material') {
+                try {
+                    const subQs = JSON.parse(q.subQuestions || '[]');
+                    contentHTML += subQs.map((sq, index) => {
+                        let answerContent = '';
+                        let optionsHTML = '';
+                        
+                        if (sq.type !== 'standard') {
+                            // 显示选项
+                            optionsHTML = sq.options.map((opt, optIdx) => {
+                                const label = String.fromCharCode(65 + optIdx);
+                                const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
+                                return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                            }).join('');
+                            answerContent = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
+                        } else {
+                            answerContent = sq.answer;
+                        }
+                        
+                        return `
+                            <div class="mt-4 pt-4 border-t border-gray-600">
+                                <div class="prose prose-invert prose-sm max-w-none font-semibold">${renderMarkdown(`(${index + 1}) ${sq.stem}`)}</div>
+                                ${optionsHTML ? `<div class="mt-2 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div>` : ''}
+                                <div class="mt-2"><strong class="text-cyan-400">答案：</strong> ${answerContent}</div>
+                                ${sq.analysis ? `<div class="mt-2"><strong class="text-yellow-400">解析：</strong><div class="prose prose-invert prose-sm max-w-none text-gray-400">${renderMarkdown(sq.analysis)}</div></div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (q.analysis) {
+                        contentHTML += `
+                            <h4 class="font-bold text-purple-400 mt-6 pt-4 border-t border-dashed border-gray-600 mb-2">材料总体解析</h4>
+                            <div class="prose prose-invert prose-sm max-w-none rendered-content">${renderMarkdown(q.analysis)}</div>
+                        `;
+                    }
+                } catch (e) { 
+                    console.error("Error rendering view modal for material question", e);
+                }
+            } else if (['single-choice', 'multi-choice'].includes(q.type)) {
+                // 选择题显示选项
+                try {
+                    const options = JSON.parse(q.options || '[]');
+                    if (options.length > 0) {
+                        const optionsHTML = options.map((opt, idx) => {
+                            const label = String.fromCharCode(65 + idx);
+                            const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
+                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                        }).join('');
+                        contentHTML += `<div class="mt-4"><strong class="text-gray-300">选项：</strong><div class="mt-2 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div></div>`;
+                    }
+                } catch(e) {
+                    console.error("Error parsing options:", e);
+                }
+                
+                contentHTML += `
+                    <div class="mt-4">
+                        <h4 class="font-bold text-cyan-400 mb-2">答案</h4>
+                        <div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.answer)}</div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-bold text-yellow-400 mb-2">解析</h4>
+                        <div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.analysis || '暂无解析')}</div>
+                    </div>
+                `;
+            } else {
+                // 标准题
+                contentHTML += `
+                    <div class="mt-4">
+                        <h4 class="font-bold text-cyan-400 mb-2">答案</h4>
+                        <div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.answer)}</div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-bold text-yellow-400 mb-2">解析</h4>
+                        <div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.analysis || '暂无解析')}</div>
+                    </div>
+                `;
+            }
+
+            DOMElements.viewModalContent.innerHTML = contentHTML;
+            DOMElements.viewQuestionModal.classList.remove('hidden');
+        };
+        const closeViewModal = () => {
+            DOMElements.viewQuestionModal.classList.add('hidden');
+        };
+
         const updateFormUIForType = (type) => {
             const isChoice = ['single-choice', 'multi-choice'].includes(type);
             const isMaterial = type === 'material';
@@ -1136,58 +1649,127 @@
                 tags: DOMElements.questionTagsInput.value.split(/,|，/).map(t => t.trim()).filter(Boolean),
                 updatedAt: new Date(),
             };
+
             if (!questionData.stem) {
                 alert("题干不能为空！");
                 return;
             }
+
             if (['single-choice', 'multi-choice'].includes(type)) {
                 const options = [];
                 let hasCorrect = false;
-                DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div) => {
+                let correctIndices = [];
+
+                DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div, index) => {
                     const text = div.querySelector('input[type="text"]').value;
                     const isCorrect = div.querySelector('input[type="radio"], input[type="checkbox"]').checked;
-                    if (isCorrect) hasCorrect = true;
-                    options.push({ text, isCorrect });
+                    
+                    if (text.trim()) {
+                        options.push({ text: text.trim(), isCorrect });
+                        if (isCorrect) {
+                            hasCorrect = true;
+                            correctIndices.push(index);
+                        }
+                    }
                 });
+
                 if (!hasCorrect) {
                     alert("选择题必须至少有一个正确答案！");
                     return;
                 }
+
+                if (options.length === 0) {
+                    alert("选择题必须至少有一个选项！");
+                    return;
+                }
+
                 questionData.options = JSON.stringify(options);
-                questionData.answer = options.filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + i)).join(', ');
+                // 修复：根据原始索引正确映射字母
+                questionData.answer = correctIndices
+                    .map(idx => String.fromCharCode(65 + idx))
+                    .join(', ');
+
             } else if (type === 'material') {
                 const subQuestions = [];
                 DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
+                    const sqType = sqNode.querySelector('.sub-question-type-select').value;
+                    const sqStem = sqNode.querySelector('textarea[data-field="stem"]').value.trim();
+                    
+                    if (!sqStem) {
+                        alert("子问题题干不能为空！");
+                        return;
+                    }
+
                     const sq = {
                         id: sqNode.dataset.sqId,
-                        type: sqNode.querySelector('.sub-question-type-select').value,
-                        stem: sqNode.querySelector('textarea[data-field="stem"]').value,
-                        analysis: sqNode.querySelector('textarea[data-field="analysis"]').value,
+                        type: sqType,
+                        stem: sqStem,
+                        analysis: sqNode.querySelector('textarea[data-field="analysis"]').value.trim(),
+                        answer: '',
                         options: []
                     };
-                    
-                    if (sq.type !== 'standard') {
-                         sqNode.querySelectorAll('.sub-question-options-area > .flex').forEach((optDiv, idx) => {
-                            const input = optDiv.querySelector('input[type="text"]');
-                            const checkbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
-                            if (input && input.value) {
+
+                    if (sqType !== 'standard') {
+                        // 处理选择题子问题
+                        const optionDivs = sqNode.querySelectorAll('.sub-question-options-area > .flex');
+                        let sqHasCorrect = false;
+                        let sqCorrectIndices = [];
+
+                        optionDivs.forEach((optDiv, optIdx) => {
+                            const optInput = optDiv.querySelector('input[type="text"]');
+                            const optCheckbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                            
+                            if (optInput && optInput.value.trim()) {
+                                const isCorrect = optCheckbox ? optCheckbox.checked : false;
                                 sq.options.push({
-                                    text: input.value,
-                                    isCorrect: checkbox ? checkbox.checked : false
+                                    text: optInput.value.trim(),
+                                    isCorrect
                                 });
+                                if (isCorrect) {
+                                    sqHasCorrect = true;
+                                    sqCorrectIndices.push(sq.options.length - 1);
+                                }
                             }
                         });
-                        sq.answer = sq.options.filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + sq.options.findIndex(opt => opt.text === o.text))).join(', ');
+
+                        if (!sqHasCorrect && sq.options.length > 0) {
+                            alert(`子问题 "${sq.stem.substring(0, 20)}..." 必须至少有一个正确答案！`);
+                            return;
+                        }
+
+                        // 修复：正确构建答案字母
+                        sq.answer = sqCorrectIndices
+                            .map(idx => String.fromCharCode(65 + idx))
+                            .join(', ');
+
                     } else {
-                        sq.answer = sqNode.querySelector('textarea[data-field="answer"]')?.value || '';
+                        // 标准题子问题
+                        sq.answer = sqNode.querySelector('textarea[data-field="answer"]')?.value.trim() || '';
+                        sq.options = [];
                     }
-                    
+
                     subQuestions.push(sq);
                 });
+
+                if (subQuestions.length === 0) {
+                    alert("材料题必须至少有一个子问题！");
+                    return;
+                }
+
                 questionData.subQuestions = JSON.stringify(subQuestions);
                 questionData.answer = '见子问题解析';
+                questionData.options = null;
+
             } else {
+                // 标准题
                 questionData.answer = DOMElements.questionAnswerInput.value.trim();
+                questionData.options = null;
+                questionData.subQuestions = null;
+
+                if (!questionData.answer) {
+                    alert("答案不能为空！");
+                    return;
+                }
             }
 
             if (id) {
@@ -1378,7 +1960,22 @@
             const id = parseInt(card.dataset.id);
 
             const buttonClicked = e.target.closest('button');
-            if (buttonClicked) triggerHapticFeedback();
+            if(buttonClicked) triggerHapticFeedback();
+
+            // Handle specific button clicks first, and stop propagation if they are clicked.
+            if (e.target.closest('.edit-btn')) {
+                const question = await db.questions.get(id);
+                openModal(question);
+                return;
+            }
+
+            if (e.target.closest('.delete-btn')) {
+                showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
+                    await db.questions.delete(id);
+                    await fetchAndRender();
+                });
+                return;
+            }
             
             if (e.target.closest('.expand-btn')) {
                 const previewDiv = card.querySelector('.sub-questions-preview');
@@ -1394,20 +1991,8 @@
                 return;
             }
 
-
-            if (e.target.closest('.edit-btn')) {
-                const question = await db.questions.get(id);
-                openModal(question);
-            }
-            if (e.target.closest('.delete-btn')) {
-                showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
-                    await db.questions.delete(id);
-                    await fetchAndRender();
-                });
-            }
-            if (e.target.closest('.toggle-answer-btn')) {
-                card.querySelector('.answer-panel').classList.toggle('hidden');
-            }
+            // If no specific button was clicked, open the view modal
+            openViewModal(id);
         });
 
         DOMElements.filterTagsContainer.addEventListener('click', (e) => {
@@ -1716,6 +2301,13 @@
         DOMElements.confirmCancelBtn.addEventListener('click', hideConfirmation);
         DOMElements.confirmModal.addEventListener('click', (e) => { if (e.target === DOMElements.confirmModal) hideConfirmation(); });
 
+        DOMElements.viewModalCloseBtn.addEventListener('click', closeViewModal);
+        DOMElements.viewQuestionModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.viewQuestionModal) {
+                closeViewModal();
+            }
+        });
+
         // --- 13. IMPORT/EXPORT & TEMPLATE LOGIC ---
         const openIOModal = () => {
             triggerHapticFeedback();
@@ -1725,6 +2317,33 @@
         DOMElements.ioBtn.addEventListener('click', openIOModal);
         DOMElements.mobileIoBtn.addEventListener('click', openIOModal);
         DOMElements.ioCloseBtn.addEventListener('click', closeIOModal);
+        DOMElements.ioModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.ioModal) {
+                closeIOModal();
+            }
+        });
+        
+        DOMElements.deleteAllQuestionsBtn.addEventListener('click', () => {
+            // 先关闭IO模态框
+            closeIOModal();
+            
+            // 延迟显示确认模态框，确保前一个模态框完全关闭
+            setTimeout(() => {
+                showConfirmation(
+                    '确认删除所有题目?',
+                    '此操作将永久清空您的题库，且无法恢复。请谨慎操作！',
+                    async () => {
+                        try {
+                            await db.questions.clear();
+                            alert('所有题目已删除');
+                            await fetchAndRender();
+                        } catch (error) {
+                            alert('删除失败: ' + error.message);
+                        }
+                    }
+                );
+            }, 200);
+        });
         
         const parseDocxContent = (text) => {
             const questions = [];
