@@ -592,6 +592,95 @@
             padding-bottom: 0.5rem;
         }
     </style>
+    <style>
+    /* 检查答案按钮的移动端优化 */
+    @media (max-width: 767px) {
+        #practice-modal .mt-auto {
+            flex-direction: column-reverse;
+        }
+        
+        #check-answer-btn, 
+        #show-answer-btn {
+            font-size: 0.875rem;
+            padding: 0.75rem 1rem;
+            min-height: 44px;
+            width: 100%;
+        }
+        
+        #check-answer-btn svg, 
+        #show-answer-btn svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+        
+        #review-buttons {
+            width: 100%;
+        }
+        
+        #review-buttons .review-btn {
+            font-size: 0.75rem;
+            padding: 0.75rem 0.5rem;
+            min-height: 44px;
+            flex: 1;
+        }
+        
+        #review-buttons .review-btn span {
+            display: block;
+            word-break: keep-all;
+        }
+    }
+    
+    /* 平板端优化 */
+    @media (min-width: 768px) and (max-width: 1024px) {
+        #check-answer-btn, 
+        #show-answer-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        #review-buttons .review-btn {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        #check-answer-btn svg, 
+        #show-answer-btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+    }
+    
+    /* 桌面端优化 */
+    @media (min-width: 1025px) {
+        #check-answer-btn span,
+        #show-answer-btn span {
+            display: inline;
+        }
+        
+        #check-answer-btn svg,
+        #show-answer-btn svg {
+            display: none;
+        }
+        
+        #review-buttons .review-btn span {
+            display: inline;
+        }
+    }
+    
+    /* 通用按钮交互优化 */
+    #check-answer-btn:active,
+    #show-answer-btn:active,
+    .review-btn:active {
+        transform: scale(0.98);
+    }
+    
+    #check-answer-btn:disabled,
+    #show-answer-btn:disabled,
+    .review-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
 </head>
 <body class="bg-gray-800 text-gray-200 antialiased">
 
@@ -626,9 +715,17 @@
         <!-- Main Content -->
         <main class="flex-1 p-4 sm:p-6 lg:p-8 mb-20 md:mb-0">
             <div class="max-w-7xl mx-auto">
-                <div class="mb-6 flex justify-between items-center">
-                    <div id="filter-tags" class="flex flex-wrap gap-2">
+                <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-2">
+                    <div id="filter-tags-wrapper" class="flex-1">
+                        <div id="filter-tags" 
+                            class="flex flex-wrap gap-2 max-h-12 md:max-h-none overflow-hidden transition-all duration-300">
+                            </div>
                     </div>
+
+                    <button id="toggle-tags-btn" 
+                            class="md:hidden text-cyan-400 text-sm self-start py-1 px-2 rounded hover:bg-gray-700">
+                        显示更多
+                    </button>
                 </div>
 
                 <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -723,7 +820,19 @@
                 </div>
                 <div class="md:w-1/2 p-6 space-y-4 overflow-y-auto">
                     <div>
-                        <label for="question-stem" class="block text-sm font-medium text-gray-300 mb-1">题干 / 材料</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="question-stem" class="block text-sm font-medium text-gray-300">题干 / 材料</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="parse-stem-btn" class="hidden bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold py-1 px-3 rounded-md transition btn-mobile-touch flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                                    <span>解析</span>
+                                </button>
+                                <button type="button" id="paste-and-parse-btn" class="md:hidden bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold py-1 px-3 rounded-md transition btn-mobile-touch flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2h-1a1 1 0 110-2h1a4 4 0 014 4v11a4 4 0 01-4 4H6a4 4 0 01-4-4V5a4 4 0 014-4h1a1 1 0 110 2H6z"></path></svg>
+                                    <span>粘贴</span>
+                                </button>
+                            </div>
+                        </div>
                         <div class="markdown-toolbar">
                             <button type="button" data-md="bold" title="加粗"><b>B</b></button>
                             <button type="button" data-md="italic" title="斜体"><i>I</i></button>
@@ -833,13 +942,30 @@
             <div id="practice-answer-area" class="flex-1 overflow-y-auto p-4 bg-gray-900 rounded-lg prose prose-invert max-w-none hidden"></div>
             
             <!-- Action Buttons -->
-            <div class="mt-auto pt-4 sm:pt-6 flex justify-between items-center">
-                <button id="check-answer-btn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-lg transition btn-mobile-touch">检查答案</button>
-                <button id="show-answer-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-lg transition btn-mobile-touch">显示答案</button>
-                <div id="review-buttons" class="hidden w-full flex items-center gap-2 md:gap-4">
-                    <button data-status="mastered" class="review-btn flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">掌握</button>
-                    <button data-status="reviewing" class="review-btn flex-1 bg-yellow-600 hover:bg-yellow-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">模糊</button>
-                    <button data-status="new" class="review-btn flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 text-center rounded-lg transition btn-mobile-touch">忘记</button>
+            <div class="mt-auto pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4">
+                <!-- 左侧：检查答案/显示答案按钮 -->
+                <div class="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button id="check-answer-btn" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 sm:px-6 rounded-lg transition duration-200 btn-mobile-touch flex items-center justify-center gap-2 min-h-[44px] sm:min-h-auto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="text-sm sm:text-base">检查答案</span>
+                    </button>
+                    <button id="show-answer-btn" class="flex-1 sm:flex-none bg-gray-600 hover:bg-gray-500 active:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 sm:px-6 rounded-lg transition duration-200 btn-mobile-touch flex items-center justify-center gap-2 min-h-[44px] sm:min-h-auto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        <span class="text-sm sm:text-base">显示答案</span>
+                    </button>
+                </div>
+
+                <!-- 右侧：复习按钮组 -->
+                <div id="review-buttons" class="hidden w-full sm:w-auto flex items-center gap-2 sm:gap-3">
+                    <button data-status="mastered" class="review-btn flex-1 sm:flex-none bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
+                        <span class="text-xs sm:text-sm">掌握</span>
+                    </button>
+                    <button data-status="reviewing" class="review-btn flex-1 sm:flex-none bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
+                        <span class="text-xs sm:text-sm">模糊</span>
+                    </button>
+                    <button data-status="new" class="review-btn flex-1 sm:flex-none bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
+                        <span class="text-xs sm:text-sm">遗忘</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -978,6 +1104,7 @@
             addSubQuestionBtn: document.getElementById('add-sub-question-btn'),
             searchBox: document.getElementById('search-box'),
             filterTagsContainer: document.getElementById('filter-tags'),
+            toggleTagsBtn: document.getElementById('toggle-tags-btn'),
             startPracticeBtn: document.getElementById('start-practice-btn'),
             practiceModal: document.getElementById('practice-modal'),
             practiceProgress: document.getElementById('practice-progress'),
@@ -1026,6 +1153,8 @@
             mobileAddBtn: document.getElementById('mobile-add-question-btn'),
             mobilePracticeBtn: document.getElementById('mobile-start-practice-btn'),
             mobileIoBtn: document.getElementById('mobile-io-btn'),
+            pasteAndParseBtn: document.getElementById('paste-and-parse-btn'),
+            parseStemBtn: document.getElementById('parse-stem-btn'),
         };
 
         // --- 4. UTILS & HELPERS ---
@@ -1096,9 +1225,140 @@
                 } catch (e) { console.error("KaTeX rendering error:", e); return match; }
             });
         };
+
+        const getAutoTags = (data) => {
+            const autoTags = new Set();
+            
+            // 1. 添加题型标签
+            const typeTagMap = {
+                'standard': '标准题',
+                'single-choice': '单选题',
+                'multi-choice': '多选题',
+                'material': '材料题'
+            };
+            if (data.type && typeTagMap[data.type]) {
+                autoTags.add(typeTagMap[data.type]);
+            }
+
+            // 2. 聚合所有解析文本 (包括子问题)
+            let allAnalysisText = data.analysis || '';
+            if (data.type === 'material' && data.subQuestions) {
+                // 在 saveQuestionData 中, data.subQuestions 已经是对象数组
+                const subQs = data.subQuestions;
+                subQs.forEach(sq => {
+                    if (sq.analysis) allAnalysisText += '\n' + sq.analysis;
+                });
+            }
+
+            if (!allAnalysisText.trim()) {
+                return Array.from(autoTags);
+            }
+
+            // 3. 定义关键词提取规则
+            
+            // 规则 A: 提取完整的考点短语
+            // 匹配 "考查[了/的是]..." 或 "考点[为/是]..."
+            const phrasePatterns = [
+                /(?:本题)?考查(?:了|的是)?(.+?)(?:。|，|\n)/gi,
+                /(?:本题)?考点(?:为|在于|是)(.+?)(?:。|，|\n)/gi,
+                /(?:主要|重点)测试的是(.+?)(?:。|，|\n)/gi
+            ];
+
+            // 规则 B: 从短语中提取核心名词 (用于匹配 "消费税" 这类词)
+            const coreNounPatterns = [
+                /(\S+税)/g,           // "消费税", "增值税"
+                /(\S+法)/g,           // "合同法", "公司法"
+                /(\S+准则)/g,         // "会计准则"
+                /(\S+原则)/g,         // "基本原则"
+                /(\S+的扣除)/g,       // "的扣除"
+                /(\S+的计算)/g,       // "的计算"
+                /(\S+的处理)/g        // "的处理"
+            ];
+
+            const foundPhrases = new Set();
+
+            // 4. 执行规则 A: 提取完整短语
+            for (const regex of phrasePatterns) {
+                let match;
+                while ((match = regex.exec(allAnalysisText)) !== null) {
+                    const phrase = match[1].trim().replace(/['"“”]/g, ''); // 清理标点
+                    if (phrase.length > 1 && phrase.length < 50) { // 合理长度
+                        foundPhrases.add(phrase);
+                        autoTags.add(phrase); // 添加完整短语, e.g., "已纳消费税的扣除"
+                    }
+                }
+            }
+
+            // 5. 执行规则 B: 从已找到的短语中提取核心名词
+            for (const phrase of foundPhrases) {
+                for (const regex of coreNounPatterns) {
+                    let match;
+                    while ((match = regex.exec(phrase)) !== null) {
+                        const coreNoun = match[1].trim();
+                        if (coreNoun.length > 1) {
+                            autoTags.add(coreNoun); // 添加核心名词, e.g., "消费税"
+                        }
+                    }
+                }
+            }
+            
+            return Array.from(autoTags);
+        };
+
+        const generateAndApplyAutoTags = () => {
+            // 如果是在编辑题目（ID已存在），则不进行自动标签，防止覆盖用户已保存的标签
+            // if (DOMElements.questionIdInput.value) return; 
+
+            const type = DOMElements.questionTypeSelect.value;
+            const analysis = DOMElements.questionAnalysisInput.value.trim();
+            
+            // 构造一个临时的 data 对象以传递给 getAutoTags
+            const questionData = {
+                type: type,
+                analysis: analysis,
+                subQuestions: []
+            };
+
+            // // 如果是材料题，遍历子问题编辑器，收集它们的解析
+            // if (type === 'material') {
+            //     DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
+            //         const sqAnalysis = sqNode.querySelector('textarea[data-field="analysis"]').value.trim();
+            //         // 仅添加包含解析的子问题对象
+            //         if (sqAnalysis) {
+            //             questionData.subQuestions.push({ analysis: sqAnalysis });
+            //         }
+            //     });
+            // }
+            
+            // 1. 获取自动生成的标签
+            const autoTags = getAutoTags(questionData);
+
+            // 2. 获取用户在输入框中已有的标签 (可能来自手动输入或上一次粘贴)
+            const existingTags = DOMElements.questionTagsInput.value
+                                    .split(/,|，/)
+                                    .map(t => t.trim())
+                                    .filter(Boolean);
+            
+            // 3. 合并标签并去重 (自动标签在前)
+            const combinedTags = [...new Set([...autoTags, ...existingTags])];
+            
+            // 4. 将合并后的标签写回输入框
+            DOMElements.questionTagsInput.value = combinedTags.join(', ');
+        };
         
         // --- 5. UI RENDERING (MODAL EDITORS) ---
-        const createSubQuestionNode = (sq = { id: generateUUID(), type: 'standard', stem: '', answer: '', analysis: '', options: [{text: '', isCorrect: false}] }) => {
+        const createSubQuestionNode = (sqInput = {}) => {
+            // 将默认值合并移到函数内部，确保 generateUUID() 每次都运行
+            const sq = {
+                id: generateUUID(),
+                type: 'standard',
+                stem: '',
+                answer: '',
+                analysis: '',
+                options: [{text: '', isCorrect: false}],
+                ...sqInput // 使用传入的 sqInput 覆盖默认值
+            };
+            
             const div = document.createElement('div');
             div.className = 'p-3 border border-gray-700 rounded-lg space-y-3 bg-gray-900/50';
             div.dataset.sqId = sq.id;
@@ -1121,10 +1381,9 @@
             `;
             
             const optionsArea = div.querySelector('.sub-question-options-area');
-            if (sq.type !== 'standard') {
-                const options = sq.options || [{text: '', isCorrect: false}];
+            if (sq.type !== 'standard' && sq.options) {
                 const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
-                options.forEach((opt, index) => {
+                sq.options.forEach((opt, index) => {
                     const optDiv = document.createElement('div');
                     optDiv.className = 'flex items-center gap-2';
                     optDiv.innerHTML = `
@@ -1185,8 +1444,8 @@
                     if (options.length > 0) {
                         const optionsHTML = options.map((opt, idx) => {
                             const label = String.fromCharCode(65 + idx);
-                            const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
-                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                            // 在卡片预览中显示正确答案
+                            return `<div class="flex gap-2${opt.isCorrect ? ' text-green-400 font-semibold' : ''}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
                         }).join('');
                         contentHTML += `<div class="mt-3 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div>`;
                     }
@@ -1363,12 +1622,12 @@
                         
                         if (sq.type !== 'standard') {
                             // 显示选项
-                            optionsHTML = sq.options.map((opt, optIdx) => {
+                            optionsHTML = (sq.options || []).map((opt, optIdx) => {
                                 const label = String.fromCharCode(65 + optIdx);
                                 const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
-                                return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                                return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
                             }).join('');
-                            answerContent = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
+                            answerContent = (sq.options || []).filter(o => o.isCorrect).map((o, idx) => String.fromCharCode(65 + (sq.options.findIndex(opt => opt.text === o.text)))).join(', ');
                         } else {
                             answerContent = sq.answer;
                         }
@@ -1377,7 +1636,7 @@
                             <div class="mt-4 pt-4 border-t border-gray-600">
                                 <div class="prose prose-invert prose-sm max-w-none font-semibold">${renderMarkdown(`(${index + 1}) ${sq.stem}`)}</div>
                                 ${optionsHTML ? `<div class="mt-2 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div>` : ''}
-                                <div class="mt-2"><strong class="text-cyan-400">答案：</strong> ${answerContent}</div>
+                                <div class="mt-2"><strong class="text-cyan-400">答案：</strong> ${renderMarkdown(answerContent)}</div>
                                 ${sq.analysis ? `<div class="mt-2"><strong class="text-yellow-400">解析：</strong><div class="prose prose-invert prose-sm max-w-none text-gray-400">${renderMarkdown(sq.analysis)}</div></div>` : ''}
                             </div>
                         `;
@@ -1400,7 +1659,7 @@
                         const optionsHTML = options.map((opt, idx) => {
                             const label = String.fromCharCode(65 + idx);
                             const isCorrect = opt.isCorrect ? ' text-green-400 font-semibold' : '';
-                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><span>${opt.text}</span></div>`;
+                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
                         }).join('');
                         contentHTML += `<div class="mt-4"><strong class="text-gray-300">选项：</strong><div class="mt-2 space-y-1 text-sm text-gray-300 bg-gray-800/50 p-3 rounded">${optionsHTML}</div></div>`;
                     }
@@ -1460,6 +1719,7 @@
             if (typeToSet === 'material'){
                 renderSubQuestionsEditor();
             }
+            DOMElements.parseStemBtn.classList.add('hidden');
             updatePreview();
             DOMElements.questionStemInput.focus();
         };
@@ -1481,166 +1741,415 @@
                 if (question.type === 'material') {
                     renderSubQuestionsEditor(JSON.parse(question.subQuestions || '[]'));
                 }
+                DOMElements.parseStemBtn.classList.add('hidden');
             } else {
                 resetModalForNewQuestion();
             }
             updatePreview();
             DOMElements.modal.classList.remove('hidden');
+          	setTimeout(() => {
+                DOMElements.questionStemInput.focus();
+            }, 50);
         };
 
         const closeModal = () => DOMElements.modal.classList.add('hidden');
         
-        const parseAndPopulateFields = (rawText) => {
-            const answerMatch = rawText.match(/【答案】\s*([A-Z]+)/);
-            const analysisMatch = rawText.match(/【解析】\s*([\s\S]+)/);
+        // ========================================================================
+        // ======================= 优化后的解析模块 START =======================
+        // ========================================================================
 
-            if (!answerMatch) return;
+        const separateQuestionParts = (rawText) => {
+            let text = rawText.replace(/^\s*\d+[\.、\s]*/, '').trim();
+            let stem = text, answerPart = '', analysisPart = '';
 
-            let textBeforeAnswerAndAnalysis = rawText;
-            if (analysisMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【解析】')[0];
-            if (answerMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【答案】')[0];
-            textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.trim();
-            
-            const optionsRegex = /([A-Z])\.([\s\S]*?)(?=\s*[A-Z]\.|$)/g;
-            const allMatches = [...textBeforeAnswerAndAnalysis.matchAll(optionsRegex)];
-            
-            if (allMatches.length === 0) return;
+            const answerMatchIndex = text.indexOf('【答案】');
+            const analysisMatchIndex = text.indexOf('【解析】');
 
-            const firstOptionMatch = allMatches[0];
-            const optionsStartIndex = firstOptionMatch.index;
-            
-            const stem = textBeforeAnswerAndAnalysis.substring(0, optionsStartIndex).replace(/^\d+\.\s*/, '').trim();
-            const optionsBlock = textBeforeAnswerAndAnalysis.substring(optionsStartIndex);
-
-            const optionsMatches = [...optionsBlock.matchAll(optionsRegex)];
-
-            if (optionsMatches.length === 0) return;
-
-            if (analysisMatch) {
-                DOMElements.questionAnalysisInput.value = analysisMatch[1].trim();
-            } else {
-                DOMElements.questionAnalysisInput.value = '';
+            if (answerMatchIndex !== -1 && analysisMatchIndex !== -1) {
+                if (answerMatchIndex < analysisMatchIndex) {
+                    stem = text.substring(0, answerMatchIndex).trim();
+                    answerPart = text.substring(answerMatchIndex + 4, analysisMatchIndex).trim();
+                    analysisPart = text.substring(analysisMatchIndex + 4).trim();
+                } else {
+                    stem = text.substring(0, analysisMatchIndex).trim();
+                    analysisPart = text.substring(analysisMatchIndex + 4, answerMatchIndex).trim();
+                    answerPart = text.substring(answerMatchIndex + 4).trim();
+                }
+            } else if (answerMatchIndex !== -1) {
+                stem = text.substring(0, answerMatchIndex).trim();
+                answerPart = text.substring(answerMatchIndex + 4).trim();
+            } else if (analysisMatchIndex !== -1) {
+                stem = text.substring(0, analysisMatchIndex).trim();
+                analysisPart = text.substring(analysisMatchIndex + 4).trim();
             }
+            
+            return { stem, answerPart, analysisPart };
+        };
 
-            const correctAnswers = answerMatch[1].trim();
+        const isMaterialQuestion = (rawText) => {
+            const answerCount = (rawText.match(/【答案】/g) || []).length;
+            if (answerCount > 1) return true;
+            
+            const analysisCount = (rawText.match(/【解析】/g) || []).length;
+            if (analysisCount > 1) return true;
+
+            const numberedItems = rawText.match(/^\s*(\d+)[\.、\s]/gm) || [];
+            const uniqueNumbers = [...new Set(numberedItems.map(item => parseInt(item)))];
+            return uniqueNumbers.length > 1;
+        };
+        
+        const isJudgmentQuestion = (stem, answerPart) => {
+             const judgmentWords = ["正确", "错误", "对", "错", "×", "✓", "T", "F"];
+             const upperAnswer = answerPart.toUpperCase().trim();
+             return judgmentWords.some(word => upperAnswer === word);
+        };
+        
+        const cleanAndValidateOptions = (matches) => {
+            if (!matches || matches.length === 0) return [];
+            
+            const options = matches
+                .map(match => ({ letter: match[1], text: match[2].trim() }))
+                .filter(opt => opt.text && opt.text.length > 0 && opt.text.length < 1500);
+
+            if (options.length < 2) return [];
+
+            const firstCharCode = options[0].letter.charCodeAt(0);
+            const isConsecutive = options.every((opt, index) => opt.letter.charCodeAt(0) === firstCharCode + index);
+
+            return isConsecutive ? options : [];
+        };
+
+        const extractOptionsFromText = (text) => {
+            const multiLinePattern = /([A-Z])\.\s*([\s\S]+?)(?=\s*\n[A-Z]\.|\s*\n【|^\s*【|$)/g;
+            const matches = [...text.matchAll(multiLinePattern)];
+            const options = cleanAndValidateOptions(matches);
+            
+            if (options.length >= 2) return options;
+            
+            const singleLinePattern = /([A-Z])\.\s*([^A-Z\n\r【]+)/g;
+            const singleLineMatches = [...text.matchAll(singleLinePattern)];
+            return cleanAndValidateOptions(singleLineMatches);
+        };
+
+        const parseAsChoiceQuestion = (stem, answerPart, analysisPart, options) => {
+            const firstOptionIndex = stem.indexOf(options[0].letter + '.');
+            const pureStem = firstOptionIndex > -1 ? stem.substring(0, firstOptionIndex).trim() : stem;
+            
+            const correctAnswers = answerPart.replace(/[^A-Z]/g, '');
             const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+            
+            const optionsWithCorrectness = options.map(opt => ({
+                text: opt.text,
+                isCorrect: correctAnswers.includes(opt.letter)
+            }));
+
+            DOMElements.questionStemInput.value = pureStem;
+            DOMElements.questionAnalysisInput.value = analysisPart;
             DOMElements.questionTypeSelect.value = newType;
             updateFormUIForType(newType);
+            renderOptionsEditor(newType, optionsWithCorrectness);
+        };
 
-            const options = optionsMatches.map(match => {
-                const letter = match[1];
-                const text = match[2].trim();
-                return { text, isCorrect: correctAnswers.includes(letter) };
-            }).filter(opt => opt.text);
-
-            if (options.length > 0) {
-                 renderOptionsEditor(newType, options);
-            }
-            
+        const parseAsStandardQuestion = (stem, answerPart, analysisPart) => {
             DOMElements.questionStemInput.value = stem;
-
-            updatePreview();
+            DOMElements.questionAnswerInput.value = answerPart;
+            DOMElements.questionAnalysisInput.value = analysisPart;
+            DOMElements.questionTypeSelect.value = 'standard';
+            updateFormUIForType('standard');
         };
 
         const parseAndPopulateSubQuestion = (sqNode) => {
             const stemTextarea = sqNode.querySelector('textarea[data-field="stem"]');
-            const rawText = stemTextarea.value;
+            if (!stemTextarea || !stemTextarea.value.trim()) return;
 
-            const answerMatch = rawText.match(/【答案】\s*([^\n]+)/); 
-            const analysisMatch = rawText.match(/【解析】\s*([\s\S]+)/); 
+            try {
+                const parts = separateQuestionParts(stemTextarea.value);
+                const { stem, answerPart, analysisPart } = parts;
 
-            if (!answerMatch) return;
+                const typeSelect = sqNode.querySelector('.sub-question-type-select');
+                const optionsArea = sqNode.querySelector('.sub-question-options-area');
+                const answerArea = sqNode.querySelector('.sub-question-answer-area');
+                const analysisTextarea = sqNode.querySelector('textarea[data-field="analysis"]');
 
-            let textBeforeAnswerAndAnalysis = rawText;
-            if (analysisMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【解析】')[0];
-            if (answerMatch) textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.split('【答案】')[0];
-            textBeforeAnswerAndAnalysis = textBeforeAnswerAndAnalysis.trim();
-
-            const optionsRegex = /([A-Z])\.([\s\S]*?)(?=\s*[A-Z]\.|$)/g;
-            const allMatches = [...textBeforeAnswerAndAnalysis.matchAll(optionsRegex)];
-
-            const typeSelect = sqNode.querySelector('.sub-question-type-select');
-            const optionsArea = sqNode.querySelector('.sub-question-options-area');
-            const answerTextarea = sqNode.querySelector('textarea[data-field="answer"]');
-            const analysisTextarea = sqNode.querySelector('textarea[data-field="analysis"]');
-
-            if (analysisMatch) {
-                analysisTextarea.value = analysisMatch[1].trim();
-            } else {
-                analysisTextarea.value = '';
-            }
-
-            if (allMatches.length > 0) { // It's a choice question
-                const firstOptionMatch = allMatches[0];
-                const optionsStartIndex = firstOptionMatch.index;
+                analysisTextarea.value = analysisPart;
                 
-                const stem = textBeforeAnswerAndAnalysis.substring(0, optionsStartIndex).replace(/^\d+\.\s*/, '').trim();
-                const optionsBlock = textBeforeAnswerAndAnalysis.substring(optionsStartIndex);
-                const optionsMatches = [...optionsBlock.matchAll(optionsRegex)];
-                
-                const correctAnswers = answerMatch[1].trim();
-                const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
-                
-                stemTextarea.value = stem;
-                typeSelect.value = newType;
-                
-                typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-
-                optionsArea.innerHTML = ''; 
-                const inputType = newType === 'single-choice' ? 'radio' : 'checkbox';
-                const sqId = sqNode.dataset.sqId;
-
-                optionsMatches.forEach((match, index) => {
-                    const letter = match[1];
-                    const text = match[2].trim();
-                    const isCorrect = correctAnswers.includes(letter);
-
-                    const optDiv = document.createElement('div');
-                    optDiv.className = 'flex items-center gap-2';
-                    optDiv.innerHTML = `
-                        <input type="${inputType}" name="sub-question-correct-${sqId}" value="${index}" ${isCorrect ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
-                        <input type="text" data-field="option-text" value="${text}" placeholder="选项内容" class="flex-1 bg-gray-700 border border-gray-600 rounded-md p-1 text-sm">
-                        <button type="button" class="remove-sub-option-btn text-red-500 hover:text-red-400 text-xs">&times;</button>
-                    `;
-                    optionsArea.appendChild(optDiv);
-                });
-                
-                const addOptBtn = document.createElement('button');
-                addOptBtn.type = 'button';
-                addOptBtn.className = 'add-sub-option-btn text-cyan-400 text-xs hover:text-cyan-300 mt-1';
-                addOptBtn.textContent = '+ 添加选项';
-                optionsArea.appendChild(addOptBtn);
-
-            } else { // It's a standard question
-                const stem = textBeforeAnswerAndAnalysis.replace(/^\d+\.\s*/, '').trim();
-                const answer = answerMatch[1].trim();
-
-                stemTextarea.value = stem;
-                answerTextarea.value = answer;
-                typeSelect.value = 'standard';
-                typeSelect.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        };
-
-        const updatePreview = () => {
-            const type = DOMElements.questionTypeSelect.value;
-            const stem = DOMElements.questionStemInput.value;
-            
-            let previewHTML = renderMarkdown(stem);
-            
-            if (['single-choice', 'multi-choice'].includes(type)) {
-                const options = [];
-                DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div) => {
-                    const text = div.querySelector('input[type="text"]').value;
-                    if(text) options.push(text);
-                });
-                if (options.length > 0) {
-                     previewHTML += '<ul class="list-disc list-inside mt-2 space-y-1">' + options.map(o => `<li>${o}</li>`).join('') + '</ul>';
+                if (isJudgmentQuestion(stem, answerPart)) {
+                    const isCorrect = ["正确", "对", "✓", "T"].some(kw => answerPart.toUpperCase().includes(kw));
+                    stemTextarea.value = stem;
+                    typeSelect.value = 'single-choice';
+                    answerArea.style.display = 'none';
+                    optionsArea.style.display = '';
+                    optionsArea.innerHTML = '';
+                    
+                    const options = [{text: '正确', isCorrect: isCorrect}, {text: '错误', isCorrect: !isCorrect}];
+                    options.forEach((opt, index) => {
+                         const optDiv = document.createElement('div');
+                         optDiv.className = 'flex items-center gap-2';
+                         optDiv.innerHTML = `
+                             <input type="radio" name="sub-question-correct-${sqNode.dataset.sqId}" value="${index}" ${opt.isCorrect ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
+                             <input type="text" data-field="option-text" value="${opt.text}" class="flex-1 bg-gray-700 border-gray-600 rounded-md p-1 text-sm">
+                             <button type="button" class="remove-sub-option-btn text-red-500 text-xs">&times;</button>`;
+                         optionsArea.appendChild(optDiv);
+                    });
+                } else {
+                    const options = extractOptionsFromText(stem);
+                    if (options.length >= 2) { // Is a choice question
+                        const pureStem = stem.substring(0, stem.indexOf(options[0].letter + '.')).trim();
+                        stemTextarea.value = pureStem;
+                        
+                        const correctAnswers = answerPart.replace(/[^A-Z]/g, '');
+                        const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+                        typeSelect.value = newType;
+                        
+                        answerArea.style.display = 'none';
+                        optionsArea.style.display = '';
+                        optionsArea.innerHTML = '';
+                        
+                        const inputType = newType === 'single-choice' ? 'radio' : 'checkbox';
+                        options.forEach((opt, index) => {
+                            const optDiv = document.createElement('div');
+                            optDiv.className = 'flex items-center gap-2';
+                            optDiv.innerHTML = `
+                                <input type="${inputType}" name="sub-question-correct-${sqNode.dataset.sqId}" value="${index}" ${correctAnswers.includes(opt.letter) ? 'checked' : ''} class="w-4 h-4 text-cyan-600 bg-gray-700 border-gray-600 rounded">
+                                <input type="text" data-field="option-text" value="${opt.text}" class="flex-1 bg-gray-700 border-gray-600 rounded-md p-1 text-sm">
+                                <button type="button" class="remove-sub-option-btn text-red-500 text-xs">&times;</button>`;
+                            optionsArea.appendChild(optDiv);
+                        });
+                    } else { // Is a standard question
+                        stemTextarea.value = stem;
+                        sqNode.querySelector('textarea[data-field="answer"]').value = answerPart;
+                        typeSelect.value = 'standard';
+                        answerArea.style.display = '';
+                        optionsArea.style.display = 'none';
+                    }
                 }
+                 const addOptBtn = document.createElement('button');
+                 addOptBtn.type = 'button';
+                 addOptBtn.className = 'add-sub-option-btn text-cyan-400 text-xs hover:text-cyan-300 mt-1';
+                 addOptBtn.textContent = '+ 添加选项';
+                 optionsArea.appendChild(addOptBtn);
+
+            } catch(e) { console.error('子问题解析失败:', e); }
+        };
+
+        const parseAsMaterialQuestion = (rawText) => {
+            DOMElements.questionTypeSelect.value = 'material';
+            updateFormUIForType('material');
+
+            // Split by markers: newline followed by a number
+            const subQuestionBlocks = rawText.split(/\n(?=\s*\d+[\.、\s])/)
+                .filter(block => block.trim() !== '');
+
+            if (subQuestionBlocks.length === 0) {
+                DOMElements.questionStemInput.value = rawText; // Fallback
+                return;
             }
 
-            DOMElements.previewArea.innerHTML = previewHTML;
+            // Heuristic: If the first block does NOT contain 【答案】, it's the main stem.
+            let mainStem = '';
+            let startIndex = 0;
+            if (!subQuestionBlocks[0].includes('【答案】') && !subQuestionBlocks[0].includes('【解析】')) {
+                mainStem = subQuestionBlocks[0].trim();
+                startIndex = 1;
+            }
+
+            DOMElements.questionStemInput.value = mainStem;
+            DOMElements.subQuestionsContainer.innerHTML = ''; 
+
+            for (let i = startIndex; i < subQuestionBlocks.length; i++) {
+                const blockText = subQuestionBlocks[i];
+                const sqNode = createSubQuestionNode({ stem: blockText });
+                DOMElements.subQuestionsContainer.appendChild(sqNode);
+                parseAndPopulateSubQuestion(sqNode);
+            }
+            DOMElements.questionAnalysisInput.value = '';
         };
+
+        const parseAndPopulateFields = (rawText) => {
+            if (!rawText || !rawText.trim()) return;
+
+            if (!rawText.includes('【答案】') || !rawText.includes('【解析】')) {
+                DOMElements.parseStemBtn.classList.remove('hidden');
+                DOMElements.questionStemInput.value = rawText;
+                updatePreview();
+                return;
+            } 
+            try {
+                if (isMaterialQuestion(rawText)) {
+                    parseAsMaterialQuestion(rawText);
+                } else {
+                    const parts = separateQuestionParts(rawText);
+                    const { stem, answerPart, analysisPart } = parts;
+
+                    if (isJudgmentQuestion(stem, answerPart)) {
+                        const isCorrect = ["正确", "对", "✓", "T"].some(kw => answerPart.toUpperCase().includes(kw));
+                        parseAsChoiceQuestion(stem, isCorrect ? 'A' : 'B', analysisPart, [{letter: 'A', text: '正确'}, {letter: 'B', text: '错误'}]);
+                    } else {
+                        const options = extractOptionsFromText(stem);
+                        const answerIsLetters = /^[A-Z]+$/.test(answerPart.trim());
+
+                        if (options.length >= 2 && answerIsLetters) {
+                            parseAsChoiceQuestion(stem, answerPart, analysisPart, options);
+                        } else {
+                            parseAsStandardQuestion(stem, answerPart, analysisPart);
+                        }
+                    }
+                }
+                updatePreview();
+                // generateAndApplyAutoTags();
+            } catch (error) {
+                console.error('题目解析过程中发生错误:', error);
+            }
+        };
+
+        // ======================================================================
+        // ======================= 优化后的解析模块 END =========================
+        // ======================================================================
+        
+        const updatePreview = () => {
+        const type = DOMElements.questionTypeSelect.value;
+        const stem = DOMElements.questionStemInput.value;
+        const analysis = DOMElements.questionAnalysisInput.value;
+        
+        let previewHTML = '<div class="space-y-4">';
+        
+        // 题干部分
+        previewHTML += `<div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(stem)}</div>`;
+        
+        if (['single-choice', 'multi-choice'].includes(type)) {
+            const options = [];
+            const correctIndices = [];
+            
+            DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div, index) => {
+                const text = div.querySelector('input[type="text"]').value;
+                const isCorrect = div.querySelector('input[type="radio"], input[type="checkbox"]')?.checked || false;
+                
+                if(text) {
+                    options.push({ text, isCorrect });
+                    if(isCorrect) correctIndices.push(index);
+                }
+            });
+            
+            if (options.length > 0) {
+                // 🔥 选项显示，带高亮效果
+                previewHTML += '<div class="mt-3 space-y-2">' + 
+                    options.map((opt, idx) => {
+                        const letter = String.fromCharCode(65 + idx);
+                        const highlightClass = opt.isCorrect 
+                            ? 'bg-green-900/40 border border-green-600/50 text-green-300 font-semibold' 
+                            : 'bg-gray-800/50';
+                        
+                        return `<div class="flex gap-2 items-start rounded-md ${highlightClass} transition-all">
+                            <span class="flex-shrink-0 pt-0.5">${letter}.</span>
+                            <div class="flex-1">${renderMarkdown(opt.text)}</div>
+                        </div>`;
+                    }).join('') + 
+                '</div>';
+            }
+        } else if (type === 'material') {
+            // 🔥 材料题预览子问题
+            const subQuestions = [];
+            DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach((sqNode, index) => {
+                const sqType = sqNode.querySelector('.sub-question-type-select').value;
+                const sqStem = sqNode.querySelector('textarea[data-field="stem"]').value.trim();
+                
+                if (sqStem) {
+                    const sq = {
+                        type: sqType,
+                        stem: sqStem,
+                        options: [],
+                        correctIndices: []
+                    };
+                    
+                    if (sqType !== 'standard') {
+                        const optionDivs = sqNode.querySelectorAll('.sub-question-options-area > .flex');
+                        optionDivs.forEach((optDiv, optIdx) => {
+                            const optInput = optDiv.querySelector('input[type="text"]');
+                            const optCheckbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                            
+                            if (optInput && optInput.value.trim()) {
+                                const isCorrect = optCheckbox ? optCheckbox.checked : false;
+                                sq.options.push({
+                                    text: optInput.value.trim(),
+                                    isCorrect
+                                });
+                                if (isCorrect) {
+                                    sq.correctIndices.push(sq.options.length - 1);
+                                }
+                            }
+                        });
+                    }
+                    
+                    subQuestions.push(sq);
+                }
+            });
+            
+            if (subQuestions.length > 0) {
+                previewHTML += '<div class="mt-4 pt-4 border-t border-gray-700 space-y-4">';
+                subQuestions.forEach((sq, index) => {
+                    previewHTML += `<div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
+                        <div class="font-semibold text-gray-300 mb-2">(${index + 1}) ${renderMarkdown(sq.stem)}</div>`;
+                    
+                    if (sq.options.length > 0) {
+                        previewHTML += '<div class="mt-2 space-y-1.5">' +
+                            sq.options.map((opt, optIdx) => {
+                                const letter = String.fromCharCode(65 + optIdx);
+                                const highlightClass = opt.isCorrect 
+                                    ? 'bg-green-900/40 border border-green-600/50 text-green-300 font-semibold' 
+                                    : 'bg-gray-800/30';
+                                const iconHTML = opt.isCorrect 
+                                    ? '<svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>' 
+                                    : '';
+                                
+                                return `<div class="flex gap-2 items-start p-2 rounded ${highlightClass} text-sm">
+                                    <span class="font-semibold text-cyan-400 flex-shrink-0">${letter}.</span>
+                                    <div class="flex-1">${renderMarkdown(opt.text)}</div>
+                                    ${iconHTML}
+                                </div>`;
+                            }).join('') +
+                        '</div>';
+                        
+                        // 子问题答案提示
+                        if (sq.correctIndices.length > 0) {
+                            const answerText = sq.correctIndices.map(idx => String.fromCharCode(65 + idx)).join(', ');
+                            previewHTML += `<div class="mt-2 text-sm text-cyan-400">
+                                <span class="font-semibold">答案：</span>${answerText}
+                            </div>`;
+                        }
+                    }
+                    
+                    previewHTML += '</div>';
+                });
+                previewHTML += '</div>';
+            }
+        } else {
+            // 🔥 标准题显示答案
+            const answer = DOMElements.questionAnswerInput.value.trim();
+            if (answer) {
+                previewHTML += `<div class="mt-3 px-4 py-2 bg-cyan-900/30 border border-cyan-600/30 rounded-lg">
+                    <div class="text-cyan-400 font-semibold mb-1">答案：</div>
+                    <div class="text-gray-300 prose prose-invert prose-sm">${renderMarkdown(answer)}</div>
+                </div>`;
+            }
+        }
+        
+        // 🔥 解析部分（所有题型）
+        if (analysis && analysis.trim()) {
+            previewHTML += `<div class="mt-3 px-4 py-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+                <div class="text-yellow-400 font-semibold mb-2 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    解析
+                </div>
+                <div class="text-gray-300 prose prose-invert prose-sm">${renderMarkdown(analysis)}</div>
+            </div>`;
+        }
+        
+        previewHTML += '</div>';
+        
+        DOMElements.previewArea.innerHTML = previewHTML;
+    };
         
         const saveQuestionData = async () => {
             const id = parseInt(DOMElements.questionIdInput.value);
@@ -1654,7 +2163,7 @@
                 updatedAt: new Date(),
             };
 
-            if (!questionData.stem) {
+            if (!questionData.stem && type !== 'material') {
                 alert("题干不能为空！");
                 return;
             }
@@ -1665,11 +2174,11 @@
                 let correctIndices = [];
 
                 DOMElements.optionsContainer.querySelectorAll('.flex.items-center').forEach((div, index) => {
-                    const text = div.querySelector('input[type="text"]').value;
-                    const isCorrect = div.querySelector('input[type="radio"], input[type="checkbox"]').checked;
-                    
-                    if (text.trim()) {
-                        options.push({ text: text.trim(), isCorrect });
+                    const textInput = div.querySelector('input[type="text"]');
+                    const isCorrectInput = div.querySelector('input[type="radio"], input[type="checkbox"]');
+                    if(textInput && isCorrectInput && textInput.value.trim()){
+                        const isCorrect = isCorrectInput.checked;
+                        options.push({ text: textInput.value.trim(), isCorrect });
                         if (isCorrect) {
                             hasCorrect = true;
                             correctIndices.push(index);
@@ -1677,30 +2186,30 @@
                     }
                 });
 
+                if (options.length < 2) {
+                    alert("选择题必须至少有两个选项！");
+                    return;
+                }
                 if (!hasCorrect) {
                     alert("选择题必须至少有一个正确答案！");
                     return;
                 }
 
-                if (options.length === 0) {
-                    alert("选择题必须至少有一个选项！");
-                    return;
-                }
-
                 questionData.options = JSON.stringify(options);
-                // 修复：根据原始索引正确映射字母
-                questionData.answer = correctIndices
-                    .map(idx => String.fromCharCode(65 + idx))
-                    .join(', ');
+                questionData.answer = correctIndices.map(idx => String.fromCharCode(65 + idx)).join(', ');
 
             } else if (type === 'material') {
                 const subQuestions = [];
+                let validationFailed = false;
                 DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
+                    if (validationFailed) return;
+
                     const sqType = sqNode.querySelector('.sub-question-type-select').value;
                     const sqStem = sqNode.querySelector('textarea[data-field="stem"]').value.trim();
                     
                     if (!sqStem) {
                         alert("子问题题干不能为空！");
+                        validationFailed = true;
                         return;
                     }
 
@@ -1714,7 +2223,6 @@
                     };
 
                     if (sqType !== 'standard') {
-                        // 处理选择题子问题
                         const optionDivs = sqNode.querySelectorAll('.sub-question-options-area > .flex');
                         let sqHasCorrect = false;
                         let sqCorrectIndices = [];
@@ -1725,52 +2233,35 @@
                             
                             if (optInput && optInput.value.trim()) {
                                 const isCorrect = optCheckbox ? optCheckbox.checked : false;
-                                sq.options.push({
-                                    text: optInput.value.trim(),
-                                    isCorrect
-                                });
+                                sq.options.push({ text: optInput.value.trim(), isCorrect });
                                 if (isCorrect) {
                                     sqHasCorrect = true;
                                     sqCorrectIndices.push(sq.options.length - 1);
                                 }
                             }
                         });
-
-                        if (!sqHasCorrect && sq.options.length > 0) {
-                            alert(`子问题 "${sq.stem.substring(0, 20)}..." 必须至少有一个正确答案！`);
-                            return;
+                        if (sq.options.length > 0 && !sqHasCorrect) {
+                           alert(`子问题 "${sq.stem.substring(0, 20)}..." 必须至少有一个正确答案！`);
+                           validationFailed = true;
+                           return;
                         }
-
-                        // 修复：正确构建答案字母
-                        sq.answer = sqCorrectIndices
-                            .map(idx => String.fromCharCode(65 + idx))
-                            .join(', ');
-
+                        sq.answer = sqCorrectIndices.map(idx => String.fromCharCode(65 + idx)).join(', ');
                     } else {
-                        // 标准题子问题
                         sq.answer = sqNode.querySelector('textarea[data-field="answer"]')?.value.trim() || '';
-                        sq.options = [];
                     }
-
                     subQuestions.push(sq);
                 });
+                if(validationFailed) return;
 
                 if (subQuestions.length === 0) {
                     alert("材料题必须至少有一个子问题！");
                     return;
                 }
-
                 questionData.subQuestions = JSON.stringify(subQuestions);
                 questionData.answer = '见子问题解析';
-                questionData.options = null;
-
             } else {
-                // 标准题
                 questionData.answer = DOMElements.questionAnswerInput.value.trim();
-                questionData.options = null;
-                questionData.subQuestions = null;
-
-                if (!questionData.answer) {
+                 if (!questionData.answer) {
                     alert("答案不能为空！");
                     return;
                 }
@@ -1795,6 +2286,36 @@
             }
         };
         
+        // --- 快捷键支持 ---
+        DOMElements.modal.addEventListener('keydown', (e) => {
+            // Cmd+Enter (Mac) 或 Ctrl+Enter (Windows/Linux)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // 检查模态框是否打开
+                if (!DOMElements.modal.classList.contains('hidden')) {
+                    triggerHapticFeedback();
+                    
+                    // 触发保存并继续添加
+                    const currentType = DOMElements.questionTypeSelect.value;
+                    saveQuestionData().then(success => {
+                        if (success) {
+                            resetModalForNewQuestion(currentType);
+                            fetchAndRender();
+                        }
+                    });
+                }
+            }
+            
+            // Esc 关闭模态框
+            if (e.key === 'Escape') {
+                if (!DOMElements.modal.classList.contains('hidden')) {
+                    e.preventDefault();
+                    closeModal();
+                }
+            }
+        });
         DOMElements.saveAndAddAnotherBtn.addEventListener('click', async () => {
             triggerHapticFeedback();
             const currentType = DOMElements.questionTypeSelect.value;
@@ -1846,20 +2367,16 @@
             }
         });
         
-        const debouncedSubQuestionParse = debounce((sqNode) => {
-            parseAndPopulateSubQuestion(sqNode);
-        }, 500);
-
-        DOMElements.subQuestionsContainer.addEventListener('input', e => {
-            if (e.target.matches('textarea[data-field="stem"]')) {
-                const sqNode = e.target.closest('[data-sq-id]');
-                if (sqNode) {
-                    debouncedSubQuestionParse(sqNode);
-                }
-            }
-        });
-        
         // --- 10. EVENT LISTENERS (STATIC) ---
+
+        DOMElements.parseStemBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const rawText = DOMElements.questionStemInput.value;
+            // 重新运行解析逻辑
+            parseAndPopulateFields(rawText); 
+            DOMElements.parseStemBtn.classList.add('hidden');
+        });
+
         const openAddModal = () => {
             triggerHapticFeedback();
             openModal();
@@ -1873,18 +2390,87 @@
         DOMElements.questionTypeSelect.addEventListener('change', (e) => {
             const type = e.target.value;
             updateFormUIForType(type);
-            if(['single-choice', 'multi-choice'].includes(type)) {
-                renderOptionsEditor(type);
+            if(['single-choice', 'multi-choice'].includes(type) && DOMElements.optionsContainer.children.length === 0) {
+                 renderOptionsEditor(type, [{text: '', isCorrect: false}]);
+            }
+             if(type === 'material' && DOMElements.subQuestionsContainer.children.length === 0) {
+                renderSubQuestionsEditor();
             }
             updatePreview();
         });
 
         const debouncedPreviewUpdate = debounce(updatePreview, 300);
         DOMElements.form.addEventListener('input', (e) => {
-            if (e.target.matches('#question-stem, #options-container input, #question-answer, #question-analysis')) {
+             // Only update preview on input, do not re-parse
+            if (e.target.matches('#question-stem, #options-container input, #question-answer, #question-analysis, #sub-questions-container textarea, #sub-questions-container input')) {
                 debouncedPreviewUpdate();
             }
         });
+
+        let isTagsExpanded = false;
+        DOMElements.toggleTagsBtn.addEventListener('click', () => {
+            isTagsExpanded = !isTagsExpanded;
+            if (isTagsExpanded) {
+                DOMElements.filterTagsContainer.classList.remove('max-h-12');
+                DOMElements.filterTagsContainer.classList.add('max-h-96'); // 限制一个最大高度
+                DOMElements.toggleTagsBtn.textContent = '收起';
+            } else {
+                DOMElements.filterTagsContainer.classList.add('max-h-12');
+                DOMElements.filterTagsContainer.classList.remove('max-h-96');
+                DOMElements.toggleTagsBtn.textContent = '显示更多';
+            }
+        });
+        
+        // FIX: Changed trigger to 'paste' and simplified logic
+        const handlePasteForParsing = (event) => {
+            if (DOMElements.questionIdInput.value) return; // Don't parse when editing
+
+            event.preventDefault();
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+            const textarea = event.target;
+            
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.setRangeText(pastedText, start, end, 'end');
+
+            parseAndPopulateFields(textarea.value);
+        };
+        DOMElements.questionStemInput.addEventListener('paste', handlePasteForParsing);
+        DOMElements.subQuestionsContainer.addEventListener('paste', (event) => {
+             if (event.target.tagName === 'TEXTAREA') {
+                const sqNode = event.target.closest('[data-sq-id]');
+                 event.preventDefault();
+                 const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+                 const textarea = event.target;
+                 const start = textarea.selectionStart;
+                 const end = textarea.selectionEnd;
+                 textarea.setRangeText(pastedText, start, end, 'end');
+                 if(sqNode) {
+                    parseAndPopulateSubQuestion(sqNode);
+                 }
+             }
+        });
+        DOMElements.pasteAndParseBtn.addEventListener('click', async () => {
+            if (!navigator.clipboard || !navigator.clipboard.readText) {
+                alert('您的浏览器不支持自动粘贴功能。请长按输入框手动粘贴。');
+                return;
+            }
+            
+            try {
+                const pastedText = await navigator.clipboard.readText();
+                if (pastedText && pastedText.trim()) {
+                    triggerHapticFeedback(); // 触发震动反馈
+                    DOMElements.questionStemInput.value = pastedText;
+                    
+                    // 调用现有的核心解析函数
+                    parseAndPopulateFields(pastedText);
+                }
+            } catch (err) {
+                console.error('无法读取粘贴板:', err);
+                alert('无法读取粘贴板。请确保已授予权限，或尝试手动粘贴。');
+            }
+        });
+
 
         DOMElements.form.addEventListener('click', e => {
             const button = e.target.closest('button[data-md]');
@@ -1941,14 +2527,6 @@
             DOMElements.subQuestionsContainer.appendChild(createSubQuestionNode());
         });
 
-        const debouncedAutoParse = debounce((event) => {
-            if (!DOMElements.questionIdInput.value) {
-                parseAndPopulateFields(event.target.value);
-            }
-        }, 500);
-        DOMElements.questionStemInput.addEventListener('input', debouncedAutoParse);
-
-
         const debouncedSearch = debounce(() => {
             state.pagination.currentPage = 1;
             renderAllQuestions();
@@ -1966,14 +2544,15 @@
             const buttonClicked = e.target.closest('button');
             if(buttonClicked) triggerHapticFeedback();
 
-            // Handle specific button clicks first, and stop propagation if they are clicked.
             if (e.target.closest('.edit-btn')) {
+                e.stopPropagation();
                 const question = await db.questions.get(id);
                 openModal(question);
                 return;
             }
 
             if (e.target.closest('.delete-btn')) {
+                e.stopPropagation();
                 showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
                     await db.questions.delete(id);
                     await fetchAndRender();
@@ -1982,10 +2561,10 @@
             }
             
             if (e.target.closest('.expand-btn')) {
+                e.stopPropagation();
                 const previewDiv = card.querySelector('.sub-questions-preview');
                 const isHidden = previewDiv.classList.contains('hidden');
                 if (isHidden && previewDiv.innerHTML === '') {
-                    // Populate on first click
                     const question = await db.questions.get(id);
                     const subQs = JSON.parse(question.subQuestions || '[]');
                     previewDiv.innerHTML = subQs.map((sq, i) => `<p><strong class="mr-2">${i+1}.</strong>${sq.stem}</p>`).join('');
@@ -1995,7 +2574,6 @@
                 return;
             }
 
-            // If no specific button was clicked, open the view modal
             openViewModal(id);
         });
 
@@ -2020,7 +2598,11 @@
             renderAllQuestions();
         });
         const navigatePage = (page) => {
-            if (page !== state.pagination.currentPage) {
+            if (page >= 1 && page !== state.pagination.currentPage) {
+                const totalItems = getFilteredQuestions().length;
+                const totalPages = Math.ceil(totalItems / state.pagination.pageSize);
+                if(page > totalPages) return;
+
                  triggerHapticFeedback();
                  state.pagination.currentPage = page;
                  renderAllQuestions();
@@ -2086,13 +2668,11 @@
             DOMElements.practiceSubQuestionsArea.innerHTML = '';
             DOMElements.practiceNavigator.innerHTML = '';
 
-            // Reset layout to default (single column)
             DOMElements.mobilePracticeTabs.classList.add('hidden');
             DOMElements.practiceMaterialPane.classList.add('hidden');
             DOMElements.practiceQuestionsPane.classList.add('hidden');
 
             if (q.type === 'material') {
-                // Activate two-column layout for material questions
                 DOMElements.mobilePracticeTabs.classList.remove('hidden');
                 DOMElements.practiceMaterialPane.classList.remove('hidden');
                 DOMElements.practiceQuestionsPane.classList.remove('hidden');
@@ -2104,7 +2684,6 @@
                 
                 const subQs = JSON.parse(q.subQuestions || '[]');
                 subQs.forEach((sq, index) => {
-                    // Render navigator
                     const navBtn = document.createElement('button');
                     navBtn.className = 'navigator-btn w-8 h-8 rounded-md bg-gray-700 hover:bg-gray-600 transition';
                     navBtn.textContent = index + 1;
@@ -2114,17 +2693,16 @@
                     };
                     DOMElements.practiceNavigator.appendChild(navBtn);
                     
-                    // Render sub-question cards
                     const sqDiv = document.createElement('div');
                     sqDiv.className = 'p-4 bg-gray-700/50 rounded-lg';
                     sqDiv.dataset.sqIndex = index;
                     let optionsHTML = '';
                     if (sq.type !== 'standard') {
                         const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
-                        optionsHTML = sq.options.map((opt, optIndex) => `
+                        optionsHTML = (sq.options || []).map((opt, optIndex) => `
                             <div class="option-input-group">
                                 <input type="${inputType}" name="practice-sq-option-${index}" id="practice-sq-${index}-opt-${optIndex}" value="${optIndex}" data-sq-index="${index}">
-                                <label for="practice-sq-${index}-opt-${optIndex}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${opt.text}</label>
+                                <label for="practice-sq-${index}-opt-${optIndex}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${renderMarkdown(opt.text)}</label>
                             </div>
                         `).join('');
                     }
@@ -2138,8 +2716,7 @@
                 setupScrollSpy();
 
             } else {
-                // Standard single-column layout for other question types
-                DOMElements.practiceMaterialPane.classList.remove('hidden'); // Use this pane as the single column
+                DOMElements.practiceMaterialPane.classList.remove('hidden');
                 DOMElements.practiceStemContent.innerHTML = renderMarkdown(q.stem);
                 
                 if (['single-choice', 'multi-choice'].includes(q.type)) {
@@ -2147,15 +2724,13 @@
                     DOMElements.showAnswerBtn.classList.add('hidden');
                     const options = JSON.parse(q.options || '[]');
                     const inputType = q.type === 'single-choice' ? 'radio' : 'checkbox';
-                    options.forEach((opt, index) => {
-                        const optDiv = document.createElement('div');
-                        optDiv.className = 'option-input-group';
-                        optDiv.innerHTML = `
+                    const optionsHTML = options.map((opt, index) => `
+                        <div class="option-input-group">
                             <input type="${inputType}" name="practice-option" id="practice-option-${index}" value="${index}">
-                            <label for="practice-option-${index}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${opt.text}</label>
-                        `;
-                         DOMElements.practiceSubQuestionsArea.appendChild(optDiv);
-                    });
+                            <label for="practice-option-${index}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${renderMarkdown(opt.text)}</label>
+                        </div>
+                    `).join('');
+                    DOMElements.practiceSubQuestionsArea.innerHTML = `<div class="space-y-3">${optionsHTML}</div>`;
                     DOMElements.practiceQuestionsPane.classList.remove('hidden');
                 } else {
                     DOMElements.checkAnswerBtn.classList.add('hidden');
@@ -2178,11 +2753,11 @@
                     let isCorrect = false;
 
                     if (sq.type !== 'standard') {
-                        const selectedIndexes = [...sqDiv.querySelectorAll('input:checked')].map(el => parseInt(el.value));
-                        const correctIndexes = sq.options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
+                        const selectedIndexes = [...sqDiv.querySelectorAll(`input[name="practice-sq-option-${index}"]:checked`)].map(el => parseInt(el.value));
+                        const correctIndexes = (sq.options || []).map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
                         isCorrect = selectedIndexes.length === correctIndexes.length && selectedIndexes.every(idx => correctIndexes.includes(idx));
                         
-                        const correctOptionsText = sq.options.filter(o => o.isCorrect).map(o => o.text).join(', ');
+                        const correctOptionsText = (sq.options || []).filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + (sq.options.findIndex(opt => opt.text === o.text)))).join(', ');
                         
                         let feedbackHTML = isCorrect
                             ? `<p class="text-green-400 font-bold">回答正确</p>`
@@ -2209,7 +2784,6 @@
                         }
                        feedbackDiv.innerHTML = feedbackHTML;
                     }
-                    // Update navigator state
                     const navBtn = DOMElements.practiceNavigator.querySelector(`[data-index="${index}"]`);
                     navBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
                 });
@@ -2328,10 +2902,7 @@
         });
         
         DOMElements.deleteAllQuestionsBtn.addEventListener('click', () => {
-            // 先关闭IO模态框
             closeIOModal();
-            
-            // 延迟显示确认模态框，确保前一个模态框完全关闭
             setTimeout(() => {
                 showConfirmation(
                     '确认删除所有题目?',
@@ -2508,11 +3079,7 @@
                 "answer": "React",
                 "analysis": "React 是一个流行的前端JavaScript库。",
                 "tags": ["编程", "前端"],
-                "options": [
-                  {"text": "Django", "isCorrect": false},
-                  {"text": "React", "isCorrect": true},
-                  {"text": "Flask", "isCorrect": false}
-                ],
+                "options": '[{"text": "Django", "isCorrect": false},{"text": "React", "isCorrect": true},{"text": "Flask", "isCorrect": false}]',
                 "subQuestions": null,
                 "reviewStatus": "new"
               },
@@ -2520,10 +3087,7 @@
                   "type": "material",
                   "stem": "材料题题干示例：\n\n阅读以下关于太阳系的描述，并回答问题。",
                   "answer": "见子问题解析",
-                  "subQuestions": [
-                      { "id": "uuid-1", "type": "standard", "stem": "太阳系中最大的行星是哪颗？", "answer": "木星" },
-                      { "id": "uuid-2", "type": "single-choice", "stem": "哪颗行星被称为“红色星球”？", "options": [{"text": "地球", "isCorrect": false}, {"text": "火星", "isCorrect": true}], "answer": "火星" }
-                  ],
+                  "subQuestions": '[{ "id": "uuid-1", "type": "standard", "stem": "太阳系中最大的行星是哪颗？", "answer": "木星", "analysis": "" },{ "id": "uuid-2", "type": "single-choice", "stem": "哪颗行星被称为“红色星球”？", "options": [{"text": "地球", "isCorrect": false}, {"text": "火星", "isCorrect": true}], "answer": "火星", "analysis": "" }]',
                   "analysis": "这是关于整个材料的整体解析。",
                   "tags": ["综合", "天文"],
                   "reviewStatus": "new",
