@@ -6,8 +6,8 @@
     <title>Q-Bank - 本地习题库管理</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU07EWpWzlzY8CwnwKatUOSCMkbeReiN+27HWseWucFMGJVdCeuOxjz" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -57,15 +57,6 @@
         .option-input-group input:checked + label {
             border-color: #2563eb;
             background-color: #1e40af;
-        }
-        /* Practice mode correct/incorrect styling */
-        .practice-option-correct {
-            border-color: #22c55e !important;
-            background-color: #166534 !important;
-        }
-        .practice-option-incorrect {
-             border-color: #ef4444 !important;
-            background-color: #991b1b !important;
         }
         /* Mobile Specific Styles */
         @media (max-width: 767px) {
@@ -563,129 +554,15 @@
             border-radius: 4px;
             border: 1px solid #6b7280;
         }
-        
-        /* New styles for practice mode */
-        .navigator-btn.active {
-            background-color: #0e7490;
-            color: white;
-            font-weight: bold;
-        }
-        .navigator-btn.answered {
-            background-color: #1d4ed8;
-            color: white;
-        }
-        .navigator-btn.correct {
-            background-color: #166534;
-            color: white;
-        }
-        .navigator-btn.incorrect {
-            background-color: #991b1b;
-            color: white;
-        }
-        .mobile-practice-tab.active {
-            border-color: #0891b2;
-            color: #0891b2;
-            background-color: #374151;
-        }
         .sub-questions-preview p:not(:last-child) {
             border-bottom: 1px solid #374151;
             padding-bottom: 0.5rem;
         }
     </style>
-    <style>
-    /* 检查答案按钮的移动端优化 */
-    @media (max-width: 767px) {
-        #practice-modal .mt-auto {
-            flex-direction: column-reverse;
-        }
-        
-        #check-answer-btn, 
-        #show-answer-btn {
-            font-size: 0.875rem;
-            padding: 0.75rem 1rem;
-            min-height: 44px;
-            width: 100%;
-        }
-        
-        #check-answer-btn svg, 
-        #show-answer-btn svg {
-            width: 1.25rem;
-            height: 1.25rem;
-        }
-        
-        #review-buttons {
-            width: 100%;
-        }
-        
-        #review-buttons .review-btn {
-            font-size: 0.75rem;
-            padding: 0.75rem 0.5rem;
-            min-height: 44px;
-            flex: 1;
-        }
-        
-        #review-buttons .review-btn span {
-            display: block;
-            word-break: keep-all;
-        }
-    }
-    
-    /* 平板端优化 */
-    @media (min-width: 768px) and (max-width: 1024px) {
-        #check-answer-btn, 
-        #show-answer-btn {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-        }
-        
-        #review-buttons .review-btn {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.85rem;
-        }
-        
-        #check-answer-btn svg, 
-        #show-answer-btn svg {
-            width: 1rem;
-            height: 1rem;
-        }
-    }
-    
-    /* 桌面端优化 */
-    @media (min-width: 1025px) {
-        #check-answer-btn span,
-        #show-answer-btn span {
-            display: inline;
-        }
-        
-        #check-answer-btn svg,
-        #show-answer-btn svg {
-            display: none;
-        }
-        
-        #review-buttons .review-btn span {
-            display: inline;
-        }
-    }
-    
-    /* 通用按钮交互优化 */
-    #check-answer-btn:active,
-    #show-answer-btn:active,
-    .review-btn:active {
-        transform: scale(0.98);
-    }
-    
-    #check-answer-btn:disabled,
-    #show-answer-btn:disabled,
-    .review-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-</style>
 </head>
 <body class="bg-gray-800 text-gray-200 antialiased">
 
     <div id="app" class="min-h-screen flex flex-col">
-        <!-- Header -->
         <header class="bg-gray-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-md p-4">
             <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
@@ -696,10 +573,6 @@
                     <input type="search" id="search-box" placeholder="搜索题干、解析、标签..." class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
                 </div>
                 <div class="hidden md:flex items-center gap-2">
-                    <button id="start-practice-btn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch" disabled>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span>开始练习</span>
-                    </button>
                     <button id="add-question-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-4 rounded-lg transition duration-200 shadow-lg flex items-center gap-2 btn-mobile-touch">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         <span>添加题目</span>
@@ -712,7 +585,6 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="flex-1 p-4 sm:p-6 lg:p-8 mb-20 md:mb-0">
             <div class="max-w-7xl mx-auto">
                 <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-2">
@@ -746,7 +618,6 @@
                     <h3 class="mt-2 text-xl font-medium text-gray-300">未找到题目</h3>
                     <p class="mt-1 text-sm text-gray-500">尝试更换搜索词或清空筛选条件。</p>
                 </div>
-                <!-- Pagination -->
                 <div id="pagination" class="mt-8 flex items-center justify-between hidden">
                     <div class="text-sm text-gray-400">
                         显示 <span id="page-start">1</span> - <span id="page-end">9</span> 共 <span id="total-count">0</span> 题
@@ -782,15 +653,10 @@
         </main>
     </div>
 
-     <!-- Mobile Action Bar -->
      <div id="mobile-action-bar" class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm p-2 flex justify-around items-center border-t border-gray-700 z-30">
         <button id="mobile-add-question-btn" class="text-cyan-400 font-medium py-2 px-4 rounded-lg transition duration-200 flex flex-col items-center gap-1 btn-mobile-touch">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             <span class="text-xs">添加</span>
-        </button>
-        <button id="mobile-start-practice-btn" class="text-green-400 font-medium py-2 px-4 rounded-lg transition duration-200 flex flex-col items-center gap-1 btn-mobile-touch" disabled>
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span class="text-xs">练习</span>
         </button>
         <button id="mobile-io-btn" class="text-gray-300 font-medium py-2 px-4 rounded-lg transition duration-200 flex flex-col items-center gap-1 btn-mobile-touch">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
@@ -798,7 +664,6 @@
         </button>
     </div>
 
-    <!-- Question Editor Modal -->
     <div id="question-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div class="p-6 border-b border-gray-700 flex justify-between items-center">
@@ -910,111 +775,6 @@
         </div>
     </div>
     
-    <!-- Practice Modal -->
-    <div id="practice-modal" class="fixed inset-0 bg-black bg-opacity-90 z-50 flex-col justify-center items-center hidden p-2 sm:p-4">
-        <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl h-[95vh] flex flex-col p-4 sm:p-6">
-            <div class="flex justify-between items-center mb-4">
-                 <div id="practice-progress" class="text-lg font-mono text-cyan-400">1 / 10</div>
-                 <div id="practice-question-type" class="text-sm font-semibold bg-gray-700 text-cyan-300 px-3 py-1 rounded-full shadow-sm"></div>
-                 <button id="close-practice-btn" class="text-gray-400 hover:text-white text-3xl leading-none btn-mobile-touch">&times;</button>
-            </div>
-            
-            <!-- Mobile Tabs -->
-            <div id="mobile-practice-tabs" class="md:hidden flex border-b border-gray-700 mb-4">
-                <button data-tab="material" class="mobile-practice-tab flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400 active">阅读材料</button>
-                <button data-tab="questions" class="mobile-practice-tab flex-1 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-400">作答区域</button>
-            </div>
-
-            <!-- Main Practice Content Area -->
-            <div id="practice-content-area" class="flex-1 flex flex-col md:flex-row gap-4 sm:gap-6 overflow-hidden">
-                <!-- Material Pane (Left Column on Desktop) -->
-                <div id="practice-material-pane" class="practice-tab-content prose prose-invert max-w-none bg-gray-900 p-4 rounded-lg overflow-y-auto md:w-5/12">
-                    <div id="practice-stem-content"></div>
-                </div>
-                
-                <!-- Questions Pane (Right Column on Desktop) -->
-                <div id="practice-questions-pane" class="practice-tab-content flex-1 flex flex-col overflow-hidden md:w-7/12 hidden md:flex">
-                    <div id="practice-navigator" class="mb-4 flex flex-wrap gap-2"></div>
-                    <div id="practice-sub-questions-area" class="flex-1 overflow-y-auto space-y-4 pr-2"></div>
-                </div>
-            </div>
-
-            <div id="practice-feedback-area" class="my-2 text-center"></div>
-            <div id="practice-answer-area" class="flex-1 overflow-y-auto p-4 bg-gray-900 rounded-lg prose prose-invert max-w-none hidden"></div>
-            
-            <!-- Action Buttons -->
-            <div class="mt-auto pt-4 sm:pt-6 flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4">
-                <!-- 左侧：检查答案/显示答案按钮 -->
-                <div class="flex gap-2 sm:gap-3 w-full sm:w-auto">
-                    <button id="check-answer-btn" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 sm:px-6 rounded-lg transition duration-200 btn-mobile-touch flex items-center justify-center gap-2 min-h-[44px] sm:min-h-auto">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span class="text-sm sm:text-base">检查答案</span>
-                    </button>
-                    <button id="show-answer-btn" class="flex-1 sm:flex-none bg-gray-600 hover:bg-gray-500 active:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 sm:px-6 rounded-lg transition duration-200 btn-mobile-touch flex items-center justify-center gap-2 min-h-[44px] sm:min-h-auto">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        <span class="text-sm sm:text-base">显示答案</span>
-                    </button>
-                </div>
-
-                <!-- 右侧：复习按钮组 -->
-                <div id="review-buttons" class="hidden w-full sm:w-auto flex items-center gap-2 sm:gap-3">
-                    <button data-status="mastered" class="review-btn flex-1 sm:flex-none bg-green-600 hover:bg-green-500 active:bg-green-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
-                        <span class="text-xs sm:text-sm">掌握</span>
-                    </button>
-                    <button data-status="reviewing" class="review-btn flex-1 sm:flex-none bg-yellow-600 hover:bg-yellow-500 active:bg-yellow-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
-                        <span class="text-xs sm:text-sm">模糊</span>
-                    </button>
-                    <button data-status="new" class="review-btn flex-1 sm:flex-none bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold py-3 sm:py-2 px-3 sm:px-4 text-center rounded-lg transition duration-200 btn-mobile-touch min-h-[44px] sm:min-h-auto flex items-center justify-center">
-                        <span class="text-xs sm:text-sm">遗忘</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="practice-options-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-end md:items-center justify-center hidden p-0 md:p-4">
-        <div class="bg-gray-800 rounded-t-xl md:rounded-xl shadow-2xl w-full max-w-md flex flex-col">
-            <div class="p-6 border-b border-gray-700 flex justify-between items-center">
-                <h2 id="practice-options-title" class="text-2xl font-bold text-white">练习设置</h2>
-                <button id="practice-options-close-btn" class="text-gray-400 hover:text-white text-3xl leading-none btn-mobile-touch">&times;</button>
-            </div>
-            <div class="p-6 space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">练习模式</label>
-                    <div class="space-y-2" id="practice-mode-group">
-                        <label class="flex items-center p-3 rounded-lg bg-gray-700 border-2 border-gray-700 has-[:checked]:border-cyan-500 cursor-pointer transition">
-                            <input type="radio" name="practice-mode" value="smart" class="w-4 h-4 text-cyan-600 bg-gray-900 border-gray-600 focus:ring-cyan-500" checked>
-                            <span class="ml-3 block text-sm font-medium text-white">智能练习</span>
-                            <span class="ml-auto text-xs text-gray-400">优先新题/错题</span>
-                        </label>
-                        <label class="flex items-center p-3 rounded-lg bg-gray-700 border-2 border-gray-700 has-[:checked]:border-cyan-500 cursor-pointer transition">
-                            <input type="radio" name="practice-mode" value="mistakes" class="w-4 h-4 text-cyan-600 bg-gray-900 border-gray-600 focus:ring-cyan-500">
-                            <span class="ml-3 block text-sm font-medium text-white">错题回顾</span>
-                            <span class="ml-auto text-xs text-gray-400">仅练习错题</span>
-                        </label>
-                        <label class="flex items-center p-3 rounded-lg bg-gray-700 border-2 border-gray-700 has-[:checked]:border-cyan-500 cursor-pointer transition">
-                            <input type="radio" name="practice-mode" value="random" class="w-4 h-4 text-cyan-600 bg-gray-900 border-gray-600 focus:ring-cyan-500">
-                            <span class="ml-3 block text-sm font-medium text-white">全量随机</span>
-                            <span class="ml-auto text-xs text-gray-400">打乱所有题目</span>
-                        </label>
-                    </div>
-                </div>
-                <div>
-                    <label for="practice-limit" class="block text-sm font-medium text-gray-300 mb-2">练习题量</label>
-                    <div class="flex items-center gap-3">
-                        <input type="number" id="practice-limit" name="practice-limit" value="20" min="1" class="w-24 bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
-                        <span id="practice-limit-label" class="text-sm text-gray-400">/ 共 0 题</span>
-                    </div>
-                </div>
-            </div>
-             <div class="p-6 border-t border-gray-700 flex justify-end gap-4 bg-gray-800/50">
-                <button type="button" id="practice-options-cancel-btn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">取消</button>
-                <button type="button" id="practice-options-start-btn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-lg transition btn-mobile-touch">开始</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
             <h3 id="confirm-title" class="text-xl font-bold text-white mb-2">确认删除？</h3>
@@ -1026,7 +786,6 @@
         </div>
     </div>
     
-    <!-- View Question Modal -->
     <div id="view-question-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-gray-800 rounded-xl md:rounded-xl rounded-b-none md:rounded-b-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col view-modal-wrapper">
             <div class="p-4 md:p-6 border-b border-gray-700 flex justify-between items-center flex-shrink-0">
@@ -1034,25 +793,19 @@
                 <button id="view-modal-close-btn" class="text-gray-400 hover:text-white text-2xl md:text-3xl leading-none btn-mobile-touch flex-shrink-0 ml-2">&times;</button>
             </div>
             <div id="view-modal-content" class="flex-1 p-4 md:p-6 overflow-y-auto prose prose-invert max-w-none">
-                <!-- Content will be injected here -->
-            </div>
+                </div>
         </div>
     </div>
 
-    <!-- IO Modal -->
     <div id="io-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden p-4">
         <div class="bg-gray-800 rounded-xl md:rounded-xl rounded-b-none md:rounded-b-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] md:max-h-[80vh]">
-            <!-- 头部 -->
             <div class="flex justify-between items-center p-4 md:p-6 border-b border-gray-700 flex-shrink-0">
                 <h3 class="text-xl md:text-2xl font-bold text-white flex-1">数据管理</h3>
                 <button id="io-close-btn" class="text-gray-400 hover:text-white text-2xl md:text-3xl leading-none btn-mobile-touch flex-shrink-0 ml-2">&times;</button>
             </div>
 
-            <!-- 内容 - 可滚动 -->
             <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6">
-                <!-- 导入导出两列布局 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                    <!-- 导入部分 -->
                     <div class="space-y-3 md:space-y-4 bg-gray-900 p-4 rounded-lg">
                         <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2">导入</h4>
                         <p class="text-xs md:text-sm text-gray-400">支持 .json, .docx 文件。重复 ID 的题目将被更新。</p>
@@ -1066,7 +819,6 @@
                         </div>
                     </div>
 
-                    <!-- 导出部分 -->
                     <div class="space-y-3 md:space-y-4 bg-gray-900 p-4 rounded-lg">
                         <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2">导出</h4>
                         <p class="text-xs md:text-sm text-gray-400">将当前筛选的题目导出。</p>
@@ -1076,7 +828,6 @@
                     </div>
                 </div>
 
-                <!-- 模板下载部分 -->
                 <div class="bg-gray-900 p-4 rounded-lg">
                     <h4 class="font-semibold text-cyan-400 border-b border-gray-700 pb-2 mb-3">下载模板</h4>
                     <p class="text-xs md:text-sm text-gray-400 mb-4">使用标准模板确保题目格式正确，以便顺利导入。</p>
@@ -1087,7 +838,6 @@
                     </div>
                 </div>
 
-                <!-- 危险操作区域 -->
                 <div class="bg-red-900/50 p-4 rounded-lg border border-red-700">
                     <h4 class="font-semibold text-red-400 mb-2">危险操作</h4>
                     <p class="text-xs md:text-sm text-gray-400 mb-4">此操作将永久删除您的所有题目，且无法恢复。</p>
@@ -1105,15 +855,14 @@
     <script type="module">
         // --- 1. SETUP ---
         const db = new Dexie("QBankDB");
-        db.version(4).stores({
-            questions: '++id, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions, practiceCount, errorCount',
+        db.version(5).stores({
+            questions: '++id, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions',
         });
 
         // --- 2. STATE MANAGEMENT ---
         let state = {
             questions: [],
             filters: { search: '', tags: [] },
-            practice: { questions: [], currentIndex: 0, intersectionObserver: null },
             pagination: {
                 currentPage: 1,
                 pageSize: 9,
@@ -1148,22 +897,6 @@
             searchBox: document.getElementById('search-box'),
             filterTagsContainer: document.getElementById('filter-tags'),
             toggleTagsBtn: document.getElementById('toggle-tags-btn'),
-            startPracticeBtn: document.getElementById('start-practice-btn'),
-            practiceModal: document.getElementById('practice-modal'),
-            practiceProgress: document.getElementById('practice-progress'),
-            practiceContentArea: document.getElementById('practice-content-area'),
-            practiceMaterialPane: document.getElementById('practice-material-pane'),
-            practiceQuestionsPane: document.getElementById('practice-questions-pane'),
-            practiceStemContent: document.getElementById('practice-stem-content'),
-            practiceNavigator: document.getElementById('practice-navigator'),
-            practiceSubQuestionsArea: document.getElementById('practice-sub-questions-area'),
-            practiceFeedbackArea: document.getElementById('practice-feedback-area'),
-            practiceAnswerArea: document.getElementById('practice-answer-area'),
-            showAnswerBtn: document.getElementById('show-answer-btn'),
-            checkAnswerBtn: document.getElementById('check-answer-btn'),
-            reviewButtons: document.getElementById('review-buttons'),
-            closePracticeBtn: document.getElementById('close-practice-btn'),
-            mobilePracticeTabs: document.getElementById('mobile-practice-tabs'),
             confirmModal: document.getElementById('confirm-modal'),
             confirmOkBtn: document.getElementById('confirm-ok-btn'),
             confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
@@ -1194,30 +927,12 @@
             lastPageBtn: document.getElementById('last-page-btn'),
             pageSizeSelect: document.getElementById('page-size-select'),
             mobileAddBtn: document.getElementById('mobile-add-question-btn'),
-            mobilePracticeBtn: document.getElementById('mobile-start-practice-btn'),
             mobileIoBtn: document.getElementById('mobile-io-btn'),
             pasteAndParseBtn: document.getElementById('paste-and-parse-btn'),
-            parseStemBtn: document.getElementById('parse-stem-btn'),
-            practiceQuestionType: document.getElementById('practice-question-type'),
-            practiceOptionsModal: document.getElementById('practice-options-modal'),
-            practiceOptionsCloseBtn: document.getElementById('practice-options-close-btn'),
-            practiceOptionsCancelBtn: document.getElementById('practice-options-cancel-btn'),
-            practiceOptionsStartBtn: document.getElementById('practice-options-start-btn'),
-            practiceModeGroup: document.getElementById('practice-mode-group'),
-            practiceLimitInput: document.getElementById('practice-limit'),
-            practiceLimitLabel: document.getElementById('practice-limit-label'),
+            parseStemBtn: document.getElementById('parse-stem-btn')
         };
 
         // --- 4. UTILS & HELPERS ---
-        const shuffleArray = (array) => {
-            // 创建一个副本以避免修改原数组 (如果需要)
-            const newArr = [...array];
-            for (let i = newArr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            }
-            return newArr;
-        };
         const debounce = (func, delay) => {
             let timeout;
             return (...args) => {
@@ -1366,9 +1081,6 @@
         };
 
         const generateAndApplyAutoTags = () => {
-            // 如果是在编辑题目（ID已存在），则不进行自动标签，防止覆盖用户已保存的标签
-            // if (DOMElements.questionIdInput.value) return; 
-
             const type = DOMElements.questionTypeSelect.value;
             const analysis = DOMElements.questionAnalysisInput.value.trim();
             
@@ -1379,17 +1091,6 @@
                 subQuestions: []
             };
 
-            // // 如果是材料题，遍历子问题编辑器，收集它们的解析
-            // if (type === 'material') {
-            //     DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
-            //         const sqAnalysis = sqNode.querySelector('textarea[data-field="analysis"]').value.trim();
-            //         // 仅添加包含解析的子问题对象
-            //         if (sqAnalysis) {
-            //             questionData.subQuestions.push({ analysis: sqAnalysis });
-            //         }
-            //     });
-            // }
-            
             // 1. 获取自动生成的标签
             const autoTags = getAutoTags(questionData);
 
@@ -1490,22 +1191,7 @@
         const renderQuestionCard = (q) => {
             const card = document.createElement('div');
             card.className = 'relative group bg-gray-900 rounded-xl shadow-lg flex flex-col transition duration-300 hover:shadow-cyan-500/20 hover:-translate-y-1 h-96 cursor-pointer';
-            const practiceCount = q.practiceCount || 0;
-            const errorCount = q.errorCount || 0;
-            // 计算正确率，避免除以零
-            const accuracy = practiceCount > 0 
-                ? Math.round(((practiceCount - errorCount) / practiceCount) * 100) 
-                : 100;
-            const accuracyColor = accuracy < 60 ? 'text-red-400' : (accuracy < 80 ? 'text-yellow-400' : 'text-green-400');
 
-            // 仅在练习过时才显示统计HTML
-            const statsHTML = practiceCount > 0 ? `
-                <div class="text-xs text-gray-400 flex justify-between items-center mb-4 pt-4 border-t border-gray-800">
-                    <span class="px-2 py-0.5 bg-gray-700/50 rounded">练习: ${practiceCount}</span>
-                    <span class="px-2 py-0.5 bg-gray-700/50 rounded">错误: ${errorCount}</span>
-                    <span class="px-2 py-0.5 bg-gray-700/50 rounded font-semibold ${accuracyColor}">正确率: ${accuracy}%</span>
-                </div>
-            ` : '';
             card.dataset.id = q.id;
 
             const tagsHTML = q.tags.map(tag => `<span class="bg-gray-700 text-cyan-400 text-xs font-medium px-2.5 py-1 rounded-full">${tag}</span>`).join(' ');
@@ -1548,7 +1234,6 @@
                     ${materialActions ? `<div class="flex justify-end mb-3">${materialActions}</div>` : ''}
                     <div class="sub-questions-preview hidden prose prose-invert prose-sm max-w-none text-gray-400 mb-4 p-3 bg-gray-800 rounded-md space-y-2"></div>
                     <div class="flex flex-wrap gap-2 mb-4">${tagsHTML}</div>
-                    ${statsHTML}
                     <div class="flex justify-between items-center">
                         <div class="flex items-center gap-2">
                             <span class="relative flex h-3 w-3"><span class="relative inline-flex rounded-full h-3 w-3 ${statusColor}"></span></span>
@@ -1643,8 +1328,6 @@
                 });
             }
             renderPagination(totalItems);
-            DOMElements.startPracticeBtn.disabled = filteredQuestions.length === 0;
-            DOMElements.mobilePracticeBtn.disabled = filteredQuestions.length === 0;
         };
         
         const renderTagsForFiltering = () => {
@@ -1824,7 +1507,7 @@
             }
             updatePreview();
             DOMElements.modal.classList.remove('hidden');
-          	setTimeout(() => {
+          setTimeout(() => {
                 DOMElements.questionStemInput.focus();
             }, 50);
         };
@@ -2698,330 +2381,6 @@
                 navigatePage(parseInt(e.target.dataset.page));
             }
         });
-        
-        // --- 11. PRACTICE MODE LOGIC ---
-        const startPractice = (mode = 'smart', limit = 20) => {
-            triggerHapticFeedback();
-            const filteredQuestions = getFilteredQuestions();
-            
-            let practiceQueue = [];
-
-            // 1. 根据模式构建练习队列
-            if (mode === 'smart') {
-                const priorityQueue = filteredQuestions.filter(q => q.reviewStatus === 'new' || q.reviewStatus === 'reviewing');
-                const masteredQueue = filteredQuestions.filter(q => q.reviewStatus === 'mastered');
-                const shuffledPriority = shuffleArray(priorityQueue);
-                const shuffledMastered = shuffleArray(masteredQueue);
-                // 优先练习新题/错题，然后复习已掌握的
-                practiceQueue = [...shuffledPriority, ...shuffledMastered];
-            } else if (mode === 'mistakes') {
-                const priorityQueue = filteredQuestions.filter(q => q.reviewStatus === 'new' || q.reviewStatus === 'reviewing');
-                practiceQueue = shuffleArray(priorityQueue);
-            } else { // 'random'
-                practiceQueue = shuffleArray(filteredQuestions);
-            }
-
-            // 2. 应用题量限制
-            state.practice.questions = practiceQueue.slice(0, limit);
-
-            // 3. 开始练习
-            state.practice.currentIndex = 0;
-            if (state.practice.questions.length > 0) {
-                DOMElements.practiceModal.classList.add('flex');
-                DOMElements.practiceModal.classList.remove('hidden');
-                loadPracticeQuestion();
-            } else {
-                // 如果队列为空，给用户提示
-                alert("没有符合条件的题目可供练习！");
-            }
-        };
-const openPracticeOptionsModal = () => {
-            const filteredQuestions = getFilteredQuestions();
-            const totalCount = filteredQuestions.length;
-
-            if (totalCount === 0) {
-                alert("题库中没有题目，请先添加。");
-                return;
-            }
-
-            // 更新题量显示
-            DOMElements.practiceLimitLabel.textContent = `/ 共 ${totalCount} 题`;
-            DOMElements.practiceLimitInput.max = totalCount;
-
-            // 如果默认题量(20)超过了总数，则使用总数作为默认值
-            if (parseInt(DOMElements.practiceLimitInput.value) > totalCount) {
-                DOMElements.practiceLimitInput.value = totalCount;
-            }
-            
-            // 总是重置为默认的“智能练习”模式
-            DOMElements.practiceModeGroup.querySelector('input[value="smart"]').checked = true;
-
-            // 显示模态框
-            DOMElements.practiceOptionsModal.classList.remove('hidden');
-        };
-
-        const setupScrollSpy = () => {
-             if (state.practice.intersectionObserver) {
-                state.practice.intersectionObserver.disconnect();
-            }
-            const options = {
-                root: DOMElements.practiceSubQuestionsArea,
-                rootMargin: '0px',
-                threshold: 0.5 
-            };
-            const callback = (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const index = entry.target.dataset.sqIndex;
-                        DOMElements.practiceNavigator.querySelectorAll('.navigator-btn').forEach(btn => {
-                            btn.classList.toggle('active', btn.dataset.index === index);
-                        });
-                    }
-                });
-            };
-            state.practice.intersectionObserver = new IntersectionObserver(callback, options);
-            DOMElements.practiceSubQuestionsArea.querySelectorAll('[data-sq-index]').forEach(el => {
-                state.practice.intersectionObserver.observe(el);
-            });
-        };
-
-        const loadPracticeQuestion = () => {
-            DOMElements.practiceFeedbackArea.innerHTML = '';
-            const q = state.practice.questions[state.practice.currentIndex];
-            const questionTypeMap = {
-                'standard': '标准题',
-                'single-choice': '单选题',
-                'multi-choice': '多选题',
-                'material': '材料题'
-            };
-            // 更新题型显示
-            DOMElements.practiceQuestionType.textContent = questionTypeMap[q.type] || '未知题型';
-            DOMElements.practiceProgress.textContent = `${state.practice.currentIndex + 1} / ${state.practice.questions.length}`;
-            DOMElements.practiceAnswerArea.classList.add('hidden');
-            DOMElements.reviewButtons.classList.add('hidden');
-            DOMElements.practiceSubQuestionsArea.innerHTML = '';
-            DOMElements.practiceNavigator.innerHTML = '';
-
-            DOMElements.mobilePracticeTabs.classList.add('hidden');
-            DOMElements.practiceMaterialPane.classList.add('hidden');
-            DOMElements.practiceQuestionsPane.classList.add('hidden');
-
-            if (q.type === 'material') {
-                DOMElements.mobilePracticeTabs.classList.remove('hidden');
-                DOMElements.practiceMaterialPane.classList.remove('hidden');
-                DOMElements.practiceQuestionsPane.classList.remove('hidden');
-                document.querySelector('.mobile-practice-tab[data-tab="material"]').click();
-
-                DOMElements.practiceStemContent.innerHTML = renderMarkdown(q.stem);
-                DOMElements.checkAnswerBtn.classList.remove('hidden');
-                DOMElements.showAnswerBtn.classList.add('hidden');
-                
-                const subQs = JSON.parse(q.subQuestions || '[]');
-                subQs.forEach((sq, index) => {
-                    const navBtn = document.createElement('button');
-                    navBtn.className = 'navigator-btn w-8 h-8 rounded-md bg-gray-700 hover:bg-gray-600 transition';
-                    navBtn.textContent = index + 1;
-                    navBtn.dataset.index = index;
-                    navBtn.onclick = () => {
-                         DOMElements.practiceSubQuestionsArea.querySelector(`[data-sq-index="${index}"]`).scrollIntoView({ behavior: 'smooth' });
-                    };
-                    DOMElements.practiceNavigator.appendChild(navBtn);
-                    
-                    const sqDiv = document.createElement('div');
-                    sqDiv.className = 'p-4 bg-gray-700/50 rounded-lg';
-                    sqDiv.dataset.sqIndex = index;
-                    let optionsHTML = '';
-                    if (sq.type !== 'standard') {
-                        const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
-                        optionsHTML = (sq.options || []).map((opt, optIndex) => `
-                            <div class="option-input-group">
-                                <input type="${inputType}" name="practice-sq-option-${index}" id="practice-sq-${index}-opt-${optIndex}" value="${optIndex}" data-sq-index="${index}">
-                                <label for="practice-sq-${index}-opt-${optIndex}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${renderMarkdown(opt.text)}</label>
-                            </div>
-                        `).join('');
-                    }
-                    sqDiv.innerHTML = `
-                        <div class="prose prose-invert max-w-none mb-3">${renderMarkdown(`**(${index + 1})** ${sq.stem}`)}</div>
-                        <div class="space-y-3">${optionsHTML}</div>
-                        <div class="practice-sq-feedback text-sm mt-2"></div>
-                    `;
-                    DOMElements.practiceSubQuestionsArea.appendChild(sqDiv);
-                });
-                setupScrollSpy();
-
-            } else {
-                DOMElements.practiceMaterialPane.classList.remove('hidden');
-                DOMElements.practiceStemContent.innerHTML = renderMarkdown(q.stem);
-                
-                if (['single-choice', 'multi-choice'].includes(q.type)) {
-                    DOMElements.checkAnswerBtn.classList.remove('hidden');
-                    DOMElements.showAnswerBtn.classList.add('hidden');
-                    const options = JSON.parse(q.options || '[]');
-                    const inputType = q.type === 'single-choice' ? 'radio' : 'checkbox';
-                    const optionsHTML = options.map((opt, index) => `
-                        <div class="option-input-group">
-                            <input type="${inputType}" name="practice-option" id="practice-option-${index}" value="${index}">
-                            <label for="practice-option-${index}" class="block w-full p-3 rounded-lg bg-gray-700 hover:bg-gray-600 cursor-pointer transition">${renderMarkdown(opt.text)}</label>
-                        </div>
-                    `).join('');
-                    DOMElements.practiceSubQuestionsArea.innerHTML = `<div class="space-y-3">${optionsHTML}</div>`;
-                    DOMElements.practiceQuestionsPane.classList.remove('hidden');
-                } else {
-                    DOMElements.checkAnswerBtn.classList.add('hidden');
-                    DOMElements.showAnswerBtn.classList.remove('hidden');
-                }
-            }
-        };
-        
-        const checkPracticeAnswer = () => {
-            triggerHapticFeedback();
-            const q = state.practice.questions[state.practice.currentIndex];
-            // 禁用所有选项输入
-            DOMElements.practiceSubQuestionsArea.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => input.disabled = true);
-            DOMElements.checkAnswerBtn.classList.add('hidden');
-            DOMElements.reviewButtons.classList.remove('hidden');
-
-            if (q.type === 'material') {
-                const subQs = JSON.parse(q.subQuestions || '[]');
-                subQs.forEach((sq, index) => {
-                    const sqDiv = DOMElements.practiceSubQuestionsArea.querySelector(`[data-sq-index="${index}"]`);
-                    const feedbackDiv = sqDiv.querySelector('.practice-sq-feedback');
-                    let isCorrect = false;
-
-                    if (sq.type !== 'standard') {
-                        const selectedIndexes = [...sqDiv.querySelectorAll(`input[name="practice-sq-option-${index}"]:checked`)].map(el => parseInt(el.value));
-                        const correctIndexes = (sq.options || []).map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
-                        isCorrect = selectedIndexes.length === correctIndexes.length && selectedIndexes.every(idx => correctIndexes.includes(idx));
-                        
-                        let feedbackHTML = isCorrect
-                            ? `<p class="text-green-400 font-bold">回答正确</p>`
-                            : `<p class="text-red-400 font-bold">回答错误。正确答案: ${sq.options.filter(o => o.isCorrect).map((o, i) => String.fromCharCode(65 + (sq.options.findIndex(opt => opt.text === o.text)))).join('')}</p>`;
-                        
-                        if (sq.analysis) {
-                            feedbackHTML += `<div class="mt-2 text-left text-gray-400 p-2 bg-gray-800 rounded">${renderMarkdown(sq.analysis)}</div>`;
-                        }
-                        feedbackDiv.innerHTML = feedbackHTML;
-
-                        sqDiv.querySelectorAll('label').forEach((label, labelIndex) => {
-                            const input = document.getElementById(`practice-sq-${index}-opt-${labelIndex}`);
-                            if(correctIndexes.includes(labelIndex)) {
-                                label.classList.add('practice-option-correct');
-                            }
-                            if(input.checked && !correctIndexes.includes(labelIndex)) {
-                                label.classList.add('practice-option-incorrect');
-                            }
-                        });
-                    } else {
-                       let feedbackHTML = `<p class="text-cyan-400">参考答案: ${sq.answer}</p>`;
-                       if (sq.analysis) {
-                            feedbackHTML += `<div class="mt-2 text-left text-gray-400 text-xs p-2 bg-gray-800 rounded">${renderMarkdown(sq.analysis)}</div>`;
-                        }
-                       feedbackDiv.innerHTML = feedbackHTML;
-                    }
-                    const navBtn = DOMElements.practiceNavigator.querySelector(`[data-index="${index}"]`);
-                    navBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
-                });
-
-            } else if (['single-choice', 'multi-choice'].includes(q.type)) {
-                const options = JSON.parse(q.options);
-                const selectedIndexes = [...DOMElements.practiceSubQuestionsArea.querySelectorAll('input:checked')].map(el => parseInt(el.value));
-                const correctIndexes = options.map((o, i) => o.isCorrect ? i : -1).filter(i => i !== -1);
-                const isCorrect = selectedIndexes.length === correctIndexes.length && selectedIndexes.every(idx => correctIndexes.includes(idx));
-
-                DOMElements.practiceFeedbackArea.innerHTML = isCorrect
-                    ? `<p class="text-green-400 font-bold text-lg">回答正确!</p>`
-                    : `<p class="text-red-400 font-bold">回答错误。正确答案: ${options.filter(o => o.isCorrect).map(o => o.text).join(', ')}</p>`;
-                
-                DOMElements.practiceAnswerArea.innerHTML = `<h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(q.analysis || '暂无解析')}</div>`;
-                DOMElements.practiceAnswerArea.classList.remove('hidden');
-            }
-        };
-        const endPractice = () => {
-            if (state.practice.intersectionObserver) state.practice.intersectionObserver.disconnect();
-            DOMElements.practiceModal.classList.add('hidden');
-            DOMElements.practiceModal.classList.remove('flex');
-            fetchAndRender();
-        };
-
-        DOMElements.startPracticeBtn.addEventListener('click', openPracticeOptionsModal);
-        DOMElements.mobilePracticeBtn.addEventListener('click', openPracticeOptionsModal);
-        // --- “练习设置”模态框的监听器 ---
-        const closePracticeOptionsModal = () => DOMElements.practiceOptionsModal.classList.add('hidden');
-
-        DOMElements.practiceOptionsCloseBtn.addEventListener('click', closePracticeOptionsModal);
-        DOMElements.practiceOptionsCancelBtn.addEventListener('click', closePracticeOptionsModal);
-        DOMElements.practiceOptionsModal.addEventListener('click', (e) => {
-             if (e.target === DOMElements.practiceOptionsModal) closePracticeOptionsModal();
-        });
-
-        DOMElements.practiceOptionsStartBtn.addEventListener('click', () => {
-            // 1. 获取用户的选择
-            const mode = DOMElements.practiceModeGroup.querySelector('input[name="practice-mode"]:checked').value;
-            const limit = parseInt(DOMElements.practiceLimitInput.value) || 20;
-            
-            // 2. 关闭设置模态框
-            closePracticeOptionsModal();
-            
-            // 3. 调用重构后的 startPractice 函数
-            // (使用 setTimeout 确保模态框关闭动画更流畅)
-            setTimeout(() => {
-                startPractice(mode, limit);
-            }, 100); 
-        });
-        DOMElements.closePracticeBtn.addEventListener('click', endPractice);
-        DOMElements.checkAnswerBtn.addEventListener('click', checkPracticeAnswer);
-        DOMElements.showAnswerBtn.addEventListener('click', () => {
-            triggerHapticFeedback();
-            
-            DOMElements.practiceAnswerArea.innerHTML = `<h4 class="font-bold text-cyan-400 mb-2">答案</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(state.practice.questions[state.practice.currentIndex].answer)}</div><h4 class="font-bold text-yellow-400 mt-4 mb-2">解析</h4><div class="prose prose-invert prose-sm max-w-none">${renderMarkdown(state.practice.questions[state.practice.currentIndex].analysis || '暂无解析')}</div>`;
-            DOMElements.practiceAnswerArea.classList.remove('hidden');
-            DOMElements.showAnswerBtn.classList.add('hidden');
-            DOMElements.reviewButtons.classList.remove('hidden');
-        });
-
-        DOMElements.reviewButtons.addEventListener('click', async (e) => {
-            const button = e.target.closest('.review-btn');
-            if (!button) return;
-            triggerHapticFeedback();
-            const status = button.dataset.status;
-            const currentQuestion = state.practice.questions[state.practice.currentIndex];
-            const newPracticeCount = (currentQuestion.practiceCount || 0) + 1;
-            const newErrorCount = (currentQuestion.errorCount || 0) + (state.practice.lastAnswerWasCorrect === false ? 1 : 0);
-            await db.questions.update(currentQuestion.id, { reviewStatus: status, practiceCount: newPracticeCount, errorCount: newErrorCount });
-            state.practice.currentIndex++;
-            if (state.practice.currentIndex < state.practice.questions.length) {
-                loadPracticeQuestion();
-            } else {
-                endPractice();
-            }
-        });
-        
-        DOMElements.practiceSubQuestionsArea.addEventListener('change', (e) => {
-            if (e.target.matches('input[type="radio"], input[type="checkbox"]')) {
-                const sqIndex = e.target.dataset.sqIndex;
-                if (sqIndex) {
-                    const navBtn = DOMElements.practiceNavigator.querySelector(`[data-index="${sqIndex}"]`);
-                    navBtn.classList.add('answered');
-                }
-            }
-        });
-        
-        DOMElements.mobilePracticeTabs.addEventListener('click', (e) => {
-            const button = e.target.closest('.mobile-practice-tab');
-            if (!button) return;
-            const tab = button.dataset.tab;
-
-            DOMElements.mobilePracticeTabs.querySelectorAll('.mobile-practice-tab').forEach(t => t.classList.remove('active'));
-            button.classList.add('active');
-            
-            document.querySelectorAll('.practice-tab-content').forEach(p => p.classList.add('hidden'));
-            if (tab === 'material') {
-                DOMElements.practiceMaterialPane.classList.remove('hidden');
-            } else {
-                 DOMElements.practiceQuestionsPane.classList.remove('hidden');
-            }
-        });
-
 
         // --- 12. CONFIRMATION MODAL LOGIC ---
         const showConfirmation = (title, message, onConfirm) => {
@@ -3346,4 +2705,3 @@ const openPracticeOptionsModal = () => {
     </script>
 </body>
 </html>
-
