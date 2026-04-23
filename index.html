@@ -228,6 +228,3178 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 12h6m-6 5h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
                     <span>标签管理</span>
                 </button>
+                <button id="cloud-sync-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg transition duration-200 flex items-center gap-1 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m14.356 2A8.001 8.001 0 106.582 9M20 20v-5h-.581m0 0a8.003 8.003 0 01-14.357-2m14.357 2H15"></path></svg>
+                    <span>同步</span>
+                </button>
+                <button id="cloud-auth-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg transition duration-200 flex items-center gap-1 shadow-sm">
+                    <span id="auth-status-dot" class="inline-block w-2 h-2 rounded-full bg-gray-300"></span>
+                    <span id="auth-status-text">云端未连接</span>
+                </button>
+                <button id="io-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg transition duration-200 flex items-center gap-1 shadow-sm" title="快捷键: Alt + M">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <span>导入/导出</span>
+                </button>
+                <button id="add-question-btn" class="bg-black hover:bg-gray-800 text-white text-sm font-medium py-2 px-3 rounded-lg transition duration-200 shadow-sm flex items-center gap-1" title="快捷键: Alt + N">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                    <span>录入题目</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div class="max-w-7xl mx-auto pb-20 md:pb-0">
+                
+                <div class="mb-6 flex flex-col md:flex-row justify-between md:items-center gap-2">
+                    <div id="filter-tags-wrapper" class="flex-1">
+                        <div id="filter-tags" class="flex flex-wrap gap-2 max-h-10 md:max-h-none overflow-hidden transition-all duration-300"></div>
+                    </div>
+                    <div class="flex items-center gap-2 self-start md:self-auto">
+                        <button id="toggle-tags-btn" class="md:hidden text-gray-500 text-sm py-1 px-2 rounded hover:bg-gray-100 border border-gray-200">
+                            显示更多标签
+                        </button>
+                        <div class="inline-flex rounded-lg border border-gray-300 overflow-hidden">
+                            <button id="view-grid-btn" class="px-3 py-1.5 text-sm bg-black text-white transition">卡片</button>
+                            <button id="view-list-btn" class="px-3 py-1.5 text-sm bg-white text-gray-700 hover:bg-gray-50 transition border-l border-gray-300">列表</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="skeleton-card h-96"></div><div class="skeleton-card h-96"></div><div class="skeleton-card h-96"></div>
+                </div>
+
+                <div id="questions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="questions-list" class="hidden bg-white border border-gray-200 rounded-xl overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-gray-50 border-b border-gray-200 text-gray-600">
+                            <tr>
+                                <th class="text-left font-medium px-4 py-3 w-24">
+                                    <button type="button" data-sort-key="type" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        类型 <span data-sort-indicator="type" class="text-xs text-gray-400">↕</span>
+                                    </button>
+                                </th>
+                                <th class="text-left font-medium px-4 py-3">
+                                    <button type="button" data-sort-key="stem" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        题干 <span data-sort-indicator="stem" class="text-xs text-gray-400">↕</span>
+                                    </button>
+                                </th>
+                                <th class="text-left font-medium px-4 py-3 w-56">
+                                    <button type="button" data-sort-key="tags" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        标签 <span data-sort-indicator="tags" class="text-xs text-gray-400">↕</span>
+                                    </button>
+                                </th>
+                                <th class="text-left font-medium px-4 py-3 w-28">
+                                    <button type="button" data-sort-key="reviewStatus" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        状态 <span data-sort-indicator="reviewStatus" class="text-xs text-gray-400">↕</span>
+                                    </button>
+                                </th>
+                                <th class="text-left font-medium px-4 py-3 w-44">
+                                    <button type="button" data-sort-key="updatedAt" class="inline-flex items-center gap-1 hover:text-black transition">
+                                        更新时间 <span data-sort-indicator="updatedAt" class="text-xs text-gray-400">↕</span>
+                                    </button>
+                                </th>
+                                <th class="text-right font-medium px-4 py-3 w-28">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questions-list-body" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+                
+                <div id="no-results" class="text-center py-20 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-gray-900">题库空空如也</h3>
+                    <p class="mt-1 text-sm text-gray-500">点击右上角“录入题目”或切换题库。</p>
+                </div>
+
+                <div id="pagination" class="mt-8 flex items-center justify-between hidden border-t border-gray-200 pt-6">
+                    <div class="text-sm text-gray-500">
+                        显示 <span id="page-start" class="font-medium text-gray-900">1</span> - <span id="page-end" class="font-medium text-gray-900">9</span> 共 <span id="total-count" class="font-medium text-gray-900">0</span> 题
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button id="first-page-btn" class="px-2 py-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg></button>
+                        <button id="prev-page-btn" class="px-2 py-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                        <div id="page-numbers" class="flex gap-1 mx-2"></div>
+                        <button id="next-page-btn" class="px-2 py-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                        <button id="last-page-btn" class="px-2 py-1 rounded bg-white border border-gray-300 hover:bg-gray-50 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg></button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="page-size-select" class="app-select rounded-md px-2 py-1 text-sm text-gray-700">
+                            <option value="9">9/页</option><option value="18">18/页</option><option value="50">50/页</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="mobile-action-bar" class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20 flex justify-around items-center p-2 pb-safe">
+        <button id="mobile-add-question-btn" class="text-black font-medium p-2 rounded-lg flex flex-col items-center gap-1 flex-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <span class="text-[10px]">录入</span>
+        </button>
+        <button id="mobile-io-btn" class="text-gray-500 font-medium p-2 rounded-lg flex flex-col items-center gap-1 flex-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+            <span class="text-[10px]">管理</span>
+        </button>
+    </div>
+
+    <div id="question-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col border border-gray-200">
+            <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gray-50/70">
+                <h2 id="modal-title" class="text-xl font-bold text-gray-900">录入题目</h2>
+                <div class="flex items-center gap-2">
+                    <div class="w-[160px]">
+                        <select id="question-type" class="app-select w-full rounded-lg p-1.5 text-sm text-gray-900">
+                            <option value="standard">标准题</option><option value="single-choice">单选题</option><option value="multi-choice">多选题</option><option value="judgment">判断题</option><option value="material">材料题</option>
+                        </select>
+                    </div>
+                    <button type="button" id="preview-toggle-btn" class="text-xs px-2 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition">隐藏预览</button>
+                </div>
+            </div>
+            <form id="question-form" class="flex-1 flex flex-col md:flex-row overflow-hidden text-gray-700">
+                <input type="hidden" id="question-id">
+                <div id="preview-pane" class="md:w-1/2 p-5 bg-gray-50 overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>实时预览
+                    </h3>
+                    <div id="preview-area" class="prose prose-sm max-w-none text-gray-800 bg-white border border-gray-200 rounded-lg p-4 min-h-[220px]"></div>
+                </div>
+                <div id="editor-pane" class="md:w-1/2 p-5 space-y-4 overflow-y-auto bg-white">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-sm font-medium text-gray-700">题干 / 材料 <span class="text-red-500">*</span></label>
+                            <div class="flex gap-2">
+                                <button type="button" id="parse-stem-btn" class="hidden bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30 text-xs py-1 px-2 rounded transition">智能解析</button>
+                                <button type="button" id="paste-and-parse-btn" class="lg:hidden bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300 text-xs py-1 px-2 rounded transition">粘贴</button>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-1"><span class="text-red-500">*</span> 为必填项</p>
+                        <div class="markdown-toolbar">
+                            <button type="button" data-md="bold" title="加粗"><b>B</b></button>
+                            <button type="button" data-md="italic" title="斜体"><i>I</i></button>
+                            <button type="button" data-md="code" title="行内代码" class="font-mono text-xs">&lt;/&gt;</button>
+                            <button type="button" data-md="katex" title="公式" class="font-mono">Σ</button>
+                        </div>
+                        <textarea id="question-stem" rows="6" class="w-full bg-white border border-gray-300 rounded-b-lg rounded-tr-lg p-3 text-sm text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" required placeholder="支持粘贴带有【答案】【解析】的文本，系统将自动拆分"></textarea>
+                    </div>
+
+                    <div id="options-editor" class="hidden space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="block text-sm font-medium text-gray-700">选项 <span class="text-red-500">*</span></label>
+                            <span class="text-[10px] text-gray-500"><kbd class="bg-gray-100 border border-gray-300 px-1 rounded">Enter</kbd> 新增 | <kbd class="bg-gray-100 border border-gray-300 px-1 rounded">Alt+Enter</kbd> 标答案</span>
+                        </div>
+                        <div id="options-container" class="space-y-2"></div>
+                        <button type="button" id="add-option-btn" class="text-gray-600 text-sm hover:text-black transition">+ 添加选项</button>
+                    </div>
+                    
+                    <div id="standard-answer-editor">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">答案 <span class="text-red-500">*</span></label>
+                        <textarea id="question-answer" rows="2" class="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition"></textarea>
+                    </div>
+
+                    <div id="sub-questions-editor" class="hidden space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">子问题 <span class="text-red-500">*</span></label>
+                        <div id="sub-questions-container" class="space-y-3"></div>
+                        <button type="button" id="add-sub-question-btn" class="text-gray-600 text-sm hover:text-black transition">+ 添加子问题 <kbd class="text-[10px] ml-1 bg-gray-100 border border-gray-300 px-1 rounded">Alt+Q</kbd></button>
+                    </div>
+
+                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">解析</label>
+                        <textarea id="question-analysis" rows="3" class="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm text-gray-900 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition"></textarea>
+                    </div>
+                    <div class="tag-editor">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">标签 (Tag 2.0)</label>
+                        <input type="hidden" id="question-tags">
+                        <div class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm text-gray-900 focus-within:border-black focus-within:ring-1 focus-within:ring-black transition">
+                            <div id="tag-chip-list" class="tag-chip-list"></div>
+                            <input type="text" id="tag-input" class="w-full mt-1 text-sm text-gray-900 placeholder-gray-400 focus:outline-none" placeholder="输入如 难度:困难、考点:闭包，按 Enter 添加">
+                        </div>
+                        <div id="tag-suggestions" class="tag-suggestions hidden"></div>
+                        <div id="tag-recommendations" class="mt-2 flex flex-wrap gap-1.5"></div>
+                        <div class="mt-2 flex justify-between items-center">
+                            <p class="text-xs text-gray-500">建议格式：难度:中等 / 题型:真题 / 来源:期末 / 考点:闭包</p>
+                            <button type="button" id="open-tag-manager-btn" class="text-xs text-blue-700 hover:text-blue-900 underline underline-offset-2">管理标签</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50/70 rounded-b-xl">
+                <button type="button" id="cancel-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
+                    取消 <span class="text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Esc</span>
+                </button>
+                <button type="button" id="save-and-add-another-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
+                    保存并继续 <span class="text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Ctrl+↵</span>
+                </button>
+                <button type="submit" form="question-form" class="bg-black hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition text-sm flex items-center gap-1.5">
+                    保存 <span class="text-[10px] text-gray-200 font-mono border border-gray-500 px-1 rounded bg-black/20">Ctrl+S</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="view-question-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 sm:p-6">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h2 class="text-lg font-bold text-gray-900">题目详情</h2>
+                <button id="view-modal-close-btn" class="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div id="view-modal-content" class="flex-1 p-6 overflow-y-auto prose prose-sm max-w-none text-gray-800">
+                </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center border border-gray-100">
+            <h3 id="confirm-title" class="text-lg font-bold text-gray-900 mb-2">确认操作</h3>
+            <p id="confirm-message" class="text-sm text-gray-500 mb-6">此操作不可撤销。</p>
+            <div class="flex justify-center gap-3">
+                <button id="confirm-cancel-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 px-6 rounded-lg text-sm font-medium transition">取消</button>
+                <button id="confirm-ok-btn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition shadow-sm">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="io-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center p-5 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900">当前题库数据管理</h3>
+                <button id="io-close-btn" class="p-1 text-gray-400 hover:text-gray-900"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 class="font-semibold text-gray-800 pb-2 border-b border-gray-200">导入到当前题库</h4>
+                        <p class="text-xs text-gray-500">支持 .json, .docx 文件</p>
+                        <div>
+                            <input type="file" id="import-json-input" accept=".json" class="text-sm w-full text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"/>
+                        </div>
+                        <div>
+                            <input type="file" id="import-docx-input" accept=".docx" class="text-sm w-full text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-black file:text-white hover:file:bg-gray-800 cursor-pointer"/>
+                        </div>
+                    </div>
+                    <div class="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 class="font-semibold text-gray-800 pb-2 border-b border-gray-200">导出当前题库</h4>
+                        <button id="export-json-btn" class="w-full bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 py-2 rounded-lg text-sm font-medium transition shadow-sm">导出为 JSON</button>
+                        <button id="export-csv-btn" class="w-full bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 py-2 rounded-lg text-sm font-medium transition shadow-sm">导出为 CSV</button>
+                        <button id="export-docx-btn" class="w-full bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 py-2 rounded-lg text-sm font-medium transition shadow-sm">导出为 Word</button>
+                    </div>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <h4 class="font-semibold text-gray-800 mb-2">云端同步</h4>
+                    <p class="text-xs text-gray-500 mb-3">登录账号后可在不同设备同步题库。</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="io-open-cloud-modal-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 py-2 px-3 rounded-lg text-sm font-medium transition shadow-sm">打开云端设置</button>
+                        <button id="io-sync-now-btn" class="bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 py-2 px-3 rounded-lg text-sm font-medium transition shadow-sm">立即同步</button>
+                    </div>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h4 class="font-semibold text-blue-800 mb-2">生成分享链接</h4>
+                    <p class="text-xs text-blue-600 mb-3">生成纯前端解析的URL链接，适合分享少量题目。</p>
+                    <div class="flex gap-2">
+                        <button id="generate-share-link-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">生成</button>
+                        <div class="flex-1 flex hidden" id="share-link-container">
+                            <input type="text" id="share-link-input" readonly class="flex-1 bg-white border border-blue-200 rounded-l-lg px-3 text-sm focus:outline-none" onclick="this.select()">
+                            <button id="copy-share-link-btn" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 rounded-r-lg text-sm font-medium transition">复制</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                    <h4 class="font-semibold text-red-800 mb-2">危险操作</h4>
+                    <button id="delete-all-questions-btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg text-sm font-medium transition shadow-sm">清空当前题库所有题目</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-bank-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">新建题库</h3>
+            <input type="text" id="new-bank-name" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black mb-4" placeholder="输入题库名称 (例如: 高等数学)">
+            <div class="flex justify-end gap-2">
+                <button id="new-bank-cancel" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">取消</button>
+                <button id="new-bank-confirm" class="px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 rounded-lg transition">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tag-manager-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden p-4 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col border border-gray-200">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900">全局标签管理</h3>
+                <button id="tag-manager-close-btn" class="p-1 rounded-md text-gray-500 hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-4 border-b border-gray-200 bg-gray-50/70 grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+                <div>
+                    <label class="text-xs text-gray-500">源标签</label>
+                    <select id="tag-merge-source" class="app-select w-full rounded-lg p-2 text-sm"></select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">目标标签</label>
+                    <input id="tag-merge-target" class="w-full bg-white border border-gray-300 rounded-lg p-2 text-sm" placeholder="例如 考点:JavaScript">
+                </div>
+                <button id="tag-merge-btn" class="bg-black text-white rounded-lg px-3 py-2 text-sm hover:bg-gray-800">合并</button>
+            </div>
+            <div id="tag-manager-list" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+        </div>
+    </div>
+
+    <div id="cloud-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden p-4 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[88vh] flex flex-col border border-gray-200">
+            <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900">云端同步设置</h3>
+                <button id="cloud-modal-close-btn" class="p-1 rounded-md text-gray-500 hover:bg-gray-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto">
+                <div class="space-y-2">
+                    <label class="block text-xs text-gray-500">Supabase URL</label>
+                    <input id="supabase-url-input" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="https://xxxx.supabase.co">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs text-gray-500">Supabase Anon Key</label>
+                    <input id="supabase-anon-key-input" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="eyJ...">
+                </div>
+                <div class="flex justify-end">
+                    <button id="save-supabase-config-btn" class="bg-black text-white text-sm px-3 py-2 rounded-lg hover:bg-gray-800">保存配置</button>
+                </div>
+                <div class="border-t border-gray-200 pt-4 space-y-2">
+                    <div class="text-sm font-medium text-gray-800">账号登录</div>
+                    <input id="auth-email-input" type="email" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="邮箱">
+                    <input id="auth-password-input" type="password" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="密码">
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button id="auth-sign-in-btn" class="bg-black text-white text-sm px-3 py-2 rounded-lg hover:bg-gray-800">登录</button>
+                        <button id="auth-sign-up-btn" class="bg-white border border-gray-300 text-gray-700 text-sm px-3 py-2 rounded-lg hover:bg-gray-100">注册</button>
+                        <button id="auth-sign-out-btn" class="bg-white border border-red-300 text-red-600 text-sm px-3 py-2 rounded-lg hover:bg-red-50">登出</button>
+                        <button id="cloud-sync-now-btn" class="bg-white border border-blue-300 text-blue-700 text-sm px-3 py-2 rounded-lg hover:bg-blue-50">立即同步</button>
+                    </div>
+                    <p id="cloud-modal-status" class="text-xs text-gray-500 pt-2">未配置 Supabase。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+        // ========================================================================
+        // 1. DEXIE DATABASE SETUP (Version 7 for Cloud Sync Support)
+        // ========================================================================
+        const db = new Dexie("QBankDB");
+        db.version(6).stores({
+            banks: '++id, name, createdAt', // 新增题库表
+            questions: '++id, bankId, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions',
+        }).upgrade(async tx => {
+            // 数据库升级逻辑：如果以前有老题目，全部迁移到一个默认题库中
+            const questions = await tx.questions.toArray();
+            const hasOrphanQuestions = questions.some(q => !q.bankId);
+            if (hasOrphanQuestions) {
+                const defaultBankId = await tx.banks.add({ name: '历史遗留题库', createdAt: new Date() });
+                await tx.questions.toCollection().modify(q => {
+                    if (!q.bankId) q.bankId = defaultBankId;
+                });
+            }
+        });
+        db.version(7).stores({
+            banks: '++id, cloudId, ownerId, name, createdAt, updatedAt',
+            questions: '++id, bankId, cloudId, ownerId, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions',
+            tombstones: '++id, entity, cloudId, createdAt'
+        }).upgrade(async tx => {
+            await tx.banks.toCollection().modify((bank) => {
+                if (!bank.updatedAt) bank.updatedAt = bank.createdAt || new Date();
+            });
+            await tx.questions.toCollection().modify((q) => {
+                if (!q.updatedAt) q.updatedAt = q.createdAt || new Date();
+            });
+        });
+
+        // --- 2. STATE MANAGEMENT ---
+        let state = {
+            banks: [],
+            currentBankId: null,
+            questions: [],
+            filters: { search: '', tags: [] },
+            pagination: { currentPage: 1, pageSize: 9 },
+            ui: {
+                previewVisible: true,
+                activePreviewAnchor: 'stem',
+                viewMode: localStorage.getItem('questionViewMode') || 'grid',
+                listSort: { key: null, direction: 'asc' },
+                tagEditor: { tags: [], suggestions: [], selectedSuggestionIndex: 0 }
+            },
+            tagStats: [],
+            cloud: {
+                supabaseUrl: localStorage.getItem('qbank.supabase.url') || '',
+                supabaseAnonKey: localStorage.getItem('qbank.supabase.anonKey') || '',
+                user: null,
+                syncing: false,
+                initialized: false
+            }
+        };
+
+        // --- 3. DOM ELEMENTS ---
+        const DOMElements = {
+            // Layout & Sidebar
+            sidebar: document.getElementById('sidebar'),
+            sidebarOverlay: document.getElementById('sidebar-overlay'),
+            mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+            closeSidebarBtn: document.getElementById('close-sidebar-btn'),
+            bankListContainer: document.getElementById('bank-list-container'),
+            createBankBtn: document.getElementById('create-bank-btn'),
+            currentBankTitle: document.getElementById('current-bank-title'),
+            newBankModal: document.getElementById('new-bank-modal'),
+            newBankNameInput: document.getElementById('new-bank-name'),
+            newBankCancel: document.getElementById('new-bank-cancel'),
+            newBankConfirm: document.getElementById('new-bank-confirm'),
+            tagManagerModal: document.getElementById('tag-manager-modal'),
+            tagManagerCloseBtn: document.getElementById('tag-manager-close-btn'),
+            tagManagerList: document.getElementById('tag-manager-list'),
+            tagMergeSource: document.getElementById('tag-merge-source'),
+            tagMergeTarget: document.getElementById('tag-merge-target'),
+            tagMergeBtn: document.getElementById('tag-merge-btn'),
+            
+            // Existing Elements
+            loader: document.getElementById('skeleton-loader'),
+            grid: document.getElementById('questions-grid'),
+            list: document.getElementById('questions-list'),
+            listBody: document.getElementById('questions-list-body'),
+            viewGridBtn: document.getElementById('view-grid-btn'),
+            viewListBtn: document.getElementById('view-list-btn'),
+            noResults: document.getElementById('no-results'),
+            previewPane: document.getElementById('preview-pane'),
+            editorPane: document.getElementById('editor-pane'),
+            previewToggleBtn: document.getElementById('preview-toggle-btn'),
+            addBtn: document.getElementById('add-question-btn'),
+            modal: document.getElementById('question-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            form: document.getElementById('question-form'),
+            cancelBtn: document.getElementById('cancel-btn'),
+            saveAndAddAnotherBtn: document.getElementById('save-and-add-another-btn'),
+            previewArea: document.getElementById('preview-area'),
+            questionIdInput: document.getElementById('question-id'),
+            questionTypeSelect: document.getElementById('question-type'),
+            questionStemInput: document.getElementById('question-stem'),
+            standardAnswerEditor: document.getElementById('standard-answer-editor'),
+            questionAnswerInput: document.getElementById('question-answer'),
+            questionAnalysisInput: document.getElementById('question-analysis'),
+            questionTagsInput: document.getElementById('question-tags'),
+            tagInput: document.getElementById('tag-input'),
+            tagChipList: document.getElementById('tag-chip-list'),
+            tagSuggestions: document.getElementById('tag-suggestions'),
+            tagRecommendations: document.getElementById('tag-recommendations'),
+            openTagManagerBtn: document.getElementById('open-tag-manager-btn'),
+            optionsEditor: document.getElementById('options-editor'),
+            optionsContainer: document.getElementById('options-container'),
+            addOptionBtn: document.getElementById('add-option-btn'),
+            subQuestionsEditor: document.getElementById('sub-questions-editor'),
+            subQuestionsContainer: document.getElementById('sub-questions-container'),
+            addSubQuestionBtn: document.getElementById('add-sub-question-btn'),
+            searchBox: document.getElementById('search-box'),
+            filterTagsContainer: document.getElementById('filter-tags'),
+            toggleTagsBtn: document.getElementById('toggle-tags-btn'),
+            confirmModal: document.getElementById('confirm-modal'),
+            confirmOkBtn: document.getElementById('confirm-ok-btn'),
+            confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
+            viewQuestionModal: document.getElementById('view-question-modal'),
+            viewModalTitle: document.getElementById('view-modal-title'),
+            viewModalContent: document.getElementById('view-modal-content'),
+            viewModalCloseBtn: document.getElementById('view-modal-close-btn'),
+            ioBtn: document.getElementById('io-btn'),
+            tagManagerBtn: document.getElementById('tag-manager-btn'),
+            cloudSyncBtn: document.getElementById('cloud-sync-btn'),
+            cloudAuthBtn: document.getElementById('cloud-auth-btn'),
+            authStatusDot: document.getElementById('auth-status-dot'),
+            authStatusText: document.getElementById('auth-status-text'),
+            ioModal: document.getElementById('io-modal'),
+            ioCloseBtn: document.getElementById('io-close-btn'),
+            ioOpenCloudModalBtn: document.getElementById('io-open-cloud-modal-btn'),
+            ioSyncNowBtn: document.getElementById('io-sync-now-btn'),
+            importJsonInput: document.getElementById('import-json-input'),
+            importDocxInput: document.getElementById('import-docx-input'),
+            exportJsonBtn: document.getElementById('export-json-btn'),
+            exportCsvBtn: document.getElementById('export-csv-btn'),
+            exportDocxBtn: document.getElementById('export-docx-btn'),
+            deleteAllQuestionsBtn: document.getElementById('delete-all-questions-btn'),
+            downloadJsonTemplateBtn: document.getElementById('download-json-template-btn'),
+            downloadCsvTemplateBtn: document.getElementById('download-csv-template-btn'),
+            downloadDocxTemplateBtn: document.getElementById('download-docx-template-btn'),
+            paginationContainer: document.getElementById('pagination'),
+            pageStart: document.getElementById('page-start'),
+            pageEnd: document.getElementById('page-end'),
+            totalCount: document.getElementById('total-count'),
+            firstPageBtn: document.getElementById('first-page-btn'),
+            prevPageBtn: document.getElementById('prev-page-btn'),
+            pageNumbers: document.getElementById('page-numbers'),
+            nextPageBtn: document.getElementById('next-page-btn'),
+            lastPageBtn: document.getElementById('last-page-btn'),
+            pageSizeSelect: document.getElementById('page-size-select'),
+            mobileAddBtn: document.getElementById('mobile-add-question-btn'),
+            mobileIoBtn: document.getElementById('mobile-io-btn'),
+            pasteAndParseBtn: document.getElementById('paste-and-parse-btn'),
+            parseStemBtn: document.getElementById('parse-stem-btn'),
+            generateShareLinkBtn: document.getElementById('generate-share-link-btn'),
+            shareLinkContainer: document.getElementById('share-link-container'),
+            shareLinkInput: document.getElementById('share-link-input'),
+            copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
+            toastContainer: document.getElementById('toast-container'),
+            cloudModal: document.getElementById('cloud-modal'),
+            cloudModalCloseBtn: document.getElementById('cloud-modal-close-btn'),
+            supabaseUrlInput: document.getElementById('supabase-url-input'),
+            supabaseAnonKeyInput: document.getElementById('supabase-anon-key-input'),
+            saveSupabaseConfigBtn: document.getElementById('save-supabase-config-btn'),
+            authEmailInput: document.getElementById('auth-email-input'),
+            authPasswordInput: document.getElementById('auth-password-input'),
+            authSignInBtn: document.getElementById('auth-sign-in-btn'),
+            authSignUpBtn: document.getElementById('auth-sign-up-btn'),
+            authSignOutBtn: document.getElementById('auth-sign-out-btn'),
+            cloudSyncNowBtn: document.getElementById('cloud-sync-now-btn'),
+            cloudModalStatus: document.getElementById('cloud-modal-status')
+        };
+
+        // --- 4. UTILS & HELPERS ---
+        const debounce = (func, delay) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        };
+        const generateUUID = () => crypto.randomUUID();
+        const triggerHapticFeedback = () => { if (navigator.vibrate) navigator.vibrate(30); };
+        const QUESTION_TYPE_LABELS = {
+            standard: '标准题',
+            'single-choice': '单选题',
+            'multi-choice': '多选题',
+            judgment: '判断题',
+            material: '材料题'
+        };
+        const REVIEW_STATUS_LABELS = {
+            new: '新题',
+            reviewing: '复习中',
+            mastered: '已掌握'
+        };
+        const getQuestionTypeLabel = (type) => QUESTION_TYPE_LABELS[type] || '题目';
+        const getReviewStatusLabel = (status) => REVIEW_STATUS_LABELS[status] || '新题';
+        const formatDateTime = (value) => {
+            if (!value) return '-';
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return '-';
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${y}-${m}-${day} ${h}:${min}`;
+        };
+        const TAG_CATEGORIES = ['难度', '题型', '来源', '考点', '章节', '年份'];
+        const TAG_SYNONYMS = {
+            js: 'JavaScript',
+            javascript: 'JavaScript',
+            ts: 'TypeScript',
+            py: 'Python',
+            cpp: 'C++'
+        };
+        const TAG_KEYWORD_MAP = [
+            { pattern: /闭包|closure/i, tag: '考点:闭包' },
+            { pattern: /原型链|prototype/i, tag: '考点:原型链' },
+            { pattern: /this/i, tag: '考点:this指向' },
+            { pattern: /异步|promise|async|await/i, tag: '考点:异步编程' },
+            { pattern: /复杂度|时间复杂度|空间复杂度/i, tag: '考点:算法复杂度' }
+        ];
+        const parseTag = (tag) => {
+            const safe = String(tag || '').trim();
+            if (!safe) return { category: '', value: '' };
+            const idx = safe.indexOf(':');
+            if (idx === -1) return { category: '考点', value: safe };
+            return { category: safe.slice(0, idx).trim(), value: safe.slice(idx + 1).trim() };
+        };
+        const normalizeTag = (inputTag) => {
+            const raw = String(inputTag || '').replace(/：/g, ':').trim();
+            if (!raw) return '';
+            const parsed = parseTag(raw);
+            let category = parsed.category || '考点';
+            let value = parsed.value.trim();
+            if (!value) return '';
+            const normalizedValue = TAG_SYNONYMS[value.toLowerCase()] || value;
+            if (!TAG_CATEGORIES.includes(category)) category = '考点';
+            return `${category}:${normalizedValue}`;
+        };
+        const toTagArray = (tags) => Array.isArray(tags) ? tags : String(tags || '').split(/,|，/);
+        const uniqueTags = (tags) => [...new Set(toTagArray(tags).map(normalizeTag).filter(Boolean))];
+        const getEditorTags = () => uniqueTags(state.ui.tagEditor.tags);
+        const syncHiddenTags = () => {
+            DOMElements.questionTagsInput.value = getEditorTags().join(', ');
+        };
+        const renderTagChips = () => {
+            DOMElements.tagChipList.innerHTML = '';
+            getEditorTags().forEach((tag) => {
+                const chip = document.createElement('span');
+                chip.className = 'tag-chip';
+                chip.innerHTML = `<span>${tag}</span><button type="button" data-remove-tag="${tag}" title="移除">×</button>`;
+                DOMElements.tagChipList.appendChild(chip);
+            });
+            syncHiddenTags();
+        };
+        const addTagToEditor = (tag) => {
+            const normalized = normalizeTag(tag);
+            if (!normalized) return;
+            if (!state.ui.tagEditor.tags.includes(normalized)) state.ui.tagEditor.tags.push(normalized);
+            state.ui.tagEditor.tags = uniqueTags(state.ui.tagEditor.tags);
+            renderTagChips();
+            updatePreview();
+        };
+        const removeTagFromEditor = (tag) => {
+            state.ui.tagEditor.tags = state.ui.tagEditor.tags.filter(t => t !== tag);
+            renderTagChips();
+            updatePreview();
+        };
+        const setTagEditorTags = (tags = []) => {
+            state.ui.tagEditor.tags = uniqueTags(tags);
+            renderTagChips();
+            renderTagRecommendations();
+            closeTagSuggestions();
+        };
+        const getAllExistingTags = () => uniqueTags(state.questions.flatMap(q => Array.isArray(q.tags) ? q.tags : []));
+        const updateTagStats = () => {
+            const counter = new Map();
+            state.questions.forEach((q) => {
+                uniqueTags(q.tags || []).forEach((tag) => counter.set(tag, (counter.get(tag) || 0) + 1));
+            });
+            state.tagStats = [...counter.entries()]
+                .map(([tag, count]) => ({ tag, count }))
+                .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'zh-Hans-CN'));
+        };
+        const buildTagSuggestions = (keyword) => {
+            const key = keyword.trim().toLowerCase();
+            const existing = getAllExistingTags();
+            const categoryTemplates = TAG_CATEGORIES.map(c => `${c}:`);
+            const base = [...categoryTemplates, ...existing];
+            const suggestions = key
+                ? base.filter(t => t.toLowerCase().includes(key))
+                : base.slice(0, 12);
+            return [...new Set(suggestions)].slice(0, 12);
+        };
+        const renderTagSuggestions = () => {
+            const items = state.ui.tagEditor.suggestions;
+            if (items.length === 0) {
+                DOMElements.tagSuggestions.classList.add('hidden');
+                DOMElements.tagSuggestions.innerHTML = '';
+                return;
+            }
+            DOMElements.tagSuggestions.innerHTML = items.map((item, idx) => (
+                `<button type="button" class="tag-suggestion-item ${idx === state.ui.tagEditor.selectedSuggestionIndex ? 'active' : ''}" data-suggestion="${item}">${item}</button>`
+            )).join('');
+            DOMElements.tagSuggestions.classList.remove('hidden');
+        };
+        const closeTagSuggestions = () => {
+            state.ui.tagEditor.suggestions = [];
+            state.ui.tagEditor.selectedSuggestionIndex = 0;
+            renderTagSuggestions();
+        };
+        const updateTagSuggestions = () => {
+            state.ui.tagEditor.suggestions = buildTagSuggestions(DOMElements.tagInput.value || '');
+            state.ui.tagEditor.selectedSuggestionIndex = 0;
+            renderTagSuggestions();
+        };
+        const suggestAutoTags = (text) => {
+            const combined = String(text || '');
+            return TAG_KEYWORD_MAP.filter(rule => rule.pattern.test(combined)).map(rule => rule.tag);
+        };
+        const renderTagRecommendations = () => {
+            const text = `${DOMElements.questionStemInput.value}\n${DOMElements.questionAnalysisInput.value}`;
+            const suggested = suggestAutoTags(text).filter(tag => !getEditorTags().includes(tag));
+            DOMElements.tagRecommendations.innerHTML = suggested.map(tag => (
+                `<button type="button" class="px-2 py-0.5 text-xs rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100" data-recommend-tag="${tag}">+ ${tag}</button>`
+            )).join('');
+        };
+        const applyTagTransformToQuestions = async (transformFn) => {
+            const all = await db.questions.toArray();
+            const changed = [];
+            all.forEach((q) => {
+                const before = uniqueTags(q.tags || []);
+                const after = uniqueTags(transformFn(before));
+                if (before.join('|') !== after.join('|')) {
+                    changed.push({ ...q, tags: after, updatedAt: new Date() });
+                }
+            });
+            if (changed.length > 0) await db.questions.bulkPut(changed);
+            return changed.length;
+        };
+        const openTagManager = () => {
+            updateTagStats();
+            renderTagManagerList();
+            DOMElements.tagManagerModal.classList.remove('hidden');
+        };
+        const closeTagManager = () => DOMElements.tagManagerModal.classList.add('hidden');
+        const renderTagManagerList = () => {
+            const options = state.tagStats.map(item => `<option value="${item.tag}">${item.tag} (${item.count})</option>`).join('');
+            DOMElements.tagMergeSource.innerHTML = `<option value="">选择源标签</option>${options}`;
+            DOMElements.tagManagerList.innerHTML = state.tagStats.map((item) => `
+                <div class="border border-gray-200 rounded-lg p-3 flex items-center gap-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm text-gray-900 truncate">${item.tag}</div>
+                        <div class="text-xs text-gray-500">关联 ${item.count} 题</div>
+                    </div>
+                    <input data-rename-from="${item.tag}" class="border border-gray-300 rounded px-2 py-1 text-sm w-44" placeholder="重命名为...">
+                    <button type="button" data-rename-btn="${item.tag}" class="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-50">重命名</button>
+                    <button type="button" data-delete-tag="${item.tag}" class="px-2 py-1 text-xs border border-red-200 text-red-600 rounded hover:bg-red-50">删除</button>
+                </div>
+            `).join('');
+        };
+        const showToast = (message, type = 'info') => {
+            const toast = document.createElement('div');
+            const toneClass = type === 'success' ? 'toast-success' : type === 'error' ? 'toast-error' : 'toast-info';
+            toast.className = `toast-item ${toneClass}`;
+            toast.textContent = message;
+            DOMElements.toastContainer.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 220);
+            }, 2200);
+        };
+        const setPreviewAnchor = (anchor) => {
+            state.ui.activePreviewAnchor = anchor;
+            const nodes = DOMElements.previewArea.querySelectorAll('[data-preview-anchor]');
+            nodes.forEach(node => node.classList.toggle('preview-anchor-active', node.dataset.previewAnchor === anchor));
+        };
+        const getPreviewAnchorByTarget = (target) => {
+            if (!target) return 'stem';
+            if (target.closest('#options-editor')) return 'options';
+            if (target.closest('#sub-questions-editor')) return 'subquestions';
+            if (target.closest('#standard-answer-editor')) return 'answer';
+            if (target.id === 'question-analysis' || target.closest('#question-analysis')) return 'analysis';
+            if (target.id === 'question-tags' || target.id === 'tag-input' || target.closest('.tag-editor')) return 'tags';
+            return 'stem';
+        };
+        const setPreviewVisible = (visible) => {
+            state.ui.previewVisible = visible;
+            DOMElements.previewPane.classList.toggle('hidden', !visible);
+            DOMElements.editorPane.classList.toggle('md:w-full', !visible);
+            DOMElements.editorPane.classList.toggle('md:w-1/2', visible);
+            DOMElements.previewToggleBtn.textContent = visible ? '隐藏预览' : '显示预览';
+            DOMElements.previewToggleBtn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+        };
+        const setQuestionViewMode = (mode) => {
+            state.ui.viewMode = mode === 'list' ? 'list' : 'grid';
+            localStorage.setItem('questionViewMode', state.ui.viewMode);
+            const isGrid = state.ui.viewMode === 'grid';
+            DOMElements.viewGridBtn.className = `px-3 py-1.5 text-sm transition ${isGrid ? 'bg-black text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
+            DOMElements.viewListBtn.className = `px-3 py-1.5 text-sm transition border-l border-gray-300 ${!isGrid ? 'bg-black text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
+            DOMElements.viewGridBtn.setAttribute('aria-pressed', isGrid ? 'true' : 'false');
+            DOMElements.viewListBtn.setAttribute('aria-pressed', !isGrid ? 'true' : 'false');
+        };
+        const setListSort = (key) => {
+            if (state.ui.listSort.key === key) {
+                state.ui.listSort.direction = state.ui.listSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.ui.listSort.key = key;
+                state.ui.listSort.direction = 'asc';
+            }
+            updateSortIndicators();
+            renderAllQuestions();
+        };
+        const updateSortIndicators = () => {
+            document.querySelectorAll('[data-sort-indicator]').forEach((node) => {
+                const key = node.dataset.sortIndicator;
+                if (state.ui.listSort.key !== key) {
+                    node.textContent = '↕';
+                    node.className = 'text-xs text-gray-400';
+                    return;
+                }
+                node.textContent = state.ui.listSort.direction === 'asc' ? '↑' : '↓';
+                node.className = 'text-xs text-black';
+            });
+        };
+        const sortQuestionsForList = (questions) => {
+            const { key, direction } = state.ui.listSort;
+            if (!key) return questions;
+            const dir = direction === 'asc' ? 1 : -1;
+            return [...questions].sort((a, b) => {
+                let va = '';
+                let vb = '';
+                if (key === 'type') {
+                    va = getQuestionTypeLabel(a.type);
+                    vb = getQuestionTypeLabel(b.type);
+                } else if (key === 'stem') {
+                    va = (a.stem || '').replace(/\s+/g, ' ').trim();
+                    vb = (b.stem || '').replace(/\s+/g, ' ').trim();
+                } else if (key === 'tags') {
+                    va = (a.tags || []).join(',');
+                    vb = (b.tags || []).join(',');
+                } else if (key === 'reviewStatus') {
+                    va = getReviewStatusLabel(a.reviewStatus);
+                    vb = getReviewStatusLabel(b.reviewStatus);
+                } else if (key === 'updatedAt') {
+                    va = new Date(a.updatedAt || a.createdAt || 0).getTime();
+                    vb = new Date(b.updatedAt || b.createdAt || 0).getTime();
+                    return (va - vb) * dir;
+                }
+                return String(va).localeCompare(String(vb), 'zh-Hans-CN') * dir;
+            });
+        };
+
+        const renderMarkdown = (text) => {
+            if (!text) return '';
+            const dirtyHtml = marked.parse(text, { breaks: true, gfm: true });
+            const cleanHtml = DOMPurify.sanitize(dirtyHtml, { ADD_TAGS: ['span'], ADD_ATTR: ['style'] });
+            return cleanHtml.replace(/\$\$(.*?)\$\$/g, (match, expression) => {
+                try { return katex.renderToString(expression, { throwOnError: false, displayMode: true }); } 
+                catch (e) { return match; }
+            }).replace(/\$(.*?)\$/g, (match, expression) => {
+                try { return katex.renderToString(expression, { throwOnError: false }); } 
+                catch (e) { return match; }
+            });
+        };
+
+        // ========================================================================
+        // 4.1 CLOUD AUTH & SYNC (Supabase)
+        // ========================================================================
+        let supabase = null;
+        let authSubscription = null;
+        const nowIso = () => new Date().toISOString();
+        const toIso = (v) => {
+            if (!v) return nowIso();
+            const d = new Date(v);
+            return Number.isNaN(d.getTime()) ? nowIso() : d.toISOString();
+        };
+        const coerceDate = (v) => {
+            if (!v) return new Date();
+            const d = new Date(v);
+            return Number.isNaN(d.getTime()) ? new Date() : d;
+        };
+        const updateCloudStatusText = (text, tone = 'muted') => {
+            DOMElements.cloudModalStatus.textContent = text;
+            if (tone === 'error') DOMElements.cloudModalStatus.className = 'text-xs text-red-600 pt-2';
+            else if (tone === 'success') DOMElements.cloudModalStatus.className = 'text-xs text-green-600 pt-2';
+            else DOMElements.cloudModalStatus.className = 'text-xs text-gray-500 pt-2';
+        };
+        const updateAuthUI = () => {
+            const hasConfig = Boolean(state.cloud.supabaseUrl && state.cloud.supabaseAnonKey);
+            const loggedIn = Boolean(state.cloud.user);
+            if (!hasConfig) {
+                DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-gray-300';
+                DOMElements.authStatusText.textContent = '云端未连接';
+                return;
+            }
+            if (loggedIn) {
+                DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
+                DOMElements.authStatusText.textContent = `已登录 ${state.cloud.user.email || ''}`.trim();
+            } else {
+                DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-yellow-400';
+                DOMElements.authStatusText.textContent = '已配置，未登录';
+            }
+        };
+        const openCloudModal = () => {
+            DOMElements.supabaseUrlInput.value = state.cloud.supabaseUrl;
+            DOMElements.supabaseAnonKeyInput.value = state.cloud.supabaseAnonKey;
+            DOMElements.cloudModal.classList.remove('hidden');
+            updateAuthUI();
+            if (!state.cloud.supabaseUrl || !state.cloud.supabaseAnonKey) {
+                updateCloudStatusText('请先填写 Supabase URL 与 Anon Key。');
+            } else if (state.cloud.user) {
+                updateCloudStatusText(`当前账号：${state.cloud.user.email || state.cloud.user.id}`, 'success');
+            } else {
+                updateCloudStatusText('配置已加载，请登录后开始同步。');
+            }
+        };
+        const closeCloudModal = () => DOMElements.cloudModal.classList.add('hidden');
+        const createSupabaseIfReady = () => {
+            if (!state.cloud.supabaseUrl || !state.cloud.supabaseAnonKey) {
+                supabase = null;
+                return null;
+            }
+            supabase = createClient(state.cloud.supabaseUrl, state.cloud.supabaseAnonKey, {
+                auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+            });
+            return supabase;
+        };
+        const ensureCloudReady = () => {
+            const client = supabase || createSupabaseIfReady();
+            if (!client) {
+                showToast('请先在云端设置中配置 Supabase 参数', 'error');
+                return null;
+            }
+            return client;
+        };
+        const markQuestionTombstoneIfNeeded = async (question) => {
+            if (!question || !question.cloudId) return;
+            await db.tombstones.add({
+                entity: 'question',
+                cloudId: question.cloudId,
+                createdAt: new Date()
+            });
+        };
+        const deleteQuestionLocalWithTombstone = async (id) => {
+            const question = await db.questions.get(id);
+            if (!question) return;
+            await markQuestionTombstoneIfNeeded(question);
+            await db.questions.delete(id);
+        };
+        const deleteBankLocalWithTombstone = async (bankId) => {
+            const bank = await db.banks.get(bankId);
+            const bankQuestions = await db.questions.where('bankId').equals(bankId).toArray();
+            for (const q of bankQuestions) {
+                await markQuestionTombstoneIfNeeded(q);
+            }
+            if (bank?.cloudId) {
+                await db.tombstones.add({
+                    entity: 'bank',
+                    cloudId: bank.cloudId,
+                    createdAt: new Date()
+                });
+            }
+            await db.questions.where('bankId').equals(bankId).delete();
+            await db.banks.delete(bankId);
+        };
+        const processTombstones = async (client) => {
+            const tombstones = await db.tombstones.toArray();
+            for (const item of tombstones) {
+                const table = item.entity === 'bank' ? 'qbanks' : 'qbank_questions';
+                const { error } = await client.from(table).delete().eq('id', item.cloudId);
+                if (!error) await db.tombstones.delete(item.id);
+            }
+        };
+        const pushLocalBanksToCloud = async (client, userId) => {
+            const banks = (await db.banks.toArray()).filter(b => !b.ownerId || b.ownerId === userId);
+            for (const bank of banks) {
+                const cloudId = bank.cloudId || crypto.randomUUID();
+                const payload = {
+                    id: cloudId,
+                    user_id: userId,
+                    name: bank.name,
+                    updated_at: toIso(bank.updatedAt || bank.createdAt),
+                    created_at: toIso(bank.createdAt)
+                };
+                const { error } = await client.from('qbanks').upsert(payload, { onConflict: 'id' });
+                if (error) throw error;
+                if (!bank.cloudId || bank.ownerId !== userId) {
+                    await db.banks.update(bank.id, { cloudId, ownerId: userId, updatedAt: coerceDate(payload.updated_at) });
+                }
+            }
+        };
+        const pushLocalQuestionsToCloud = async (client, userId) => {
+            const questions = (await db.questions.toArray()).filter(q => !q.ownerId || q.ownerId === userId);
+            const cloudBanks = (await db.banks.toArray()).filter(b => !b.ownerId || b.ownerId === userId);
+            const localBankIdToCloudId = new Map(cloudBanks.filter(b => b.cloudId).map(b => [b.id, b.cloudId]));
+            for (const q of questions) {
+                const bankCloudId = localBankIdToCloudId.get(q.bankId);
+                if (!bankCloudId) continue;
+                const cloudId = q.cloudId || crypto.randomUUID();
+                const payload = {
+                    id: cloudId,
+                    user_id: userId,
+                    bank_id: bankCloudId,
+                    type: q.type || 'standard',
+                    stem: q.stem || '',
+                    answer: q.answer || '',
+                    analysis: q.analysis || '',
+                    tags: Array.isArray(q.tags) ? q.tags : [],
+                    review_status: q.reviewStatus || 'new',
+                    options: q.options || null,
+                    sub_questions: q.subQuestions || null,
+                    updated_at: toIso(q.updatedAt || q.createdAt),
+                    created_at: toIso(q.createdAt)
+                };
+                const { error } = await client.from('qbank_questions').upsert(payload, { onConflict: 'id' });
+                if (error) throw error;
+                if (!q.cloudId || q.ownerId !== userId) {
+                    await db.questions.update(q.id, { cloudId, ownerId: userId, updatedAt: coerceDate(payload.updated_at) });
+                }
+            }
+        };
+        const pullBanksFromCloud = async (client, userId) => {
+            const { data, error } = await client
+                .from('qbanks')
+                .select('id, user_id, name, created_at, updated_at')
+                .eq('user_id', userId);
+            if (error) throw error;
+            const remote = data || [];
+            const remoteIds = new Set(remote.map(item => item.id));
+            const localCloudBanks = await db.banks.where('ownerId').equals(userId).toArray();
+            for (const localBank of localCloudBanks) {
+                if (!remoteIds.has(localBank.cloudId)) {
+                    await db.questions.where('bankId').equals(localBank.id).delete();
+                    await db.banks.delete(localBank.id);
+                }
+            }
+            const bankCloudToLocalId = new Map();
+            for (const rb of remote) {
+                const existing = await db.banks.where('cloudId').equals(rb.id).first();
+                const payload = {
+                    cloudId: rb.id,
+                    ownerId: rb.user_id,
+                    name: rb.name,
+                    createdAt: coerceDate(rb.created_at),
+                    updatedAt: coerceDate(rb.updated_at)
+                };
+                if (existing) {
+                    await db.banks.update(existing.id, payload);
+                    bankCloudToLocalId.set(rb.id, existing.id);
+                } else {
+                    const newId = await db.banks.add(payload);
+                    bankCloudToLocalId.set(rb.id, newId);
+                }
+            }
+            return bankCloudToLocalId;
+        };
+        const pullQuestionsFromCloud = async (client, userId, bankCloudToLocalId) => {
+            const { data, error } = await client
+                .from('qbank_questions')
+                .select('id, user_id, bank_id, type, stem, answer, analysis, tags, review_status, options, sub_questions, created_at, updated_at')
+                .eq('user_id', userId);
+            if (error) throw error;
+            const remote = data || [];
+            const remoteIds = new Set(remote.map(item => item.id));
+            const localCloudQuestions = await db.questions.where('ownerId').equals(userId).toArray();
+            for (const localQ of localCloudQuestions) {
+                if (!remoteIds.has(localQ.cloudId)) {
+                    await db.questions.delete(localQ.id);
+                }
+            }
+            for (const rq of remote) {
+                const bankId = bankCloudToLocalId.get(rq.bank_id);
+                if (!bankId) continue;
+                const payload = {
+                    cloudId: rq.id,
+                    ownerId: rq.user_id,
+                    bankId,
+                    type: rq.type || 'standard',
+                    stem: rq.stem || '',
+                    answer: rq.answer || '',
+                    analysis: rq.analysis || '',
+                    tags: Array.isArray(rq.tags) ? rq.tags : [],
+                    reviewStatus: rq.review_status || 'new',
+                    options: rq.options || null,
+                    subQuestions: rq.sub_questions || null,
+                    createdAt: coerceDate(rq.created_at),
+                    updatedAt: coerceDate(rq.updated_at)
+                };
+                const existing = await db.questions.where('cloudId').equals(rq.id).first();
+                if (existing) await db.questions.update(existing.id, payload);
+                else await db.questions.add(payload);
+            }
+        };
+        const syncWithCloud = async ({ silent = false } = {}) => {
+            if (state.cloud.syncing) return;
+            const client = ensureCloudReady();
+            if (!client) return;
+            const user = state.cloud.user;
+            if (!user) {
+                if (!silent) showToast('请先登录账号', 'error');
+                return;
+            }
+            state.cloud.syncing = true;
+            DOMElements.cloudSyncBtn.disabled = true;
+            DOMElements.cloudSyncNowBtn.disabled = true;
+            updateCloudStatusText('同步中...');
+            try {
+                await processTombstones(client);
+                await pushLocalBanksToCloud(client, user.id);
+                await pushLocalQuestionsToCloud(client, user.id);
+                const bankMap = await pullBanksFromCloud(client, user.id);
+                await pullQuestionsFromCloud(client, user.id, bankMap);
+                await initBanks();
+                await fetchAndRender();
+                updateCloudStatusText(`同步完成：${new Date().toLocaleString('zh-CN')}`, 'success');
+                if (!silent) showToast('云端同步完成', 'success');
+            } catch (err) {
+                console.error('Cloud sync failed', err);
+                updateCloudStatusText(`同步失败：${err.message || err}`, 'error');
+                if (!silent) showToast(`同步失败: ${err.message || err}`, 'error');
+            } finally {
+                state.cloud.syncing = false;
+                DOMElements.cloudSyncBtn.disabled = false;
+                DOMElements.cloudSyncNowBtn.disabled = false;
+            }
+        };
+        const initCloudAuth = async () => {
+            createSupabaseIfReady();
+            updateAuthUI();
+            if (!supabase) return;
+            if (authSubscription?.unsubscribe) {
+                authSubscription.unsubscribe();
+                authSubscription = null;
+            }
+            const { data, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error('getSession failed', error);
+                return;
+            }
+            state.cloud.user = data.session?.user || null;
+            updateAuthUI();
+            state.cloud.initialized = true;
+            const { data: authData } = supabase.auth.onAuthStateChange(async (_event, session) => {
+                state.cloud.user = session?.user || null;
+                updateAuthUI();
+                if (state.cloud.user) {
+                    updateCloudStatusText(`已登录：${state.cloud.user.email || state.cloud.user.id}`, 'success');
+                    await syncWithCloud({ silent: true });
+                } else {
+                    updateCloudStatusText('已退出登录。');
+                }
+            });
+            authSubscription = authData?.subscription || null;
+        };
+
+        // ========================================================================
+        // 5. SIDEBAR & BANK MANAGEMENT LOGIC
+        // ========================================================================
+        
+        // 初始化或获取题库列表
+        const initBanks = async () => {
+            let banks = await db.banks.orderBy('createdAt').toArray();
+            if (banks.length === 0) {
+                // 如果是全新用户，创建一个默认题库
+                const now = new Date();
+                const id = await db.banks.add({ name: '默认综合题库', createdAt: now, updatedAt: now });
+                banks = [{ id, name: '默认综合题库', createdAt: now, updatedAt: now }];
+            }
+            state.banks = banks;
+            // 恢复上次选择的题库，或默认选中第一个
+            const savedBankId = localStorage.getItem('lastBankId');
+            if (savedBankId && banks.some(b => b.id === parseInt(savedBankId))) {
+                state.currentBankId = parseInt(savedBankId);
+            } else {
+                state.currentBankId = banks[0].id;
+            }
+            renderSidebarBanks();
+            updateCurrentBankHeader();
+        };
+
+        // 渲染左侧题库列表
+        const renderSidebarBanks = () => {
+            DOMElements.bankListContainer.innerHTML = '';
+            state.banks.forEach(bank => {
+                const div = document.createElement('div');
+                const isActive = bank.id === state.currentBankId;
+                div.className = `bank-item ${isActive ? 'active' : ''}`;
+                div.dataset.id = bank.id;
+                div.innerHTML = `
+                    <div class="bank-main">
+                        <svg class="w-4 h-4 flex-shrink-0 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <span class="truncate block">${bank.name}</span>
+                    </div>
+                    ${state.banks.length > 1 ? `<button class="bank-action-btn delete-bank-btn" data-id="${bank.id}" title="删除题库"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
+                `;
+                DOMElements.bankListContainer.appendChild(div);
+            });
+        };
+
+        const updateCurrentBankHeader = () => {
+            const currentBank = state.banks.find(b => b.id === state.currentBankId);
+            if (currentBank) {
+                DOMElements.currentBankTitle.textContent = currentBank.name;
+                localStorage.setItem('lastBankId', currentBank.id);
+            }
+        };
+
+        // 切换题库
+        const switchBank = async (bankId) => {
+            if (state.currentBankId === bankId) return;
+            state.currentBankId = bankId;
+            state.pagination.currentPage = 1;
+            state.filters = { search: '', tags: [] }; // 重置筛选
+            DOMElements.searchBox.value = '';
+            
+            updateCurrentBankHeader();
+            renderSidebarBanks();
+            await fetchAndRender();
+            
+            // 移动端切换后自动收起侧边栏
+            if (window.innerWidth < 768) {
+                toggleSidebar(false);
+            }
+        };
+
+        // 侧边栏事件委托
+        DOMElements.bankListContainer.addEventListener('click', async (e) => {
+            const deleteBtn = e.target.closest('.delete-bank-btn');
+            if (deleteBtn) {
+                e.stopPropagation();
+                const bankId = parseInt(deleteBtn.dataset.id);
+                const bank = state.banks.find(b => b.id === bankId);
+                showConfirmation(`删除题库 "${bank.name}"?`, '该题库下的所有题目将被永久删除！', async () => {
+                    // 删除该库下的所有题目
+                    await deleteBankLocalWithTombstone(bankId);
+                    // 重新初始化
+                    await initBanks();
+                    await fetchAndRender();
+                    if (state.cloud.user) await syncWithCloud({ silent: true });
+                });
+                return;
+            }
+            const item = e.target.closest('.bank-item');
+            if (item) {
+                const id = parseInt(item.dataset.id);
+                switchBank(id);
+            }
+        });
+
+        // 移动端侧边栏切换
+        const toggleSidebar = (forceState) => {
+            const isOpen = forceState !== undefined ? forceState : !DOMElements.sidebar.classList.contains('open');
+            if (isOpen) {
+                DOMElements.sidebar.classList.add('open');
+                DOMElements.sidebarOverlay.classList.remove('hidden');
+            } else {
+                DOMElements.sidebar.classList.remove('open');
+                DOMElements.sidebarOverlay.classList.add('hidden');
+            }
+        };
+        DOMElements.mobileMenuBtn.addEventListener('click', () => toggleSidebar(true));
+        DOMElements.closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+        DOMElements.sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+        // 新建题库弹窗逻辑
+        DOMElements.createBankBtn.addEventListener('click', () => {
+            DOMElements.newBankModal.classList.remove('hidden');
+            DOMElements.newBankNameInput.focus();
+        });
+        const closeNewBankModal = () => {
+            DOMElements.newBankModal.classList.add('hidden');
+            DOMElements.newBankNameInput.value = '';
+        };
+        DOMElements.newBankCancel.addEventListener('click', closeNewBankModal);
+        DOMElements.newBankConfirm.addEventListener('click', async () => {
+            const name = DOMElements.newBankNameInput.value.trim();
+            if (name) {
+                const now = new Date();
+                const id = await db.banks.add({ name, createdAt: now, updatedAt: now });
+                await initBanks();
+                switchBank(id);
+                closeNewBankModal();
+                if (state.cloud.user) await syncWithCloud({ silent: true });
+            }
+        });
+        DOMElements.newBankNameInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') DOMElements.newBankConfirm.click();
+            if(e.key === 'Escape') closeNewBankModal();
+        });
+
+        // --- UTILS & HELPERS ---
+        const applyMarkdown = (textarea, prefix, suffix) => {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const finalSuffix = suffix === undefined ? prefix : suffix;
+            const replacement = `${prefix}${selectedText}${finalSuffix}`;
+            textarea.setRangeText(replacement, start, end);
+            textarea.selectionStart = start + prefix.length;
+            textarea.selectionEnd = end + prefix.length;
+            textarea.focus();
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+
+        const applyStyleSpan = (textarea, styleProperty, styleValue) => {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const prefix = `<span style="${styleProperty}: ${styleValue}">`;
+            const suffix = `</span>`;
+
+            if (!selectedText) {
+                textarea.setRangeText(`${prefix}${suffix}`, start, end);
+                textarea.selectionStart = start + prefix.length;
+                textarea.selectionEnd = textarea.selectionStart;
+            } else {
+                const replacement = `${prefix}${selectedText}${suffix}`;
+                textarea.setRangeText(replacement, start, end);
+                textarea.selectionStart = start;
+                textarea.selectionEnd = start + replacement.length;
+            }
+
+            textarea.focus();
+            const inputEvent = new Event('input', { bubbles: true });
+            textarea.dispatchEvent(inputEvent);
+        };
+
+        // --- UI Rendering ---
+        // 核心修改：只渲染当前 bankId 下的题目
+        const getFilteredQuestions = () => {
+            return state.questions.filter(q => {
+                if (q.bankId !== state.currentBankId) return false;
+                const tags = uniqueTags(q.tags || []);
+                const searchMatch = state.filters.search ? 
+                    (q.stem?.toLowerCase().includes(state.filters.search) ||
+                    q.analysis?.toLowerCase().includes(state.filters.search) ||
+                    tags.some(t => t.toLowerCase().includes(state.filters.search))) 
+                    : true;
+                const tagsMatch = state.filters.tags.length > 0 ? state.filters.tags.every(ft => tags.includes(ft)) : true;
+                return searchMatch && tagsMatch;
+            });
+        };
+
+        const renderQuestionCard = (q) => {
+            const card = document.createElement('div');
+            // 纯白极简卡片
+            card.className = 'relative group bg-white border border-gray-200 rounded-xl flex flex-col transition duration-200 hover:shadow-md hover:-translate-y-0.5 h-96 cursor-pointer';
+            card.dataset.id = q.id;
+
+            const tagsHTML = q.tags.map(tag => `<span class="bg-gray-100 border border-gray-200 text-gray-600 text-xs font-medium px-2 py-1 rounded-md">${tag}</span>`).join(' ');
+            let statusColor = q.reviewStatus === 'mastered' ? 'bg-green-400' : q.reviewStatus === 'reviewing' ? 'bg-yellow-400' : 'bg-gray-400';
+            
+            // 移除 prose-invert，适合白底黑字
+            let contentHTML = `<div class="prose prose-sm max-w-none text-gray-800">${renderMarkdown(q.stem)}</div>`;
+            
+            if (['single-choice', 'multi-choice', 'judgment'].includes(q.type)) {
+                try {
+                    const options = JSON.parse(q.options || '[]');
+                    if (options.length > 0) {
+                        const optionsHTML = options.map((opt, idx) => {
+                            const label = String.fromCharCode(65 + idx);
+                            const textStyle = opt.isCorrect ? ' text-black font-bold' : ' text-gray-600';
+                            return `<div class="flex gap-2${textStyle}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
+                        }).join('');
+                        contentHTML += `<div class="mt-3 space-y-1 text-sm bg-gray-50 border border-gray-100 p-3 rounded">${optionsHTML}</div>`;
+                    }
+                } catch(e) { }
+            }
+            
+            let materialActions = '';
+            if (q.type === 'material') {
+                try {
+                    const subQs = JSON.parse(q.subQuestions);
+                    materialActions = `<button class="expand-btn text-sm text-gray-500 hover:text-black font-medium underline underline-offset-2">展开 ${subQs.length} 个子问题</button>`;
+                } catch(e) {}
+            }
+
+            card.innerHTML = `
+                <div class="p-5 flex-1 overflow-y-auto question-card-content">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="font-semibold text-black">${getQuestionTypeLabel(q.type)}</h3>
+                        <span class="text-xs bg-gray-100 border border-gray-200 text-gray-500 px-2 py-1 rounded-md ml-2 whitespace-nowrap">${getQuestionTypeLabel(q.type)}</span>
+                    </div>
+                    ${contentHTML}
+                </div>
+                <div class="px-5 pb-5 mt-auto border-t border-transparent group-hover:border-gray-100 pt-4">
+                    ${materialActions ? `<div class="flex justify-end mb-3">${materialActions}</div>` : ''}
+                    <div class="sub-questions-preview hidden prose prose-sm max-w-none text-gray-600 mb-4 p-3 bg-gray-50 border border-gray-100 rounded-md space-y-2"></div>
+                    <div class="flex flex-wrap gap-2 mb-4">${tagsHTML}</div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2.5 w-2.5"><span class="relative inline-flex rounded-full h-2.5 w-2.5 ${statusColor}"></span></span>
+                            <span class="text-xs text-gray-500">${getReviewStatusLabel(q.reviewStatus)}</span>
+                        </div>
+                        <div class="flex gap-3 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <button class="edit-btn text-gray-400 hover:text-black transition p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
+                            <button class="delete-btn text-gray-400 hover:text-red-600 transition p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        };
+
+        const renderQuestionListRow = (q) => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 cursor-pointer';
+            row.dataset.id = q.id;
+            const tags = (q.tags || []).slice(0, 3);
+            const tagsHTML = tags.length > 0
+                ? tags.map(tag => `<span class="inline-flex px-2 py-0.5 mr-1 mb-1 rounded-full text-xs bg-gray-100 border border-gray-200 text-gray-600">${tag}</span>`).join('')
+                : '<span class="text-xs text-gray-400">-</span>';
+            const stemText = (q.stem || '').replace(/\s+/g, ' ').trim();
+            const typeLabel = getQuestionTypeLabel(q.type);
+            const statusLabel = getReviewStatusLabel(q.reviewStatus);
+            row.innerHTML = `
+                <td class="px-4 py-3 align-top"><span class="text-xs bg-gray-100 border border-gray-200 text-gray-600 px-2 py-0.5 rounded-md">${typeLabel}</span></td>
+                <td class="px-4 py-3 align-top text-gray-800">
+                    <div class="clamp-2">${stemText || '（无题干）'}</div>
+                </td>
+                <td class="px-4 py-3 align-top">${tagsHTML}</td>
+                <td class="px-4 py-3 align-top text-xs text-gray-500">${statusLabel}</td>
+                <td class="px-4 py-3 align-top text-xs text-gray-500 whitespace-nowrap">${formatDateTime(q.updatedAt || q.createdAt)}</td>
+                <td class="px-4 py-3 align-top text-right">
+                    <div class="inline-flex items-center gap-2">
+                        <button class="edit-btn text-gray-400 hover:text-black transition p-1" title="编辑"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z"></path></svg></button>
+                        <button class="delete-btn text-gray-400 hover:text-red-600 transition p-1" title="删除"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    </div>
+                </td>
+            `;
+            return row;
+        };
+
+        const renderPagination = (totalItems) => {
+            const { currentPage, pageSize } = state.pagination;
+            const totalPages = Math.ceil(totalItems / pageSize);
+
+            if (totalPages <= 1) {
+                DOMElements.paginationContainer.classList.add('hidden');
+                return;
+            }
+            DOMElements.paginationContainer.classList.remove('hidden');
+
+            const startItem = (currentPage - 1) * pageSize + 1;
+            const endItem = Math.min(startItem + pageSize - 1, totalItems);
+            DOMElements.pageStart.textContent = startItem;
+            DOMElements.pageEnd.textContent = endItem;
+            DOMElements.totalCount.textContent = totalItems;
+
+            DOMElements.firstPageBtn.disabled = currentPage === 1;
+            DOMElements.prevPageBtn.disabled = currentPage === 1;
+            DOMElements.nextPageBtn.disabled = currentPage === totalPages;
+            DOMElements.lastPageBtn.disabled = currentPage === totalPages;
+            
+            DOMElements.pageNumbers.innerHTML = '';
+            const pagesToShow = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pagesToShow.push(i);
+            } else {
+                pagesToShow.push(1);
+                if (currentPage > 3) pagesToShow.push('...');
+                let start = Math.max(2, currentPage - 1);
+                let end = Math.min(totalPages - 1, currentPage + 1);
+                for (let i = start; i <= end; i++) pagesToShow.push(i);
+                if (currentPage < totalPages - 2) pagesToShow.push('...');
+                pagesToShow.push(totalPages);
+            }
+
+            pagesToShow.forEach(page => {
+                 const pageBtn = document.createElement('button');
+                 pageBtn.className = `px-2.5 py-1 rounded text-sm font-medium transition border `;
+                if (page === '...') {
+                    pageBtn.textContent = '...';
+                    pageBtn.disabled = true;
+                    pageBtn.className += ' text-gray-400 border-transparent';
+                } else {
+                    pageBtn.textContent = page;
+                    pageBtn.dataset.page = page;
+                    // 黑白风格的分页按钮
+                    pageBtn.className += page === currentPage ? ' bg-black text-white border-black' : ' bg-white text-gray-600 border-gray-300 hover:bg-gray-50';
+                }
+                 DOMElements.pageNumbers.appendChild(pageBtn);
+            });
+        };
+
+        const renderAllQuestions = () => {
+            DOMElements.loader.classList.add('hidden');
+            DOMElements.grid.innerHTML = '';
+            DOMElements.listBody.innerHTML = '';
+            
+            const filteredQuestions = getFilteredQuestions();
+            const displayQuestions = state.ui.viewMode === 'list' ? sortQuestionsForList(filteredQuestions) : filteredQuestions;
+            const { currentPage, pageSize } = state.pagination;
+            const totalItems = displayQuestions.length;
+            const totalPages = Math.ceil(totalItems / pageSize);
+
+            if (currentPage > totalPages && totalPages > 0) {
+                state.pagination.currentPage = totalPages;
+            }
+            
+            const paginatedQuestions = displayQuestions.slice((state.pagination.currentPage - 1) * pageSize, state.pagination.currentPage * pageSize);
+
+            if (displayQuestions.length === 0) {
+                DOMElements.noResults.classList.remove('hidden');
+                DOMElements.grid.classList.add('hidden');
+                DOMElements.list.classList.add('hidden');
+                DOMElements.paginationContainer.classList.add('hidden');
+            } else {
+                DOMElements.noResults.classList.add('hidden');
+                if (state.ui.viewMode === 'list') {
+                    DOMElements.grid.classList.add('hidden');
+                    DOMElements.list.classList.remove('hidden');
+                    paginatedQuestions.forEach(q => DOMElements.listBody.appendChild(renderQuestionListRow(q)));
+                } else {
+                    DOMElements.list.classList.add('hidden');
+                    DOMElements.grid.classList.remove('hidden');
+                    paginatedQuestions.forEach(q => DOMElements.grid.appendChild(renderQuestionCard(q)));
+                }
+            }
+            renderPagination(totalItems);
+        };
+
+        const renderTagsForFiltering = () => {
+            const currentBankQuestions = state.questions.filter(q => q.bankId === state.currentBankId);
+            const allTags = uniqueTags(currentBankQuestions.flatMap(q => q.tags || []));
+            const groups = new Map();
+            allTags.forEach((tag) => {
+                const parsed = parseTag(tag);
+                const category = parsed.category || '其他';
+                if (!groups.has(category)) groups.set(category, []);
+                groups.get(category).push(tag);
+            });
+            DOMElements.filterTagsContainer.innerHTML = '';
+            [...groups.keys()].sort((a, b) => a.localeCompare(b, 'zh-Hans-CN')).forEach((category) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'tag-category-group';
+                const title = document.createElement('div');
+                title.className = 'tag-category-title';
+                title.textContent = category;
+                wrap.appendChild(title);
+                const container = document.createElement('div');
+                container.className = 'flex flex-wrap gap-2';
+                groups.get(category).sort((a, b) => a.localeCompare(b, 'zh-Hans-CN')).forEach((tag) => {
+                    const button = document.createElement('button');
+                    button.textContent = parseTag(tag).value || tag;
+                    button.title = tag;
+                    button.dataset.tag = tag;
+                    const isActive = state.filters.tags.includes(tag);
+                    button.className = `px-3 py-1 rounded-full text-xs font-medium transition border ${isActive ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'}`;
+                    container.appendChild(button);
+                });
+                wrap.appendChild(container);
+                DOMElements.filterTagsContainer.appendChild(wrap);
+            });
+        };
+
+        const fetchAndRender = async () => {
+            DOMElements.loader.classList.remove('hidden');
+            DOMElements.grid.classList.add('hidden');
+            DOMElements.list.classList.add('hidden');
+            // 获取所有问题缓存在内存中
+            state.questions = await db.questions.orderBy('createdAt').reverse().toArray();
+            state.questions = state.questions.map(q => ({ ...q, tags: uniqueTags(q.tags || []) }));
+            updateTagStats();
+            setTimeout(() => {
+                renderAllQuestions();
+                renderTagsForFiltering();
+            }, 100);
+        };
+
+        // ========================================================================
+        // 6. 中央快捷键调度系统 (无冲突设计)
+        // ========================================================================
+        document.addEventListener('keydown', (e) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const modifierKey = isMac ? e.metaKey : e.ctrlKey;
+            const activeElement = document.activeElement;
+            const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName);
+            
+            const isEditorOpen = !DOMElements.modal.classList.contains('hidden');
+            const isIOOpen = !DOMElements.ioModal.classList.contains('hidden');
+            const isViewOpen = !DOMElements.viewQuestionModal.classList.contains('hidden');
+            const isConfirmOpen = !DOMElements.confirmModal.classList.contains('hidden');
+            const isNewBankOpen = !DOMElements.newBankModal.classList.contains('hidden');
+            const anyModalOpen = isEditorOpen || isIOOpen || isViewOpen || isConfirmOpen || isNewBankOpen;
+
+            // 场景 A: 全局快捷键
+            if (!anyModalOpen) {
+                if (e.key === '/' && !isTyping) { e.preventDefault(); DOMElements.searchBox.focus(); }
+                if (e.altKey && e.key.toLowerCase() === 'n') { e.preventDefault(); DOMElements.addBtn.click(); }
+                if (e.altKey && e.key.toLowerCase() === 'm') { e.preventDefault(); DOMElements.ioBtn.click(); }
+                if (!isTyping && e.key === 'ArrowLeft') if(!DOMElements.prevPageBtn.disabled) DOMElements.prevPageBtn.click();
+                if (!isTyping && e.key === 'ArrowRight') if(!DOMElements.nextPageBtn.disabled) DOMElements.nextPageBtn.click();
+                return;
+            }
+
+            // 场景 B: 题目编辑器快捷键
+            if (isEditorOpen && !isConfirmOpen) {
+                if (e.key === 'Escape') { e.preventDefault(); triggerHapticFeedback(); DOMElements.cancelBtn.click(); return; }
+                if (modifierKey && e.key.toLowerCase() === 's') {
+                    e.preventDefault(); e.stopPropagation(); triggerHapticFeedback();
+                    const saveBtn = DOMElements.modal.querySelector('button[type="submit"]');
+                    if (saveBtn) saveBtn.click();
+                    return;
+                }
+                if (modifierKey && e.key === 'Enter') {
+                    e.preventDefault(); e.stopPropagation(); triggerHapticFeedback(); DOMElements.saveAndAddAnotherBtn.click(); return;
+                }
+                if (e.altKey && e.key.toLowerCase() === 'o') { e.preventDefault(); DOMElements.addOptionBtn.click(); return; }
+                if (e.altKey && e.key.toLowerCase() === 'q') { e.preventDefault(); DOMElements.addSubQuestionBtn.click(); return; }
+
+                const isOptionInput = activeElement.matches('#options-container input[type="text"], #sub-questions-container input[data-field="option-text"]');
+                if (isOptionInput) {
+                    const optDiv = activeElement.closest('.option-row, .sub-option-row');
+                    const container = activeElement.closest('#options-container') || activeElement.closest('.sub-question-options-area');
+                    const addBtn = container.parentElement.querySelector('#add-option-btn, .add-sub-option-btn');
+
+                    if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        e.preventDefault();
+                        if (addBtn) addBtn.click();
+                        setTimeout(() => {
+                            const allInputs = container.querySelectorAll('input[type="text"]');
+                            if (allInputs.length > 0) allInputs[allInputs.length - 1].focus();
+                        }, 0);
+                    }
+                    if (e.altKey && e.key === 'Enter') {
+                        e.preventDefault();
+                        const checkboxOrRadio = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                        if (checkboxOrRadio) {
+                            checkboxOrRadio.checked = checkboxOrRadio.type === 'radio' ? true : !checkboxOrRadio.checked;
+                            triggerHapticFeedback(); updatePreview();
+                        }
+                    }
+                    if (e.key === 'Backspace' && activeElement.value === '') {
+                        e.preventDefault();
+                        const prevDiv = optDiv.previousElementSibling;
+                        const isMainOptions = container.id === 'options-container';
+                        const rowSelector = isMainOptions ? '.option-row' : '.sub-option-row';
+                        const rowCount = container.querySelectorAll(rowSelector).length;
+                        if (rowCount > 1) {
+                            optDiv.remove(); triggerHapticFeedback();
+                            if (prevDiv && prevDiv.querySelector('input[type="text"]')) prevDiv.querySelector('input[type="text"]').focus();
+                            updatePreview();
+                        }
+                    }
+                }
+                return;
+            }
+
+            // 场景 C: 其他弹窗关闭
+            if (e.key === 'Escape') {
+                if (isConfirmOpen) DOMElements.confirmCancelBtn.click();
+                else if (isIOOpen) DOMElements.ioCloseBtn.click();
+                else if (isViewOpen) DOMElements.viewModalCloseBtn.click();
+            }
+        });
+
+        // ========================================================================
+        // 7. REST OF THE APP LOGIC (Parse, Editor, Modal, IO...)
+        // 大部分保持你之前的逻辑，重点在于保存时注入 bankId
+        // ========================================================================
+
+        const saveQuestionData = async () => {
+            const id = parseInt(DOMElements.questionIdInput.value);
+            const type = DOMElements.questionTypeSelect.value;
+            const pendingTag = normalizeTag(DOMElements.tagInput.value);
+            if (pendingTag) addTagToEditor(pendingTag);
+            DOMElements.tagInput.value = '';
+            
+            // 绑定当前题库 ID
+            const questionData = {
+                bankId: state.currentBankId,
+                type: type,
+                stem: DOMElements.questionStemInput.value.trim(),
+                analysis: DOMElements.questionAnalysisInput.value.trim(),
+                tags: getEditorTags(),
+                updatedAt: new Date(),
+            };
+            const autoTags = suggestAutoTags(`${questionData.stem}\n${questionData.analysis}`);
+            questionData.tags = uniqueTags([...questionData.tags, ...autoTags]);
+
+            if (!questionData.stem && type !== 'material') { showToast("题干不能为空！", 'error'); return; }
+
+            // ...(这里是选择题和材料题保存逻辑，与上一版完全一致，篇幅限制不重复粘贴)
+             if (['single-choice', 'multi-choice', 'judgment'].includes(type)) {
+                const options = []; let hasCorrect = false; let correctIndices = [];
+                DOMElements.optionsContainer.querySelectorAll('.option-row').forEach((div, index) => {
+                    const textInput = div.querySelector('input[type="text"]');
+                    const isCorrectInput = div.querySelector('input[type="radio"], input[type="checkbox"]');
+                    if(textInput && isCorrectInput && textInput.value.trim()){
+                        const isCorrect = isCorrectInput.checked;
+                        options.push({ text: textInput.value.trim(), isCorrect });
+                        if (isCorrect) { hasCorrect = true; correctIndices.push(index); }
+                    }
+                });
+                if (options.length < 2) { showToast(type === 'judgment' ? "判断题必须包含两个选项！" : "选择题必须至少有两个选项！", 'error'); return; }
+                if (!hasCorrect) { showToast(type === 'judgment' ? "判断题必须选择一个答案！" : "选择题必须至少有一个正确答案！", 'error'); return; }
+                questionData.options = JSON.stringify(options);
+                if (type === 'judgment') {
+                    questionData.answer = options.find(opt => opt.isCorrect)?.text || '';
+                } else {
+                    questionData.answer = correctIndices.map(idx => String.fromCharCode(65 + idx)).join(', ');
+                }
+            } else if (type === 'material') {
+                 // 材料题提取逻辑同上一版
+                const subQuestions = []; let validationFailed = false;
+                DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach(sqNode => {
+                    if (validationFailed) return;
+                    const sqType = sqNode.querySelector('.sub-question-type-select').value;
+                    const sqStem = sqNode.querySelector('textarea[data-field="stem"]').value.trim();
+                    if (!sqStem) { showToast("子问题题干不能为空！", 'error'); validationFailed = true; return; }
+                    const sq = {
+                        id: sqNode.dataset.sqId, type: sqType, stem: sqStem,
+                        analysis: sqNode.querySelector('textarea[data-field="analysis"]').value.trim(), answer: '', options: []
+                    };
+                    if (sqType !== 'standard') {
+                        const optionDivs = sqNode.querySelectorAll('.sub-question-options-area > .flex');
+                        let sqHasCorrect = false; let sqCorrectIndices = [];
+                        optionDivs.forEach((optDiv, optIdx) => {
+                            const optInput = optDiv.querySelector('input[type="text"]');
+                            const optCheckbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                            if (optInput && optInput.value.trim()) {
+                                const isCorrect = optCheckbox ? optCheckbox.checked : false;
+                                sq.options.push({ text: optInput.value.trim(), isCorrect });
+                                if (isCorrect) { sqHasCorrect = true; sqCorrectIndices.push(sq.options.length - 1); }
+                            }
+                        });
+                        if (sq.options.length > 0 && !sqHasCorrect) {
+                           showToast(`子问题 "${sq.stem.substring(0, 20)}..." 必须至少有一个正确答案！`, 'error'); validationFailed = true; return;
+                        }
+                        sq.answer = sqCorrectIndices.map(idx => String.fromCharCode(65 + idx)).join(', ');
+                    } else {
+                        sq.answer = sqNode.querySelector('textarea[data-field="answer"]')?.value.trim() || '';
+                    }
+                    subQuestions.push(sq);
+                });
+                if(validationFailed) return;
+                if (subQuestions.length === 0) { showToast("材料题必须至少有一个子问题！", 'error'); return; }
+                questionData.subQuestions = JSON.stringify(subQuestions);
+                questionData.answer = '见子问题解析';
+            } else {
+                questionData.answer = DOMElements.questionAnswerInput.value.trim();
+                if (!questionData.answer) { showToast("答案不能为空！", 'error'); return; }
+            }
+
+            if (id) {
+                await db.questions.update(id, questionData);
+            } else {
+                questionData.createdAt = new Date();
+                questionData.reviewStatus = 'new';
+                await db.questions.add(questionData);
+            }
+            return true;
+        };
+
+        const handleFormSubmit = async (e) => {
+            e.preventDefault();
+            if (await saveQuestionData()) {
+                closeModal();
+                await fetchAndRender();
+                showToast('题目已保存', 'success');
+                if (state.cloud.user) await syncWithCloud({ silent: true });
+            }
+        };
+
+        DOMElements.saveAndAddAnotherBtn.addEventListener('click', async () => {
+            const currentType = DOMElements.questionTypeSelect.value;
+            if (await saveQuestionData()) {
+                resetModalForNewQuestion(currentType);
+                await fetchAndRender();
+                showToast('已保存，可继续录入', 'success');
+                if (state.cloud.user) await syncWithCloud({ silent: true });
+            }
+        });
+        
+        // --- 模态框打开与重置逻辑 ---
+        const resetModalForNewQuestion = (typeToSet = 'single-choice') => {
+            DOMElements.form.reset(); DOMElements.questionIdInput.value = '';
+            DOMElements.modalTitle.textContent = '录入题目'; DOMElements.questionTypeSelect.value = typeToSet;
+            updateFormUIForType(typeToSet);
+            if (['single-choice', 'multi-choice', 'judgment'].includes(typeToSet)) renderOptionsEditor(typeToSet);
+            if (typeToSet === 'material') renderSubQuestionsEditor();
+            setTagEditorTags([]);
+            state.ui.activePreviewAnchor = 'stem';
+            DOMElements.parseStemBtn.classList.add('hidden'); updatePreview();
+            setTimeout(() => DOMElements.questionStemInput.focus(), 50);
+        };
+        
+        const openModal = (question = null) => {
+            if (question) {
+                DOMElements.form.reset(); DOMElements.modalTitle.textContent = '编辑题目';
+                DOMElements.questionIdInput.value = question.id; DOMElements.questionStemInput.value = question.stem;
+                DOMElements.questionAnswerInput.value = question.answer; DOMElements.questionAnalysisInput.value = question.analysis;
+                setTagEditorTags(question.tags || []);
+                DOMElements.questionTypeSelect.value = question.type;
+                updateFormUIForType(question.type);
+                if (['single-choice', 'multi-choice', 'judgment'].includes(question.type)) renderOptionsEditor(question.type, JSON.parse(question.options || '[]'));
+                if (question.type === 'material') renderSubQuestionsEditor(JSON.parse(question.subQuestions || '[]'));
+                DOMElements.parseStemBtn.classList.add('hidden');
+            } else { resetModalForNewQuestion(); }
+            state.ui.activePreviewAnchor = 'stem';
+            updatePreview();
+            setPreviewVisible(state.ui.previewVisible);
+            DOMElements.modal.classList.remove('hidden');
+        };
+        const closeModal = () => DOMElements.modal.classList.add('hidden');
+        
+        // --- UI Utils (更新UI显示) ---
+        const updateFormUIForType = (type) => {
+            const isChoice = ['single-choice', 'multi-choice', 'judgment'].includes(type);
+            const isMaterial = type === 'material';
+            DOMElements.optionsEditor.classList.toggle('hidden', !isChoice);
+            DOMElements.subQuestionsEditor.classList.toggle('hidden', !isMaterial);
+            DOMElements.standardAnswerEditor.classList.toggle('hidden', isChoice || isMaterial);
+            DOMElements.addOptionBtn.classList.toggle('hidden', type === 'judgment');
+        };
+
+        const createSubQuestionNode = (sqInput = {}) => {
+            const sq = {
+                id: generateUUID(),
+                type: 'standard',
+                stem: '',
+                answer: '',
+                analysis: '',
+                options: [{text: '', isCorrect: false}],
+                ...sqInput
+            };
+            
+            const div = document.createElement('div');
+            div.className = 'p-3 border border-gray-300 rounded-lg space-y-3 bg-gray-50';
+            div.dataset.sqId = sq.id;
+
+            div.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <select class="app-select sub-question-type-select w-2/5 rounded-md p-1 text-xs text-gray-700">
+                        <option value="standard" ${sq.type === 'standard' ? 'selected' : ''}>标准题</option>
+                        <option value="single-choice" ${sq.type === 'single-choice' ? 'selected' : ''}>单选题</option>
+                        <option value="multi-choice" ${sq.type === 'multi-choice' ? 'selected' : ''}>多选题</option>
+                    </select>
+                    <button type="button" class="remove-sub-question-btn text-red-600 hover:text-red-800 text-xs font-medium">删除</button>
+                </div>
+                <textarea data-field="stem" placeholder="子问题题干（必填）" class="w-full bg-white border border-gray-300 p-2 rounded-md text-sm text-gray-900">${sq.stem}</textarea>
+                <div class="sub-question-answer-area" ${sq.type !== 'standard' ? 'style="display: none;"' : ''}>
+                    <textarea data-field="answer" placeholder="子问题答案（标准题必填）" class="w-full bg-white border border-gray-300 p-2 rounded-md text-sm text-gray-900">${sq.answer || ''}</textarea>
+                </div>
+                <div class="sub-question-options-area space-y-2" ${sq.type === 'standard' ? 'style="display: none;"' : ''}></div>
+                <textarea data-field="analysis" placeholder="子问题解析" class="w-full bg-white border border-gray-300 p-2 rounded-md text-sm text-gray-900">${sq.analysis || ''}</textarea>
+            `;
+            
+            const optionsArea = div.querySelector('.sub-question-options-area');
+            if (sq.type !== 'standard' && sq.options) {
+                const inputType = sq.type === 'single-choice' ? 'radio' : 'checkbox';
+                sq.options.forEach((opt, index) => {
+                    const optDiv = document.createElement('div');
+                    optDiv.className = 'sub-option-row flex items-center gap-2';
+                    optDiv.innerHTML = `
+                        <input type="${inputType}" name="sub-question-correct-${sq.id}" value="${index}" ${opt.isCorrect ? 'checked' : ''} class="w-4 h-4">
+                        <input type="text" data-field="option-text" value="${opt.text}" placeholder="选项内容（必填）" class="flex-1 bg-white border border-gray-300 rounded-md p-1 text-sm text-gray-900">
+                        <button type="button" class="remove-sub-option-btn text-red-600 text-xs">&times;</button>
+                    `;
+                    optionsArea.appendChild(optDiv);
+                });
+                const addOptBtn = document.createElement('button');
+                addOptBtn.type = 'button';
+                addOptBtn.className = 'add-sub-option-btn text-gray-600 text-xs hover:text-gray-800 mt-1 font-medium';
+                addOptBtn.textContent = '+ 添加选项';
+                optionsArea.appendChild(addOptBtn);
+            }
+            return div;
+        };
+
+        const renderSubQuestionsEditor = (subQuestions = []) => {
+            DOMElements.subQuestionsContainer.innerHTML = '';
+            const initialSQ = [{ id: generateUUID(), type: 'standard', stem: '', answer: '', analysis: '', options: [] }];
+            const questionsToRender = subQuestions.length > 0 ? subQuestions : initialSQ;
+            questionsToRender.forEach(sq => {
+                DOMElements.subQuestionsContainer.appendChild(createSubQuestionNode(sq));
+            });
+        };
+
+        const getCurrentMainOptions = () => {
+            const options = [];
+            DOMElements.optionsContainer.querySelectorAll('.option-row').forEach((row) => {
+                const textInput = row.querySelector('input[type="text"]');
+                const control = row.querySelector('input[type="radio"], input[type="checkbox"]');
+                options.push({
+                    text: textInput ? textInput.value : '',
+                    isCorrect: Boolean(control && control.checked)
+                });
+            });
+            return options.length > 0 ? options : [{ text: '', isCorrect: false }];
+        };
+        const getJudgmentOptions = (options = []) => {
+            const source = Array.isArray(options) ? options : [];
+            const normalized = [
+                { text: source[0]?.text || '正确', isCorrect: Boolean(source[0]?.isCorrect) },
+                { text: source[1]?.text || '错误', isCorrect: Boolean(source[1]?.isCorrect) }
+            ];
+            if (!normalized[0].isCorrect && !normalized[1].isCorrect) normalized[0].isCorrect = true;
+            if (normalized[0].isCorrect && normalized[1].isCorrect) normalized[1].isCorrect = false;
+            return normalized;
+        };
+
+        const appendMainOptionRow = (type, option = { text: '', isCorrect: false }, index = DOMElements.optionsContainer.querySelectorAll('.option-row').length) => {
+            const inputType = (type === 'single-choice' || type === 'judgment') ? 'radio' : 'checkbox';
+            const isJudgment = type === 'judgment';
+            const div = document.createElement('div');
+            div.className = 'option-row flex items-center gap-2';
+            div.innerHTML = `
+                <input type="${inputType}" id="option-correct-${index}" name="option-correct" value="${index}" ${option.isCorrect ? 'checked' : ''} class="w-4 h-4 text-gray-900 bg-white border-gray-300 rounded">
+                <input type="text" value="${option.text || ''}" placeholder="选项内容（必填）" class="flex-1 bg-white border border-gray-300 rounded-md p-2 text-gray-900 text-sm focus:outline-none focus:border-black ${isJudgment ? 'cursor-not-allowed bg-gray-50' : ''}" ${isJudgment ? 'readonly' : ''}>
+                <button type="button" class="remove-option-btn text-red-600 hover:text-red-800 transition ${isJudgment ? 'hidden' : ''}"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            `;
+            DOMElements.optionsContainer.appendChild(div);
+        };
+
+        const renderOptionsEditor = (type, options = [{text: '', isCorrect: false}]) => {
+            DOMElements.optionsContainer.innerHTML = '';
+            const sourceOptions = type === 'judgment'
+                ? getJudgmentOptions(options)
+                : ((options && options.length > 0) ? options : [{ text: '', isCorrect: false }]);
+            const normalized = sourceOptions.map(opt => ({ text: opt.text || '', isCorrect: Boolean(opt.isCorrect) }));
+            if (type === 'single-choice' || type === 'judgment') {
+                const firstChecked = normalized.findIndex(opt => opt.isCorrect);
+                const finalIndex = firstChecked === -1 ? 0 : firstChecked;
+                normalized.forEach((opt, idx) => { opt.isCorrect = idx === finalIndex; });
+            }
+            normalized.forEach((option, index) => appendMainOptionRow(type, option, index));
+        };
+
+        // --- Event Listeners Bindings (事件绑定) ---
+        DOMElements.addBtn.addEventListener('click', () => { triggerHapticFeedback(); openModal(); });
+        DOMElements.mobileAddBtn.addEventListener('click', () => { triggerHapticFeedback(); openModal(); });
+        DOMElements.cancelBtn.addEventListener('click', closeModal);
+        DOMElements.form.addEventListener('submit', handleFormSubmit);
+        DOMElements.modal.addEventListener('click', (e) => { if (e.target === DOMElements.modal) closeModal(); });
+        DOMElements.tagChipList.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-remove-tag]');
+            if (!btn) return;
+            removeTagFromEditor(btn.dataset.removeTag);
+        });
+        DOMElements.tagInput.addEventListener('focus', updateTagSuggestions);
+        DOMElements.tagInput.addEventListener('blur', () => setTimeout(closeTagSuggestions, 120));
+        DOMElements.tagInput.addEventListener('input', () => {
+            updateTagSuggestions();
+            renderTagRecommendations();
+        });
+        DOMElements.tagInput.addEventListener('keydown', (e) => {
+            const list = state.ui.tagEditor.suggestions;
+            if (e.key === 'ArrowDown' && list.length > 0) {
+                e.preventDefault();
+                state.ui.tagEditor.selectedSuggestionIndex = (state.ui.tagEditor.selectedSuggestionIndex + 1) % list.length;
+                renderTagSuggestions();
+                return;
+            }
+            if (e.key === 'ArrowUp' && list.length > 0) {
+                e.preventDefault();
+                state.ui.tagEditor.selectedSuggestionIndex = (state.ui.tagEditor.selectedSuggestionIndex - 1 + list.length) % list.length;
+                renderTagSuggestions();
+                return;
+            }
+            if (e.key === 'Enter' || e.key === ',' || e.key === '，') {
+                e.preventDefault();
+                const chosen = list[state.ui.tagEditor.selectedSuggestionIndex] || DOMElements.tagInput.value;
+                addTagToEditor(chosen);
+                DOMElements.tagInput.value = '';
+                closeTagSuggestions();
+            }
+            if (e.key === 'Backspace' && DOMElements.tagInput.value === '' && state.ui.tagEditor.tags.length > 0) {
+                removeTagFromEditor(state.ui.tagEditor.tags[state.ui.tagEditor.tags.length - 1]);
+            }
+        });
+        DOMElements.tagSuggestions.addEventListener('click', (e) => {
+            const item = e.target.closest('button[data-suggestion]');
+            if (!item) return;
+            addTagToEditor(item.dataset.suggestion);
+            DOMElements.tagInput.value = '';
+            closeTagSuggestions();
+            DOMElements.tagInput.focus();
+        });
+        DOMElements.tagRecommendations.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-recommend-tag]');
+            if (!btn) return;
+            addTagToEditor(btn.dataset.recommendTag);
+            renderTagRecommendations();
+        });
+        DOMElements.openTagManagerBtn.addEventListener('click', openTagManager);
+        DOMElements.tagManagerCloseBtn.addEventListener('click', closeTagManager);
+        DOMElements.tagManagerModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.tagManagerModal) closeTagManager();
+        });
+        DOMElements.tagMergeBtn.addEventListener('click', async () => {
+            const from = normalizeTag(DOMElements.tagMergeSource.value);
+            const to = normalizeTag(DOMElements.tagMergeTarget.value);
+            if (!from || !to || from === to) {
+                showToast('请选择有效的源标签和目标标签', 'error');
+                return;
+            }
+            const changed = await applyTagTransformToQuestions((tags) => tags.map(t => t === from ? to : t));
+            showToast(`合并完成，更新 ${changed} 题`, 'success');
+            await fetchAndRender();
+            openTagManager();
+            if (state.cloud.user) await syncWithCloud({ silent: true });
+        });
+        DOMElements.tagManagerList.addEventListener('click', async (e) => {
+            const renameBtn = e.target.closest('button[data-rename-btn]');
+            if (renameBtn) {
+                const from = renameBtn.dataset.renameBtn;
+                const input = DOMElements.tagManagerList.querySelector(`input[data-rename-from="${from}"]`);
+                const to = normalizeTag(input?.value || '');
+                if (!to || from === to) { showToast('请输入有效的新标签', 'error'); return; }
+                const changed = await applyTagTransformToQuestions((tags) => tags.map(t => t === from ? to : t));
+                showToast(`重命名完成，更新 ${changed} 题`, 'success');
+                await fetchAndRender();
+                openTagManager();
+                if (state.cloud.user) await syncWithCloud({ silent: true });
+                return;
+            }
+            const deleteBtn = e.target.closest('button[data-delete-tag]');
+            if (deleteBtn) {
+                const tag = deleteBtn.dataset.deleteTag;
+                if (!window.confirm(`删除标签 "${tag}"？该标签会从所有题目中移除。`)) return;
+                const changed = await applyTagTransformToQuestions((tags) => tags.filter(t => t !== tag));
+                showToast(`删除完成，更新 ${changed} 题`, 'success');
+                await fetchAndRender();
+                openTagManager();
+                if (state.cloud.user) await syncWithCloud({ silent: true });
+            }
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.tag-editor')) closeTagSuggestions();
+        });
+        DOMElements.previewToggleBtn.addEventListener('click', () => setPreviewVisible(!state.ui.previewVisible));
+        DOMElements.form.addEventListener('focusin', (e) => setPreviewAnchor(getPreviewAnchorByTarget(e.target)));
+        DOMElements.form.addEventListener('click', (e) => setPreviewAnchor(getPreviewAnchorByTarget(e.target)));
+        DOMElements.viewGridBtn.addEventListener('click', () => {
+            if (state.ui.viewMode === 'grid') return;
+            setQuestionViewMode('grid');
+            renderAllQuestions();
+        });
+        DOMElements.viewListBtn.addEventListener('click', () => {
+            if (state.ui.viewMode === 'list') return;
+            setQuestionViewMode('list');
+            renderAllQuestions();
+        });
+        
+        // 绑定搜索与分页
+        DOMElements.searchBox.addEventListener('input', debounce((e) => {
+            state.filters.search = e.target.value.toLowerCase();
+            state.pagination.currentPage = 1;
+            renderAllQuestions();
+        }, 300));
+        
+        DOMElements.filterTagsContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                triggerHapticFeedback();
+                const tag = e.target.dataset.tag;
+                const tagIndex = state.filters.tags.indexOf(tag);
+                if (tagIndex > -1) state.filters.tags.splice(tagIndex, 1);
+                else state.filters.tags.push(tag);
+                state.pagination.currentPage = 1;
+                renderAllQuestions(); renderTagsForFiltering();
+            }
+        });
+
+        // 绑定管理导入导出
+        const openIOModal = () => { triggerHapticFeedback(); DOMElements.ioModal.classList.remove('hidden'); };
+        const closeIOModal = () => DOMElements.ioModal.classList.add('hidden');
+        DOMElements.ioBtn.addEventListener('click', openIOModal);
+        DOMElements.tagManagerBtn.addEventListener('click', openTagManager);
+        DOMElements.cloudAuthBtn.addEventListener('click', openCloudModal);
+        DOMElements.cloudSyncBtn.addEventListener('click', async () => {
+            triggerHapticFeedback();
+            await syncWithCloud();
+        });
+        DOMElements.mobileIoBtn.addEventListener('click', openIOModal);
+        DOMElements.ioCloseBtn.addEventListener('click', closeIOModal);
+        DOMElements.ioOpenCloudModalBtn.addEventListener('click', () => {
+            closeIOModal();
+            openCloudModal();
+        });
+        DOMElements.ioSyncNowBtn.addEventListener('click', async () => {
+            await syncWithCloud();
+        });
+        DOMElements.cloudModalCloseBtn.addEventListener('click', closeCloudModal);
+        DOMElements.cloudModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.cloudModal) closeCloudModal();
+        });
+        DOMElements.saveSupabaseConfigBtn.addEventListener('click', async () => {
+            const url = DOMElements.supabaseUrlInput.value.trim();
+            const anonKey = DOMElements.supabaseAnonKeyInput.value.trim();
+            if (!url || !anonKey) {
+                showToast('Supabase URL 和 Anon Key 不能为空', 'error');
+                return;
+            }
+            state.cloud.supabaseUrl = url;
+            state.cloud.supabaseAnonKey = anonKey;
+            localStorage.setItem('qbank.supabase.url', url);
+            localStorage.setItem('qbank.supabase.anonKey', anonKey);
+            await initCloudAuth();
+            updateCloudStatusText('配置已保存，请使用邮箱登录。', 'success');
+            showToast('Supabase 配置已保存', 'success');
+        });
+        DOMElements.authSignInBtn.addEventListener('click', async () => {
+            const client = ensureCloudReady();
+            if (!client) return;
+            const email = DOMElements.authEmailInput.value.trim();
+            const password = DOMElements.authPasswordInput.value;
+            if (!email || !password) {
+                showToast('请输入邮箱和密码', 'error');
+                return;
+            }
+            const { error } = await client.auth.signInWithPassword({ email, password });
+            if (error) {
+                showToast(`登录失败: ${error.message}`, 'error');
+                updateCloudStatusText(`登录失败：${error.message}`, 'error');
+                return;
+            }
+            showToast('登录成功', 'success');
+            updateCloudStatusText('登录成功，正在同步...', 'success');
+            await syncWithCloud({ silent: true });
+        });
+        DOMElements.authSignUpBtn.addEventListener('click', async () => {
+            const client = ensureCloudReady();
+            if (!client) return;
+            const email = DOMElements.authEmailInput.value.trim();
+            const password = DOMElements.authPasswordInput.value;
+            if (!email || !password) {
+                showToast('请输入邮箱和密码', 'error');
+                return;
+            }
+            const { error } = await client.auth.signUp({ email, password });
+            if (error) {
+                showToast(`注册失败: ${error.message}`, 'error');
+                updateCloudStatusText(`注册失败：${error.message}`, 'error');
+                return;
+            }
+            showToast('注册请求已提交，请检查邮箱验证后登录', 'success');
+            updateCloudStatusText('注册成功，请先完成邮箱验证（若已开启）。', 'success');
+        });
+        DOMElements.authSignOutBtn.addEventListener('click', async () => {
+            const client = ensureCloudReady();
+            if (!client) return;
+            const { error } = await client.auth.signOut();
+            if (error) {
+                showToast(`登出失败: ${error.message}`, 'error');
+                return;
+            }
+            showToast('已登出', 'success');
+            updateCloudStatusText('已登出。');
+        });
+        DOMElements.cloudSyncNowBtn.addEventListener('click', async () => {
+            await syncWithCloud();
+        });
+
+        // --- 卡片操作事件 ---
+        DOMElements.grid.addEventListener('click', async (e) => {
+            const card = e.target.closest('[data-id]');
+            if (!card) return;
+            const id = parseInt(card.dataset.id);
+            const buttonClicked = e.target.closest('button');
+            if(buttonClicked) triggerHapticFeedback();
+            if (e.target.closest('.edit-btn')) {
+                e.stopPropagation();
+                const question = await db.questions.get(id);
+                openModal(question);
+                return;
+            }
+            if (e.target.closest('.delete-btn')) {
+                e.stopPropagation();
+                showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
+                    await deleteQuestionLocalWithTombstone(id);
+                    await fetchAndRender();
+                    if (state.cloud.user) await syncWithCloud({ silent: true });
+                });
+                return;
+            }
+            if (e.target.closest('.expand-btn')) {
+                e.stopPropagation();
+                const previewDiv = card.querySelector('.sub-questions-preview');
+                const isHidden = previewDiv.classList.contains('hidden');
+                if (isHidden && previewDiv.innerHTML === '') {
+                    const question = await db.questions.get(id);
+                    const subQs = JSON.parse(question.subQuestions || '[]');
+                    previewDiv.innerHTML = subQs.map((sq, i) => `<p><strong class="mr-2">${i+1}.</strong>${sq.stem}</p>`).join('');
+                }
+                previewDiv.classList.toggle('hidden');
+                e.target.textContent = isHidden ? '收起子问题' : `展开 ${JSON.parse((await db.questions.get(id)).subQuestions).length} 个子问题`;
+                return;
+            }
+            openViewModal(id);
+        });
+
+        DOMElements.listBody.addEventListener('click', async (e) => {
+            const row = e.target.closest('[data-id]');
+            if (!row) return;
+            const id = parseInt(row.dataset.id);
+            const buttonClicked = e.target.closest('button');
+            if (buttonClicked) triggerHapticFeedback();
+            if (e.target.closest('.edit-btn')) {
+                e.stopPropagation();
+                const question = await db.questions.get(id);
+                openModal(question);
+                return;
+            }
+            if (e.target.closest('.delete-btn')) {
+                e.stopPropagation();
+                showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
+                    await deleteQuestionLocalWithTombstone(id);
+                    await fetchAndRender();
+                    if (state.cloud.user) await syncWithCloud({ silent: true });
+                });
+                return;
+            }
+            openViewModal(id);
+        });
+        DOMElements.list.addEventListener('click', (e) => {
+            const sortBtn = e.target.closest('button[data-sort-key]');
+            if (!sortBtn) return;
+            setListSort(sortBtn.dataset.sortKey);
+        });
+
+        // --- 子问题和选项编辑事件 ---
+        DOMElements.subQuestionsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-sub-question-btn')) {
+                e.target.closest('[data-sq-id]').remove();
+            }
+            if (e.target.classList.contains('add-sub-option-btn')) {
+                const sqId = e.target.closest('[data-sq-id]').dataset.sqId;
+                const type = e.target.closest('[data-sq-id]').querySelector('.sub-question-type-select').value;
+                const inputType = type === 'single-choice' ? 'radio' : 'checkbox';
+                const optDiv = document.createElement('div');
+                optDiv.className = 'sub-option-row flex items-center gap-2';
+                optDiv.innerHTML = `
+                    <input type="${inputType}" name="sub-question-correct-${sqId}" class="w-4 h-4">
+                    <input type="text" data-field="option-text" placeholder="选项内容（必填）" class="flex-1 bg-white border border-gray-300 rounded-md p-1 text-sm text-gray-900 focus:outline-none focus:border-black">
+                    <button type="button" class="remove-sub-option-btn text-red-600 text-xs">&times;</button>
+                `;
+                e.target.before(optDiv);
+            }
+            if (e.target.classList.contains('remove-sub-option-btn')) {
+                e.target.closest('.flex').remove();
+            }
+        });
+
+        DOMElements.subQuestionsContainer.addEventListener('change', (e) => {
+            if (e.target.classList.contains('sub-question-type-select')) {
+                const sqNode = e.target.closest('[data-sq-id]');
+                const type = e.target.value;
+                sqNode.querySelector('.sub-question-answer-area').style.display = type === 'standard' ? '' : 'none';
+                const optionsArea = sqNode.querySelector('.sub-question-options-area');
+                optionsArea.style.display = type !== 'standard' ? '' : 'none';
+                if (type !== 'standard' && !optionsArea.querySelector('.add-sub-option-btn')) {
+                    optionsArea.innerHTML = '';
+                    const addOptBtn = document.createElement('button');
+                    addOptBtn.type = 'button';
+                    addOptBtn.className = 'add-sub-option-btn text-gray-600 text-xs hover:text-gray-800';
+                    addOptBtn.textContent = '+ 添加选项';
+                    optionsArea.appendChild(addOptBtn);
+                }
+            }
+        });
+
+        // --- 选项编辑事件 ---
+        DOMElements.addOptionBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const type = DOMElements.questionTypeSelect.value;
+            if (type === 'judgment') return;
+            appendMainOptionRow(type, { text: '', isCorrect: false });
+        });
+
+        DOMElements.optionsContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-option-btn')) {
+                const row = e.target.closest('.option-row');
+                if (!row) return;
+                const rowCount = DOMElements.optionsContainer.querySelectorAll('.option-row').length;
+                if (rowCount <= 1) return;
+                row.remove();
+                updatePreview();
+            }
+        });
+
+        DOMElements.addSubQuestionBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            DOMElements.subQuestionsContainer.appendChild(createSubQuestionNode());
+        });
+
+        // --- Markdown工具栏 ---
+        DOMElements.form.addEventListener('click', (e) => {
+            const button = e.target.closest('button[data-md]');
+            if (!button) return;
+            e.preventDefault();
+            const mdType = button.dataset.md;
+            const toolbar = button.closest('.markdown-toolbar');
+            const textarea = toolbar ? toolbar.nextElementSibling : null;
+            if (!textarea || textarea.tagName !== 'TEXTAREA') return;
+            switch(mdType) {
+                case 'bold': applyMarkdown(textarea, '**'); break;
+                case 'italic': applyMarkdown(textarea, '*'); break;
+                case 'code': applyMarkdown(textarea, '`'); break;
+                case 'katex': applyMarkdown(textarea, '$'); break;
+            }
+        });
+
+        // --- 粘贴事件 ---
+        const handlePasteForParsing = (event) => {
+            if (DOMElements.questionIdInput.value) return;
+            event.preventDefault();
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+            const textarea = event.target;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            textarea.setRangeText(pastedText, start, end, 'end');
+            parseAndPopulateFields(textarea.value);
+        };
+        DOMElements.questionStemInput.addEventListener('paste', handlePasteForParsing);
+
+        // --- 表单输入事件 ---
+        const debouncedPreviewUpdate = debounce(updatePreview, 300);
+        DOMElements.form.addEventListener('input', (e) => {
+            if (e.target.matches('#question-stem, #options-container input, #question-answer, #question-analysis, #sub-questions-container textarea, #sub-questions-container input')) {
+                debouncedPreviewUpdate();
+                renderTagRecommendations();
+            }
+        });
+
+        DOMElements.questionTypeSelect.addEventListener('change', (e) => {
+            const type = e.target.value;
+            updateFormUIForType(type);
+            if(['single-choice', 'multi-choice', 'judgment'].includes(type)) {
+                const currentOptions = getCurrentMainOptions();
+                renderOptionsEditor(type, currentOptions);
+            }
+            if(type === 'material' && DOMElements.subQuestionsContainer.children.length === 0) {
+                renderSubQuestionsEditor();
+            }
+            updatePreview();
+        });
+
+        // --- 分页事件 ---
+        DOMElements.pageSizeSelect.addEventListener('change', (e) => {
+            state.pagination.pageSize = parseInt(e.target.value);
+            state.pagination.currentPage = 1;
+            renderAllQuestions();
+        });
+
+        const navigatePage = (page) => {
+            if (page >= 1 && page !== state.pagination.currentPage) {
+                const totalItems = getFilteredQuestions().length;
+                const totalPages = Math.ceil(totalItems / state.pagination.pageSize);
+                if(page > totalPages) return;
+                triggerHapticFeedback();
+                state.pagination.currentPage = page;
+                renderAllQuestions();
+            }
+        };
+
+        DOMElements.firstPageBtn.addEventListener('click', () => navigatePage(1));
+        DOMElements.prevPageBtn.addEventListener('click', () => navigatePage(state.pagination.currentPage - 1));
+        DOMElements.nextPageBtn.addEventListener('click', () => navigatePage(state.pagination.currentPage + 1));
+        DOMElements.lastPageBtn.addEventListener('click', () => {
+             const totalItems = getFilteredQuestions().length;
+             const totalPages = Math.ceil(totalItems / state.pagination.pageSize);
+             navigatePage(totalPages);
+        });
+
+        DOMElements.pageNumbers.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.dataset.page) {
+                navigatePage(parseInt(e.target.dataset.page));
+            }
+        });
+
+        // --- 视图模态框 ---
+        const openViewModal = async (id) => {
+            const q = await db.questions.get(id);
+            if (!q) return;
+            let contentHTML = `<div class="mb-6 pb-6 border-b border-gray-200">${renderMarkdown(q.stem)}</div>`;
+            
+            if (q.type === 'material') {
+                try {
+                    const subQs = JSON.parse(q.subQuestions || '[]');
+                    contentHTML += subQs.map((sq, index) => {
+                        let answerContent = '';
+                        let optionsHTML = '';
+                        
+                        if (sq.type !== 'standard') {
+                            optionsHTML = (sq.options || []).map((opt, optIdx) => {
+                                const label = String.fromCharCode(65 + optIdx);
+                                const isCorrect = opt.isCorrect ? ' text-green-700 font-semibold' : '';
+                                return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
+                            }).join('');
+                            answerContent = sq.answer;
+                        } else {
+                            answerContent = sq.answer;
+                        }
+                        
+                        return `
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="prose prose-sm max-w-none font-semibold text-gray-800">${renderMarkdown(`(${index + 1}) ${sq.stem}`)}</div>
+                                ${optionsHTML ? `<div class="mt-2 space-y-1 text-sm text-gray-700 bg-gray-50 p-3 rounded">${optionsHTML}</div>` : ''}
+                                <div class="mt-2"><strong class="text-blue-700">答案：</strong> ${renderMarkdown(answerContent)}</div>
+                                ${sq.analysis ? `<div class="mt-2"><strong class="text-yellow-700">解析：</strong><div class="prose prose-sm max-w-none text-gray-600">${renderMarkdown(sq.analysis)}</div></div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+
+                    if (q.analysis) {
+                        contentHTML += `
+                            <h4 class="font-bold text-purple-700 mt-6 pt-4 border-t border-dashed border-gray-200 mb-2">材料总体解析</h4>
+                            <div class="prose prose-sm max-w-none text-gray-800">${renderMarkdown(q.analysis)}</div>
+                        `;
+                    }
+                } catch (e) { console.error("Error rendering view modal for material question", e); }
+            } else if (['single-choice', 'multi-choice', 'judgment'].includes(q.type)) {
+                try {
+                    const options = JSON.parse(q.options || '[]');
+                    if (options.length > 0) {
+                        const optionsHTML = options.map((opt, idx) => {
+                            const label = String.fromCharCode(65 + idx);
+                            const isCorrect = opt.isCorrect ? ' text-green-700 font-semibold' : '';
+                            return `<div class="flex gap-2${isCorrect}"><span>${label}.</span><div>${renderMarkdown(opt.text)}</div></div>`;
+                        }).join('');
+                        contentHTML += `<div class="mt-4"><strong class="text-gray-700">选项：</strong><div class="mt-2 space-y-1 text-sm text-gray-700 bg-gray-50 p-3 rounded">${optionsHTML}</div></div>`;
+                    }
+                } catch(e) { console.error("Error parsing options:", e); }
+                contentHTML += `
+                    <div class="mt-4">
+                        <h4 class="font-bold text-blue-700 mb-2">答案</h4>
+                        <div class="prose prose-sm max-w-none text-gray-700">${renderMarkdown(q.answer)}</div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-bold text-yellow-700 mb-2">解析</h4>
+                        <div class="prose prose-sm max-w-none text-gray-700">${renderMarkdown(q.analysis || '暂无解析')}</div>
+                    </div>
+                `;
+            } else {
+                contentHTML += `
+                    <div class="mt-4">
+                        <h4 class="font-bold text-blue-700 mb-2">答案</h4>
+                        <div class="prose prose-sm max-w-none text-gray-700">${renderMarkdown(q.answer)}</div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="font-bold text-yellow-700 mb-2">解析</h4>
+                        <div class="prose prose-sm max-w-none text-gray-700">${renderMarkdown(q.analysis || '暂无解析')}</div>
+                    </div>
+                `;
+            }
+            DOMElements.viewModalContent.innerHTML = contentHTML;
+            DOMElements.viewQuestionModal.classList.remove('hidden');
+        };
+
+        const closeViewModal = () => DOMElements.viewQuestionModal.classList.add('hidden');
+        DOMElements.viewModalCloseBtn.addEventListener('click', closeViewModal);
+        DOMElements.viewQuestionModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.viewQuestionModal) closeViewModal();
+        });
+
+        // --- 确认弹窗 ---
+        const showConfirmation = (title, message, onConfirm) => {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            DOMElements.confirmModal.classList.remove('hidden');
+            DOMElements.confirmOkBtn.onclick = () => {
+                triggerHapticFeedback();
+                onConfirm();
+                hideConfirmation();
+            };
+        };
+
+        const hideConfirmation = () => DOMElements.confirmModal.classList.add('hidden');
+        DOMElements.confirmCancelBtn.addEventListener('click', hideConfirmation);
+        DOMElements.confirmModal.addEventListener('click', (e) => {
+            if (e.target === DOMElements.confirmModal) hideConfirmation();
+        });
+        
+        // --- 解析核心 (保持原来逻辑，为节省体积此处做简化声明，实际开发需引入之前的 parse 逻辑) ---
+        // ===== 数据解析函数 =====
+        const separateQuestionParts = (rawText) => {
+            let text = rawText.replace(/^\s*\d+[\.、\s]*/, '').trim();
+            let stem = text, answerPart = '', analysisPart = '';
+            const answerMatchIndex = text.indexOf('【答案】');
+            const analysisMatchIndex = text.indexOf('【解析】');
+
+            if (answerMatchIndex !== -1 && analysisMatchIndex !== -1) {
+                if (answerMatchIndex < analysisMatchIndex) {
+                    stem = text.substring(0, answerMatchIndex).trim();
+                    answerPart = text.substring(answerMatchIndex + 4, analysisMatchIndex).trim();
+                    analysisPart = text.substring(analysisMatchIndex + 4).trim();
+                } else {
+                    stem = text.substring(0, analysisMatchIndex).trim();
+                    analysisPart = text.substring(analysisMatchIndex + 4, answerMatchIndex).trim();
+                    answerPart = text.substring(answerMatchIndex + 4).trim();
+                }
+            } else if (answerMatchIndex !== -1) {
+                stem = text.substring(0, answerMatchIndex).trim();
+                answerPart = text.substring(answerMatchIndex + 4).trim();
+            } else if (analysisMatchIndex !== -1) {
+                stem = text.substring(0, analysisMatchIndex).trim();
+                analysisPart = text.substring(analysisMatchIndex + 4).trim();
+            }
+            return { stem, answerPart, analysisPart };
+        };
+
+        const isMaterialQuestion = (rawText) => {
+            const answerCount = (rawText.match(/【答案】/g) || []).length;
+            if (answerCount > 1) return true;
+            const analysisCount = (rawText.match(/【解析】/g) || []).length;
+            if (analysisCount > 1) return true;
+            const numberedItems = rawText.match(/^\s*(\d+)[\.、\s]/gm) || [];
+            const uniqueNumbers = [...new Set(numberedItems.map(item => parseInt(item)))];
+            return uniqueNumbers.length > 1;
+        };
+
+        const isJudgmentQuestion = (stem, answerPart) => {
+             const judgmentWords = ["正确", "错误", "对", "错", "×", "✓", "T", "F"];
+             const upperAnswer = answerPart.toUpperCase().trim();
+             return judgmentWords.some(word => upperAnswer === word);
+        };
+
+        const cleanAndValidateOptions = (matches) => {
+            if (!matches || matches.length === 0) return [];
+            const options = matches.map(match => ({ letter: match[1], text: match[2].trim() }))
+                .filter(opt => opt.text && opt.text.length > 0 && opt.text.length < 1500);
+            if (options.length < 2) return [];
+            const firstCharCode = options[0].letter.charCodeAt(0);
+            const isConsecutive = options.every((opt, index) => opt.letter.charCodeAt(0) === firstCharCode + index);
+            return isConsecutive ? options : [];
+        };
+
+        const extractOptionsFromText = (text) => {
+            const multiLinePattern = /([A-Z])\.\s*([\s\S]+?)(?=\s*\n[A-Z]\.|\s*\n【|^\s*【|$)/g;
+            const matches = [...text.matchAll(multiLinePattern)];
+            const options = cleanAndValidateOptions(matches);
+            if (options.length >= 2) return options;
+            const singleLinePattern = /([A-Z])\.\s*([^A-Z\n\r【]+)/g;
+            const singleLineMatches = [...text.matchAll(singleLinePattern)];
+            return cleanAndValidateOptions(singleLineMatches);
+        };
+
+        const parseAsChoiceQuestion = (stem, answerPart, analysisPart, options) => {
+            const firstOptionIndex = stem.indexOf(options[0].letter + '.');
+            const pureStem = firstOptionIndex > -1 ? stem.substring(0, firstOptionIndex).trim() : stem;
+            const correctAnswers = answerPart.replace(/[^A-Z]/g, '');
+            const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+            const optionsWithCorrectness = options.map(opt => ({
+                text: opt.text,
+                isCorrect: correctAnswers.includes(opt.letter)
+            }));
+            DOMElements.questionStemInput.value = pureStem;
+            DOMElements.questionAnalysisInput.value = analysisPart;
+            DOMElements.questionTypeSelect.value = newType;
+            updateFormUIForType(newType);
+            renderOptionsEditor(newType, optionsWithCorrectness);
+        };
+        const parseAsJudgmentQuestion = (stem, answerPart, analysisPart) => {
+            const isCorrect = ["正确", "对", "✓", "T"].some(kw => answerPart.toUpperCase().includes(kw));
+            DOMElements.questionStemInput.value = stem;
+            DOMElements.questionAnalysisInput.value = analysisPart;
+            DOMElements.questionTypeSelect.value = 'judgment';
+            updateFormUIForType('judgment');
+            renderOptionsEditor('judgment', [
+                { text: '正确', isCorrect },
+                { text: '错误', isCorrect: !isCorrect }
+            ]);
+        };
+
+        const parseAsStandardQuestion = (stem, answerPart, analysisPart) => {
+            DOMElements.questionStemInput.value = stem;
+            DOMElements.questionAnswerInput.value = answerPart;
+            DOMElements.questionAnalysisInput.value = analysisPart;
+            DOMElements.questionTypeSelect.value = 'standard';
+            updateFormUIForType('standard');
+        };
+
+        const parseAndPopulateSubQuestion = (sqNode) => {
+            const stemTextarea = sqNode.querySelector('textarea[data-field="stem"]');
+            if (!stemTextarea || !stemTextarea.value.trim()) return;
+            try {
+                const parts = separateQuestionParts(stemTextarea.value);
+                const { stem, answerPart, analysisPart } = parts;
+                const typeSelect = sqNode.querySelector('.sub-question-type-select');
+                const optionsArea = sqNode.querySelector('.sub-question-options-area');
+                const answerArea = sqNode.querySelector('.sub-question-answer-area');
+                const analysisTextarea = sqNode.querySelector('textarea[data-field="analysis"]');
+                analysisTextarea.value = analysisPart;
+                
+                if (isJudgmentQuestion(stem, answerPart)) {
+                    const isCorrect = ["正确", "对", "✓", "T"].some(kw => answerPart.toUpperCase().includes(kw));
+                    stemTextarea.value = stem;
+                    typeSelect.value = 'single-choice';
+                    answerArea.style.display = 'none';
+                    optionsArea.style.display = '';
+                    optionsArea.innerHTML = '';
+                    const options = [{text: '正确', isCorrect: isCorrect}, {text: '错误', isCorrect: !isCorrect}];
+                    options.forEach((opt, index) => {
+                         const optDiv = document.createElement('div');
+                         optDiv.className = 'sub-option-row flex items-center gap-2';
+                         optDiv.innerHTML = `
+                             <input type="radio" name="sub-question-correct-${sqNode.dataset.sqId}" value="${index}" ${opt.isCorrect ? 'checked' : ''} class="w-4 h-4 text-gray-900 bg-white border-gray-300 rounded">
+                             <input type="text" data-field="option-text" value="${opt.text}" class="flex-1 bg-white border border-gray-300 rounded-md p-1 text-sm text-gray-900 focus:outline-none focus:border-black">
+                             <button type="button" class="remove-sub-option-btn text-red-600 text-xs">&times;</button>`;
+                         optionsArea.appendChild(optDiv);
+                    });
+                } else {
+                    const options = extractOptionsFromText(stem);
+                    if (options.length >= 2) {
+                        const pureStem = stem.substring(0, stem.indexOf(options[0].letter + '.')).trim();
+                        stemTextarea.value = pureStem;
+                        const correctAnswers = answerPart.replace(/[^A-Z]/g, '');
+                        const newType = correctAnswers.length > 1 ? 'multi-choice' : 'single-choice';
+                        typeSelect.value = newType;
+                        answerArea.style.display = 'none';
+                        optionsArea.style.display = '';
+                        optionsArea.innerHTML = '';
+                        const inputType = newType === 'single-choice' ? 'radio' : 'checkbox';
+                        options.forEach((opt, index) => {
+                            const optDiv = document.createElement('div');
+                            optDiv.className = 'sub-option-row flex items-center gap-2';
+                            optDiv.innerHTML = `
+                                <input type="${inputType}" name="sub-question-correct-${sqNode.dataset.sqId}" value="${index}" ${correctAnswers.includes(opt.letter) ? 'checked' : ''} class="w-4 h-4 text-gray-900 bg-white border-gray-300 rounded">
+                                <input type="text" data-field="option-text" value="${opt.text}" class="flex-1 bg-white border border-gray-300 rounded-md p-1 text-sm text-gray-900 focus:outline-none focus:border-black">
+                                <button type="button" class="remove-sub-option-btn text-red-600 text-xs">&times;</button>`;
+                            optionsArea.appendChild(optDiv);
+                        });
+                    } else {
+                        stemTextarea.value = stem;
+                        sqNode.querySelector('textarea[data-field="answer"]').value = answerPart;
+                        typeSelect.value = 'standard';
+                        answerArea.style.display = '';
+                        optionsArea.style.display = 'none';
+                    }
+                }
+            } catch(e) { console.error('子问题解析失败:', e); }
+        };
+
+        const parseAsMaterialQuestion = (rawText) => {
+            DOMElements.questionTypeSelect.value = 'material';
+            updateFormUIForType('material');
+            const subQuestionBlocks = rawText.split(/\n(?=\s*\d+[\.、\s])/).filter(block => block.trim() !== '');
+            if (subQuestionBlocks.length === 0) {
+                DOMElements.questionStemInput.value = rawText;
+                return;
+            }
+            let mainStem = '';
+            let startIndex = 0;
+            if (!subQuestionBlocks[0].includes('【答案】') && !subQuestionBlocks[0].includes('【解析】')) {
+                mainStem = subQuestionBlocks[0].trim();
+                startIndex = 1;
+            }
+            DOMElements.questionStemInput.value = mainStem;
+            DOMElements.subQuestionsContainer.innerHTML = '';
+            for (let i = startIndex; i < subQuestionBlocks.length; i++) {
+                const blockText = subQuestionBlocks[i];
+                const sqNode = createSubQuestionNode({ stem: blockText });
+                DOMElements.subQuestionsContainer.appendChild(sqNode);
+                parseAndPopulateSubQuestion(sqNode);
+            }
+            DOMElements.questionAnalysisInput.value = '';
+        };
+
+        const parseAndPopulateFields = (rawText) => {
+            if (!rawText || !rawText.trim()) return;
+            if (!rawText.includes('【答案】') || !rawText.includes('【解析】')) {
+                DOMElements.parseStemBtn.classList.remove('hidden');
+                DOMElements.questionStemInput.value = rawText;
+                updatePreview();
+                return;
+            }
+            try {
+                if (isMaterialQuestion(rawText)) {
+                    parseAsMaterialQuestion(rawText);
+                } else {
+                    const parts = separateQuestionParts(rawText);
+                    const { stem, answerPart, analysisPart } = parts;
+                    if (isJudgmentQuestion(stem, answerPart)) {
+                        parseAsJudgmentQuestion(stem, answerPart, analysisPart);
+                    } else {
+                        const options = extractOptionsFromText(stem);
+                        const answerIsLetters = /^[A-Z]+$/.test(answerPart.trim());
+                        if (options.length >= 2 && answerIsLetters) {
+                            parseAsChoiceQuestion(stem, answerPart, analysisPart, options);
+                        } else {
+                            parseAsStandardQuestion(stem, answerPart, analysisPart);
+                        }
+                    }
+                }
+                updatePreview();
+            } catch (error) {
+                console.error('题目解析过程中发生错误:', error);
+            }
+        };
+
+        function updatePreview() {
+        const type = DOMElements.questionTypeSelect.value;
+        const stem = DOMElements.questionStemInput.value.trim();
+        const answer = DOMElements.questionAnswerInput.value.trim();
+        const analysis = DOMElements.questionAnalysisInput.value.trim();
+        const tags = getEditorTags();
+
+        const options = [];
+        DOMElements.optionsContainer.querySelectorAll('.option-row').forEach((div) => {
+            const text = div.querySelector('input[type="text"]')?.value?.trim() || '';
+            const isCorrect = div.querySelector('input[type="radio"], input[type="checkbox"]')?.checked || false;
+            if (text) options.push({ text, isCorrect });
+        });
+
+        const subQuestions = [];
+        DOMElements.subQuestionsContainer.querySelectorAll('[data-sq-id]').forEach((sqNode) => {
+            const sqType = sqNode.querySelector('.sub-question-type-select').value;
+            const sqStem = sqNode.querySelector('textarea[data-field="stem"]').value.trim();
+            if (!sqStem) return;
+            const sq = { type: sqType, stem: sqStem, options: [], correctIndices: [] };
+            if (sqType !== 'standard') {
+                const optionDivs = sqNode.querySelectorAll('.sub-question-options-area > .flex');
+                optionDivs.forEach((optDiv) => {
+                    const optInput = optDiv.querySelector('input[type="text"]');
+                    const optCheckbox = optDiv.querySelector('input[type="radio"], input[type="checkbox"]');
+                    if (optInput && optInput.value.trim()) {
+                        const isCorrect = optCheckbox ? optCheckbox.checked : false;
+                        sq.options.push({ text: optInput.value.trim(), isCorrect });
+                        if (isCorrect) sq.correctIndices.push(sq.options.length - 1);
+                    }
+                });
+            }
+            subQuestions.push(sq);
+        });
+
+        const hasAnyContent = Boolean(stem || answer || analysis || options.length || subQuestions.length || tags.length);
+        if (!hasAnyContent) {
+            DOMElements.previewArea.innerHTML = `
+                <div class="h-full min-h-[180px] flex flex-col items-center justify-center text-center px-6">
+                    <p class="text-sm font-medium text-gray-700">预览区为空</p>
+                    <p class="text-xs text-gray-500 mt-1">开始输入题干、选项或答案后，这里会实时显示。</p>
+                </div>`;
+            return;
+        }
+
+        const anchorClass = (name) => `preview-anchor-target rounded-lg border p-3 ${state.ui.activePreviewAnchor === name ? 'preview-anchor-active' : 'border-transparent bg-transparent'}`;
+        let previewHTML = '<div class="space-y-3">';
+
+        if (stem) {
+            previewHTML += `
+                <section data-preview-anchor="stem" class="${anchorClass('stem')}">
+                    <div class="text-xs text-gray-500 mb-1">题干 / 材料</div>
+                    <div class="prose prose-sm max-w-none text-gray-800">${renderMarkdown(stem)}</div>
+                </section>`;
+        }
+
+        if (['single-choice', 'multi-choice', 'judgment'].includes(type) && options.length > 0) {
+            previewHTML += `
+                <section data-preview-anchor="options" class="${anchorClass('options')}">
+                    <div class="text-xs text-gray-500 mb-2">选项</div>
+                    <div class="space-y-1.5">
+                        ${options.map((opt, idx) => {
+                            const letter = String.fromCharCode(65 + idx);
+                            const highlightClass = opt.isCorrect ? 'bg-green-50 border border-green-200 text-green-900 font-semibold' : 'bg-gray-50 border border-gray-200';
+                            return `<div class="flex gap-2 items-start rounded-md px-3 py-2 ${highlightClass} text-sm"><span class="flex-shrink-0">${letter}.</span><div class="flex-1">${renderMarkdown(opt.text)}</div></div>`;
+                        }).join('')}
+                    </div>
+                </section>`;
+        }
+
+        if (type === 'material' && subQuestions.length > 0) {
+            previewHTML += `
+                <section data-preview-anchor="subquestions" class="${anchorClass('subquestions')}">
+                    <div class="text-xs text-gray-500 mb-2">子问题</div>
+                    <div class="space-y-3">
+                        ${subQuestions.map((sq, index) => {
+                            const optionsHTML = sq.options.length > 0
+                                ? `<div class="mt-2 space-y-1">${sq.options.map((opt, optIdx) => {
+                                      const letter = String.fromCharCode(65 + optIdx);
+                                      const cls = opt.isCorrect ? 'bg-green-100 text-green-800 font-semibold' : 'bg-gray-100';
+                                      return `<div class="flex gap-2 items-start p-2 rounded text-sm ${cls}"><span class="font-semibold text-gray-600">${letter}.</span><div class="flex-1">${renderMarkdown(opt.text)}</div></div>`;
+                                  }).join('')}</div>`
+                                : '';
+                            const answerText = sq.correctIndices.length > 0
+                                ? `<div class="mt-2 text-sm text-gray-600"><span class="font-semibold">答案：</span>${sq.correctIndices.map(idx => String.fromCharCode(65 + idx)).join(', ')}</div>`
+                                : '';
+                            return `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200"><div class="font-semibold text-gray-800 mb-1">(${index + 1}) ${renderMarkdown(sq.stem)}</div>${optionsHTML}${answerText}</div>`;
+                        }).join('')}
+                    </div>
+                </section>`;
+        }
+
+        if (type === 'standard' && answer) {
+            previewHTML += `
+                <section data-preview-anchor="answer" class="${anchorClass('answer')}">
+                    <div class="text-xs text-blue-700 font-semibold mb-1">答案</div>
+                    <div class="text-gray-700 prose prose-sm">${renderMarkdown(answer)}</div>
+                </section>`;
+        }
+
+        if (analysis) {
+            previewHTML += `
+                <section data-preview-anchor="analysis" class="${anchorClass('analysis')}">
+                    <div class="text-xs text-yellow-800 font-semibold mb-1">解析</div>
+                    <div class="text-gray-700 prose prose-sm">${renderMarkdown(analysis)}</div>
+                </section>`;
+        }
+
+        if (tags.length > 0) {
+            previewHTML += `
+                <section data-preview-anchor="tags" class="${anchorClass('tags')}">
+                    <div class="text-xs text-gray-500 mb-1">标签</div>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${tags.map(tag => `<span class="px-2 py-0.5 rounded-full text-xs bg-gray-100 border border-gray-200 text-gray-700">${tag}</span>`).join('')}
+                    </div>
+                </section>`;
+        }
+
+        previewHTML += '</div>';
+        DOMElements.previewArea.innerHTML = previewHTML;
+        setPreviewAnchor(state.ui.activePreviewAnchor);
+        renderTagRecommendations();
+    }
+
+        // --- 初始化执行 ---
+        const parseDocxContent = (text) => {
+            const questions = [];
+            const normalizedText = text.replace(/\r\n/g, '\n').replace(/(\s*\n\s*){2,}/g, '\n\n').trim();
+            const sections = normalizedText.split(/^[一二三四五六七八九十]+、.+题\s*$/m);
+            const titles = normalizedText.match(/^[一二三四五六七八九十]+、.+题\s*$/gm);
+
+            if (!titles) {
+                console.error("Could not find any section titles like '一、单项选择题'.");
+                return [];
+            }
+            
+            titles.forEach((title, index) => {
+                const sectionContent = sections[index + 1];
+                if (!sectionContent || !sectionContent.trim()) return;
+
+                let questionType = 'standard';
+                if (title.includes('单项选择')) questionType = 'single-choice';
+                if (title.includes('多项选择')) questionType = 'multi-choice';
+                if (title.includes('判断')) questionType = 'judgment';
+                
+                const questionBlocks = sectionContent.trim().split(/\n(?=\d+\.)/);
+
+                questionBlocks.forEach(block => {
+                    if (!block.trim()) return;
+
+                    const q = {
+                        bankId: state.currentBankId,
+                        type: questionType, 
+                        reviewStatus: 'new', 
+                        createdAt: new Date(), 
+                        updatedAt: new Date(),
+                        tags: [], 
+                        options: null, 
+                        subQuestions: null
+                    };
+
+                    const answerMatch = block.match(/【答案】\s*([^\n]+)/);
+                    const analysisMatch = block.match(/【解析】\s*([\s\S]+)/);
+                    const answer = answerMatch ? answerMatch[1].trim() : '';
+                    q.analysis = analysisMatch ? analysisMatch[1].trim() : '';
+                    
+                    let stem = block.replace(/【答案】[^\n]+/, '').replace(/【解析】[\s\S]+/, '').trim();
+
+                    if (questionType === 'single-choice' || questionType === 'multi-choice') {
+                        const optionsArray = [];
+                        const optionLines = stem.match(/^[A-Z]\.[\s\S]+/gm) || [];
+                        stem = stem.replace(/^[A-Z]\.[\s\S]+/gm, '').trim();
+                        const correctAnswers = answer.split('');
+                        
+                        optionLines.forEach(line => {
+                            const optionLetter = line.charAt(0);
+                            const optionText = line.substring(2).trim();
+                            optionsArray.push({ text: optionText, isCorrect: correctAnswers.includes(optionLetter) });
+                        });
+                        q.options = JSON.stringify(optionsArray);
+                        q.answer = optionsArray.filter(opt => opt.isCorrect).map(opt => opt.text).join(', ');
+                    } else if (questionType === 'judgment') {
+                        const isCorrect = ["正确", "对", "✓", "T"].some(kw => answer.toUpperCase().includes(kw));
+                        const optionsArray = [
+                            { text: '正确', isCorrect },
+                            { text: '错误', isCorrect: !isCorrect }
+                        ];
+                        q.options = JSON.stringify(optionsArray);
+                        q.answer = optionsArray.find(opt => opt.isCorrect)?.text || '';
+                    } else {
+                        q.answer = answer;
+                    }
+                    
+                    q.stem = stem;
+                    questions.push(q);
+                });
+            });
+            return questions;
+        };
+
+        const downloadFile = (blob, filename) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        // --- 导入导出事件监听 ---
+        DOMElements.importJsonInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (!Array.isArray(data)) throw new Error('JSON is not an array.');
+                    // 为导入的数据添加bankId
+                    const dataWithBankId = data.map(q => ({
+                        ...q,
+                        bankId: state.currentBankId,
+                        tags: uniqueTags(Array.isArray(q.tags) ? q.tags : String(q.tags || '').split(/,|，/)),
+                        updatedAt: q.updatedAt ? new Date(q.updatedAt) : new Date(),
+                        createdAt: q.createdAt ? new Date(q.createdAt) : new Date()
+                    }));
+                    await db.questions.bulkPut(dataWithBankId);
+                    showToast(`${data.length} 条题目导入/更新成功!`, 'success');
+                    await fetchAndRender();
+                    if (state.cloud.user) await syncWithCloud({ silent: true });
+                    DOMElements.importJsonInput.value = '';
+                } catch (error) { showToast('导入失败: ' + error.message, 'error'); }
+            };
+            reader.readAsText(file);
+        });
+
+        DOMElements.importDocxInput.addEventListener('change', async (e) => {
+             const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const arrayBuffer = event.target.result;
+                    const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+                    const text = result.value;
+                    const questions = parseDocxContent(text);
+                    if (questions.length === 0) throw new Error("未能从文件中解析出有效题目。请检查模板格式。");
+                    await db.questions.bulkAdd(questions);
+                    showToast(`${questions.length} 条题目从DOCX导入成功!`, 'success');
+                    await fetchAndRender();
+                    if (state.cloud.user) await syncWithCloud({ silent: true });
+                    DOMElements.importDocxInput.value = '';
+                } catch(error) { showToast('DOCX 导入失败: ' + error.message, 'error'); }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+        
+        DOMElements.exportJsonBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions();
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.json`);
+        });
+
+        DOMElements.exportCsvBtn.addEventListener('click', () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions().map(q => ({
+                ...q, 
+                tags: q.tags.join(','), 
+                subQuestions: q.subQuestions ? JSON.stringify(q.subQuestions) : '', 
+                options: q.options ? JSON.stringify(q.options) : ''
+            }));
+            const csvString = Papa.unparse(data);
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.csv`);
+        });
+
+        DOMElements.exportDocxBtn.addEventListener('click', async () => {
+            triggerHapticFeedback();
+            const data = getFilteredQuestions();
+            let htmlContent = ``;
+            data.forEach(q => {
+                htmlContent += `<div>${renderMarkdown(q.stem)}</div><br><p><strong>答案:</strong></p><div>${renderMarkdown(q.answer)}</div><br><p><strong>解析:</strong></p><div>${renderMarkdown(q.analysis || '')}</div><hr>`;
+            });
+            const blob = htmlDocx.asBlob(htmlContent);
+            downloadFile(blob, `q-bank-export-${new Date().toISOString().slice(0,10)}.docx`);
+        });
+
+        DOMElements.deleteAllQuestionsBtn.addEventListener('click', () => {
+            DOMElements.ioCloseBtn.click();
+            setTimeout(() => {
+                showConfirmation('确认删除当前题库下的所有题目？', '此操作将永久删除该题库的所有题目，且无法恢复。请谨慎操作！', async () => {
+                    try {
+                        const list = await db.questions.where('bankId').equals(state.currentBankId).toArray();
+                        for (const q of list) await markQuestionTombstoneIfNeeded(q);
+                        await db.questions.where('bankId').equals(state.currentBankId).delete();
+                        showToast('当前题库的所有题目已删除', 'success');
+                        await fetchAndRender();
+                        if (state.cloud.user) await syncWithCloud({ silent: true });
+                    } catch (error) {
+                        showToast('删除失败: ' + error.message, 'error');
+                    }
+                });
+            }, 200);
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            setPreviewVisible(state.ui.previewVisible);
+            setQuestionViewMode(state.ui.viewMode);
+            updateSortIndicators();
+            setTagEditorTags([]);
+            updateAuthUI();
+            await initCloudAuth();
+            await initBanks();
+            await fetchAndRender();
+            if (state.cloud.user) await syncWithCloud({ silent: true });
+        });
+    </script>
+</body>
+</html>
+            overflow: hidden;
+        }
+        .skeleton-card::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        
+        .option-input-group input[type="radio"], .option-input-group input[type="checkbox"] { display: none; }
+        .option-input-group label { border: 2px solid #4b5563; }
+        .option-input-group input:checked + label { border-color: #2563eb; background-color: #1e40af; }
+
+        /* 侧边栏列表项样式 */
+        .bank-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.18s ease;
+        }
+        .bank-item:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+        }
+        .bank-item.active {
+            border-color: #111827;
+            background: #f3f4f6;
+            color: #111827;
+            font-weight: 600;
+        }
+        .bank-main {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            flex: 1;
+        }
+        .bank-main > span {
+            display: block;
+            min-width: 0;
+        }
+        .bank-action-btn {
+            opacity: 0;
+            transition: opacity 0.15s ease, color 0.15s ease;
+            padding: 4px;
+            color: #9ca3af;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .bank-item:hover .bank-action-btn,
+        .bank-item.active .bank-action-btn {
+            opacity: 1;
+        }
+        .bank-action-btn:hover {
+            color: #dc2626;
+            background: #fef2f2;
+        }
+
+        /* 移动端响应式 */
+        @media (max-width: 767px) {
+          #questions-grid { grid-template-columns: 1fr; }
+          .question-card-content { padding: 1.5rem; }
+          
+          #sidebar {
+              transform: translateX(-100%);
+              transition: transform 0.3s ease-in-out;
+          }
+          #sidebar.open { transform: translateX(0); }
+        }
+
+        /* 其他模态框和响应式样式保持不变... (已省略冗长媒体查询，保持原逻辑) */
+        .btn-mobile-touch { padding: 0.75rem 1rem; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .markdown-toolbar { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: -1px; padding: 4px 8px; background-color: #f3f4f6; border: 1px solid #d1d5db; border-bottom: none; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem; }
+        .markdown-toolbar button { background-color: transparent; border: 1px solid transparent; color: #4b5563; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 14px; line-height: 1; transition: all 0.2s; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; }
+        .markdown-toolbar button:hover { background-color: #e5e7eb; color: #111827; }
+        .markdown-toolbar + textarea { border-top-left-radius: 0; border-top-right-radius: 0; }
+        .markdown-toolbar input[type="color"] { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; background-color: transparent; border: none; cursor: pointer; padding: 0; border-radius: 4px; }
+        .markdown-toolbar input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: 1px solid #9ca3af; }
+        .sub-questions-preview p:not(:last-child) { border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .preview-anchor-target { transition: all 0.15s ease; }
+        .preview-anchor-active { border-color: #93c5fd !important; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); background-color: #eff6ff; }
+        .toast-container { position: fixed; top: 16px; right: 16px; z-index: 80; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+        .toast-item { min-width: 220px; max-width: 360px; padding: 10px 12px; border-radius: 10px; font-size: 13px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); opacity: 0; transform: translateY(-8px); transition: all 0.2s ease; border: 1px solid transparent; }
+        .toast-item.show { opacity: 1; transform: translateY(0); }
+        .toast-info { background: #eff6ff; color: #1e3a8a; border-color: #bfdbfe; }
+        .toast-success { background: #ecfdf5; color: #166534; border-color: #a7f3d0; }
+        .toast-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+        .clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .tag-editor { position: relative; }
+        .tag-chip-list { display: flex; flex-wrap: wrap; gap: 6px; min-height: 32px; }
+        .tag-chip { display: inline-flex; align-items: center; gap: 6px; background: #f3f4f6; border: 1px solid #e5e7eb; color: #374151; padding: 2px 8px; border-radius: 999px; font-size: 12px; }
+        .tag-chip button { color: #6b7280; }
+        .tag-chip button:hover { color: #dc2626; }
+        .tag-suggestions { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); max-height: 180px; overflow: auto; }
+        .tag-suggestion-item { width: 100%; text-align: left; padding: 8px 10px; font-size: 12px; color: #374151; border-bottom: 1px solid #f3f4f6; }
+        .tag-suggestion-item:last-child { border-bottom: none; }
+        .tag-suggestion-item:hover, .tag-suggestion-item.active { background: #f9fafb; }
+        .tag-category-group { border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px; }
+        .tag-category-title { font-size: 11px; color: #6b7280; margin-bottom: 6px; font-weight: 600; }
+        .app-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: #ffffff;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M6 8l4 4 4-4' stroke='%236b7280' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 14px 14px;
+            padding-right: 30px;
+            border: 1px solid #d1d5db;
+            color: #111827;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .app-select:focus {
+            outline: none;
+            border-color: #111827;
+            box-shadow: 0 0 0 1px #111827;
+        }
+        .app-select::-ms-expand { display: none; }
+        .app-select option {
+            background-color: #ffffff;
+            color: #111827;
+            padding: 8px 10px;
+        }
+        .app-select option:checked {
+            background-color: #111827;
+            color: #ffffff;
+        }
+        .app-select optgroup {
+            background-color: #f9fafb;
+            color: #4b5563;
+            font-style: normal;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 antialiased flex h-screen overflow-hidden">
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/20 z-30 hidden md:hidden transition-opacity"></div>
+
+    <aside id="sidebar" class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full fixed md:relative z-40 bg-white/95 backdrop-blur-xl">
+        <div class="h-16 flex items-center justify-between px-5 border-b border-gray-200">
+            <div class="flex items-center gap-2">
+                <svg class="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" fill="currentColor"/><path d="M12.5 7v5.5l4.5 2.5-1 1.73L11 13V7h1.5z" fill="currentColor"/></svg>
+                <h1 class="text-xl font-bold text-black tracking-tight">Q-Bank</h1>
+            </div>
+            <button id="close-sidebar-btn" class="md:hidden p-1 text-gray-500 hover:text-black">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="p-4">
+            <button id="create-bank-btn" class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 rounded-lg text-sm font-medium transition shadow-sm text-black">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                新建题库
+            </button>
+        </div>
+
+        <div class="px-3 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">我的题库</div>
+        <nav id="bank-list-container" class="flex-1 overflow-y-auto px-2 space-y-1 pb-20 md:pb-4">
+            </nav>
+    </aside>
+
+    <div id="main-content" class="flex-1 flex flex-col h-full min-w-0 bg-white relative">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 z-10 flex-shrink-0">
+            <div class="flex items-center gap-3 flex-1">
+                <button id="mobile-menu-btn" class="md:hidden p-1 text-gray-600 hover:text-black">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <h2 id="current-bank-title" class="text-lg font-semibold text-gray-800 truncate max-w-[150px] sm:max-w-xs">载入中...</h2>
+            </div>
+
+            <div class="flex-1 max-w-xl mx-4">
+                <input type="search" id="search-box" placeholder="搜索题干、解析、标签..." class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition">
+            </div>
+
+            <div class="hidden md:flex items-center gap-2">
+                <button id="tag-manager-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg transition duration-200 flex items-center gap-1 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 12h6m-6 5h10M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"></path></svg>
+                    <span>标签管理</span>
+                </button>
                 <button id="io-btn" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium py-2 px-3 rounded-lg transition duration-200 flex items-center gap-1 shadow-sm" title="快捷键: Alt + M">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                     <span>导入/导出</span>
