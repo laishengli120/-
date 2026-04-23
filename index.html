@@ -1066,6 +1066,7 @@
         // ========================================================================
         let supabase = null;
         let authSubscription = null;
+        let syncUnlockTimer = null;
         const nowIso = () => new Date().toISOString();
         const toIso = (v) => {
             if (!v) return nowIso();
@@ -1082,6 +1083,18 @@
             if (tone === 'error') DOMElements.cloudModalStatus.className = 'text-xs text-red-600 pt-2';
             else if (tone === 'success') DOMElements.cloudModalStatus.className = 'text-xs text-green-600 pt-2';
             else DOMElements.cloudModalStatus.className = 'text-xs text-gray-500 pt-2';
+        };
+        const setSyncBusyUI = (busy) => {
+            const topBtnText = DOMElements.cloudSyncBtn?.querySelector('span');
+            if (busy) {
+                DOMElements.cloudSyncBtn.classList.add('opacity-70', 'cursor-wait');
+                if (topBtnText) topBtnText.textContent = '同步中...';
+                if (DOMElements.cloudSyncNowBtn) DOMElements.cloudSyncNowBtn.textContent = '同步中...';
+            } else {
+                DOMElements.cloudSyncBtn.classList.remove('opacity-70', 'cursor-wait');
+                if (topBtnText) topBtnText.textContent = '同步';
+                if (DOMElements.cloudSyncNowBtn) DOMElements.cloudSyncNowBtn.textContent = '立即同步';
+            }
         };
         const updateAuthUI = () => {
             const hasConfig = Boolean(state.cloud.supabaseUrl && state.cloud.supabaseAnonKey);
@@ -1290,7 +1303,10 @@
             }
         };
         const syncWithCloud = async ({ silent = false } = {}) => {
-            if (state.cloud.syncing) return;
+            if (state.cloud.syncing) {
+                if (!silent) showToast('同步正在进行中，请稍候…', 'info');
+                return;
+            }
             const client = ensureCloudReady();
             if (!client) return;
             const user = state.cloud.user;
@@ -1299,8 +1315,18 @@
                 return;
             }
             state.cloud.syncing = true;
-            DOMElements.cloudSyncBtn.disabled = true;
-            DOMElements.cloudSyncNowBtn.disabled = true;
+            setSyncBusyUI(true);
+            if (syncUnlockTimer) {
+                clearTimeout(syncUnlockTimer);
+                syncUnlockTimer = null;
+            }
+            syncUnlockTimer = setTimeout(() => {
+                if (!state.cloud.syncing) return;
+                state.cloud.syncing = false;
+                setSyncBusyUI(false);
+                updateCloudStatusText('同步超时，请重试。', 'error');
+                if (!silent) showToast('同步超时，请检查网络后重试', 'error');
+            }, 30000);
             updateCloudStatusText('同步中...');
             try {
                 await processTombstones(client);
@@ -1317,9 +1343,12 @@
                 updateCloudStatusText(`同步失败：${err.message || err}`, 'error');
                 if (!silent) showToast(`同步失败: ${err.message || err}`, 'error');
             } finally {
+                if (syncUnlockTimer) {
+                    clearTimeout(syncUnlockTimer);
+                    syncUnlockTimer = null;
+                }
                 state.cloud.syncing = false;
-                DOMElements.cloudSyncBtn.disabled = false;
-                DOMElements.cloudSyncNowBtn.disabled = false;
+                setSyncBusyUI(false);
             }
         };
         const initCloudAuth = async () => {
@@ -3200,6 +3229,7 @@
             setQuestionViewMode(state.ui.viewMode);
             updateSortIndicators();
             setTagEditorTags([]);
+            setSyncBusyUI(false);
             updateAuthUI();
             await initCloudAuth();
             await initBanks();
