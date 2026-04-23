@@ -619,6 +619,9 @@
             });
         });
 
+        const DEFAULT_SUPABASE_URL = 'https://oynrflmlzramuqocbyis.supabase.co';
+        const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bnJmbG1senJhbXVxb2NieWlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjM3OTUsImV4cCI6MjA5MjQ5OTc5NX0.9pDTVXWChVD6GfskNDZbW-n-hUzXAkkdPWSuFwNrGZU';
+
         // --- 2. STATE MANAGEMENT ---
         let state = {
             banks: [],
@@ -635,8 +638,8 @@
             },
             tagStats: [],
             cloud: {
-                supabaseUrl: localStorage.getItem('qbank.supabase.url') || '',
-                supabaseAnonKey: localStorage.getItem('qbank.supabase.anonKey') || '',
+                supabaseUrl: localStorage.getItem('qbank.supabase.url') || DEFAULT_SUPABASE_URL,
+                supabaseAnonKey: localStorage.getItem('qbank.supabase.anonKey') || DEFAULT_SUPABASE_ANON_KEY,
                 user: null,
                 syncing: false,
                 initialized: false
