@@ -1,0 +1,24 @@
+{
+  "name": "Q-Bank - 本地习题库管理",
+  "short_name": "Q-Bank",
+  "description": "专业题库管理与智能组卷工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fafaf9",
+  "theme_color": "#1c1917",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "zh-CN"
+}
