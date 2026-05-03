@@ -217,6 +217,17 @@
             font-family: 'JetBrains Mono', monospace;
         }
         .stat-pill strong.green { color: #16a34a; }
+        .stat-pill.clickable { cursor: pointer; user-select: none; }
+        .stat-pill.clickable strong {
+            border-bottom: 1.5px dashed currentColor;
+            padding-bottom: 1px;
+        }
+        .stat-pill.clickable:hover strong { opacity: 0.8; }
+        .stat-pill.clickable:active { transform: scale(0.97); }
+        .stat-pill.review-active strong {
+            border-bottom-style: solid;
+            color: #92400e;
+        }
         .subbar-divider {
             width: 0.5px; height: 16px;
             background: var(--color-border-tertiary);
@@ -488,11 +499,6 @@
             #subbar .stat-pill strong { font-size: 12px; }
             .subbar-divider { margin: 0 2px; }
             .subbar-view-toggle { margin-left: auto; }
-
-            /* Subbar toolbar group: hide on mobile (in bottom nav instead) */
-            #subbar-toolbar-group {
-                display: none !important;
-            }
 
             /* Paper modal: fullscreen on mobile */
             .shortcuts-panel {
@@ -982,7 +988,7 @@
 
         <!-- Subbar: stats + view toggle -->
         <div id="subbar">
-            <div class="stat-pill">
+            <div class="stat-pill clickable" id="stat-total-pill" title="点击智能组卷">
                 <strong id="stat-total">—</strong>
                 <span>道题</span>
             </div>
@@ -990,11 +996,11 @@
                 <strong id="stat-mastered" class="green">—</strong>
                 <span>已掌握</span>
             </div>
-            <div class="stat-pill">
+            <div class="stat-pill clickable" id="stat-review-due-pill" title="点击进入复习模式">
                 <strong id="stat-review-due" style="color:#f59e0b;">—</strong>
                 <span>待复习</span>
             </div>
-            <div class="stat-pill">
+            <div class="stat-pill clickable" id="stat-tags-pill" title="点击管理标签">
                 <strong id="stat-tags">—</strong>
                 <span>标签</span>
             </div>
@@ -1007,7 +1013,7 @@
                 <span id="stat-progress-label" class="text-[11px] whitespace-nowrap" style="font-family: 'JetBrains Mono', monospace; color: var(--color-text-tertiary);">— / —</span>
             </div>
             <!-- View toggle -->
-            <div class="subbar-view-toggle">
+            <div class="subbar-view-toggle hidden sm:inline-flex">
                 <button id="view-grid-btn" class="subbar-view-btn active" title="卡片视图">
                     <svg class="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="1.8"/></svg>
                 </button>
@@ -1240,13 +1246,13 @@
                 <!-- Row 2: action buttons -->
                 <div class="flex justify-end gap-3">
                     <button type="button" id="cancel-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
-                        取消 <span class="text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Esc</span>
+                        取消 <span class="hidden sm:inline text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Esc</span>
                     </button>
                     <button type="button" id="save-and-add-another-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
-                        保存并继续 <span class="text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Ctrl+↵</span>
+                        保存并继续 <span class="hidden sm:inline text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Ctrl+↵</span>
                     </button>
                     <button type="submit" form="question-form" class="bg-black hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition text-sm flex items-center gap-1.5">
-                        保存 <span class="text-[10px] text-gray-200 font-mono border border-gray-500 px-1 rounded bg-black/20">Ctrl+S</span>
+                        保存 <span class="hidden sm:inline text-[10px] text-gray-200 font-mono border border-gray-500 px-1 rounded bg-black/20">Ctrl+S</span>
                     </button>
                 </div>
             </div>
@@ -2498,13 +2504,34 @@
             const d = new Date(v);
             return Number.isNaN(d.getTime()) ? new Date() : d;
         };
+        const getLastSyncKey = (userId = state.cloud?.user?.id) => userId ? `qbank.lastSync.${userId}` : 'qbank.lastSync';
+        const getLastSyncAt = (userId = state.cloud?.user?.id) => {
+            if (userId) return localStorage.getItem(getLastSyncKey(userId));
+            return localStorage.getItem('qbank.lastSync');
+        };
+        const setLastSyncAt = (ts, userId = state.cloud?.user?.id) => {
+            if (userId) localStorage.setItem(getLastSyncKey(userId), ts);
+            localStorage.setItem('qbank.lastSync', ts);
+        };
+        const getLocalRecordTime = (record) => coerceDate(record?.updatedAt || record?.createdAt).getTime();
+        const getRemoteRecordTime = (record) => coerceDate(record?.updated_at || record?.created_at).getTime();
+        const getLastSyncTime = (userId = state.cloud?.user?.id) => {
+            const lastSync = getLastSyncAt(userId);
+            if (!lastSync) return 0;
+            const d = new Date(lastSync);
+            return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+        };
+        const hasLocalChangesAfterLastSync = (record, userId) => {
+            const lastSyncTime = getLastSyncTime(userId);
+            return lastSyncTime > 0 && getLocalRecordTime(record) > lastSyncTime;
+        };
         const updateCloudStatusText = (text, tone = 'muted') => {
             DOMElements.cloudModalStatus.textContent = text;
             if (tone === 'error') DOMElements.cloudModalStatus.className = 'cloud-status-value text-red-600';
             else if (tone === 'success') DOMElements.cloudModalStatus.className = 'cloud-status-value text-emerald-700';
             else DOMElements.cloudModalStatus.className = 'cloud-status-value text-slate-700';
         };
-        const setSyncBusyUI = (busy, label = '处理中...') => {
+        const setSyncBusyUI = (busy, label = '处理中...', { recordLastSync = false, userId = state.cloud?.user?.id } = {}) => {
             const buttons = [
                 DOMElements.topCloudUploadBtn,
                 DOMElements.topCloudPullBtn,
@@ -2515,10 +2542,12 @@
                 buttons.forEach(btn => {
                     btn.disabled = true;
                     btn.classList.add('opacity-70', 'cursor-wait');
-                    btn.dataset.prevText = btn.textContent;
+                    if (!btn.dataset.idleHtml) btn.dataset.idleHtml = btn.innerHTML;
                     btn.textContent = '处理中...';
                 });
                 if (DOMElements.ioSyncProgressWrap) {
+                    clearInterval(DOMElements.ioSyncProgressWrap._animInterval);
+                    clearTimeout(DOMElements.ioSyncProgressWrap._hideTimer);
                     DOMElements.ioSyncProgressWrap.classList.add('visible');
                     if (DOMElements.ioSyncProgressLabel) DOMElements.ioSyncProgressLabel.textContent = label;
                     if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '0%';
@@ -2533,18 +2562,21 @@
                 buttons.forEach(btn => {
                     btn.disabled = false;
                     btn.classList.remove('opacity-70', 'cursor-wait');
-                    if (btn.dataset.prevText) btn.textContent = btn.dataset.prevText;
+                    if (btn.dataset.idleHtml) btn.innerHTML = btn.dataset.idleHtml;
                 });
                 if (DOMElements.ioSyncProgressWrap) {
                     clearInterval(DOMElements.ioSyncProgressWrap._animInterval);
+                    clearTimeout(DOMElements.ioSyncProgressWrap._hideTimer);
                     if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '100%';
-                    setTimeout(() => {
+                    DOMElements.ioSyncProgressWrap._hideTimer = setTimeout(() => {
                         DOMElements.ioSyncProgressWrap.classList.remove('visible');
                         if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '0%';
                     }, 700);
+                }
+                if (recordLastSync) {
                     // Persist last sync time
                     const ts = new Date().toISOString();
-                    localStorage.setItem('qbank.lastSync', ts);
+                    setLastSyncAt(ts, userId);
                     if (DOMElements.ioLastSyncLine) DOMElements.ioLastSyncLine.textContent = `上次同步：${formatRelativeTime(ts)}`;
                 }
             }
@@ -2641,10 +2673,6 @@
         };
         const deleteBankLocalWithTombstone = async (bankId) => {
             const bank = await db.banks.get(bankId);
-            const bankQuestions = await db.questions.where('bankId').equals(bankId).toArray();
-            for (const q of bankQuestions) {
-                await markQuestionTombstoneIfNeeded(q);
-            }
             if (bank?.cloudId) {
                 await db.tombstones.add({
                     entity: 'bank',
@@ -2658,7 +2686,11 @@
             await db.banks.delete(bankId);
         };
         const processTombstones = async (client, userId) => {
-            const tombstones = await db.tombstones.toArray();
+            const skippedBankDeletes = new Set();
+            const tombstones = (await db.tombstones.toArray()).sort((a, b) => {
+                if (a.entity === b.entity) return (a.id || 0) - (b.id || 0);
+                return a.entity === 'bank' ? -1 : 1;
+            });
             for (const item of tombstones) {
                 if (!item.cloudId) {
                     await db.tombstones.delete(item.id);
@@ -2671,14 +2703,26 @@
                     continue;
                 }
                 const table = item.entity === 'bank' ? 'qbanks' : 'qbank_questions';
+                const selectColumns = item.entity === 'bank' ? 'id, updated_at' : 'id, bank_id, updated_at';
                 const { data: existing, error: checkError } = await client
                     .from(table)
-                    .select('id')
+                    .select(selectColumns)
                     .eq('id', item.cloudId)
                     .eq('user_id', userId)
                     .limit(1);
                 if (checkError) continue;
                 if (!existing || existing.length === 0) {
+                    await db.tombstones.delete(item.id);
+                    continue;
+                }
+                if (item.entity === 'question' && skippedBankDeletes.has(existing[0].bank_id)) {
+                    await db.tombstones.delete(item.id);
+                    continue;
+                }
+                const deleteTime = coerceDate(item.createdAt).getTime();
+                const cloudTime = getRemoteRecordTime(existing[0]);
+                if (cloudTime > deleteTime) {
+                    if (item.entity === 'bank') skippedBankDeletes.add(item.cloudId);
                     await db.tombstones.delete(item.id);
                     continue;
                 }
@@ -2691,8 +2735,16 @@
             }
         };
         const pushLocalBanksToCloud = async (client, userId) => {
-            const banks = (await db.banks.toArray()).filter(b => !b.ownerId || b.ownerId === userId);
+            const [banks, cloudRes] = await Promise.all([
+                db.banks.toArray(),
+                client.from('qbanks').select('id, updated_at').eq('user_id', userId)
+            ]);
+            if (cloudRes.error) throw cloudRes.error;
+            const cloudMap = new Map((cloudRes.data || []).map(b => [b.id, b]));
             for (const bank of banks) {
+                if (bank.ownerId && bank.ownerId !== userId) continue;
+                const cloud = bank.cloudId ? cloudMap.get(bank.cloudId) : null;
+                if (cloud && getLocalRecordTime(bank) <= getRemoteRecordTime(cloud)) continue;
                 const cloudId = bank.cloudId || crypto.randomUUID();
                 const payload = {
                     id: cloudId,
@@ -2701,18 +2753,36 @@
                     updated_at: toIso(bank.updatedAt || bank.createdAt),
                     created_at: toIso(bank.createdAt)
                 };
-                const { error } = await client.from('qbanks').upsert(payload, { onConflict: 'id' });
+                const { data: saved, error } = await client
+                    .from('qbanks')
+                    .upsert(payload, { onConflict: 'id' })
+                    .select('id, updated_at')
+                    .single();
                 if (error) throw error;
-                if (!bank.cloudId || bank.ownerId !== userId) {
-                    await db.banks.update(bank.id, { cloudId, ownerId: userId, updatedAt: coerceDate(payload.updated_at) });
-                }
+                await db.banks.update(bank.id, {
+                    cloudId,
+                    ownerId: userId,
+                    updatedAt: coerceDate(saved?.updated_at || payload.updated_at)
+                });
             }
         };
         const pushLocalQuestionsToCloud = async (client, userId) => {
-            const questions = (await db.questions.toArray()).filter(q => !q.ownerId || q.ownerId === userId);
-            const cloudBanks = (await db.banks.toArray()).filter(b => !b.ownerId || b.ownerId === userId);
-            const localBankIdToCloudId = new Map(cloudBanks.filter(b => b.cloudId).map(b => [b.id, b.cloudId]));
+            const [questions, cloudBanks, cloudQuestionsRes] = await Promise.all([
+                db.questions.toArray(),
+                db.banks.toArray(),
+                client.from('qbank_questions').select('id, updated_at').eq('user_id', userId)
+            ]);
+            if (cloudQuestionsRes.error) throw cloudQuestionsRes.error;
+            const cloudQuestionMap = new Map((cloudQuestionsRes.data || []).map(q => [q.id, q]));
+            const localBankIdToCloudId = new Map(
+                cloudBanks
+                    .filter(b => (!b.ownerId || b.ownerId === userId) && b.cloudId)
+                    .map(b => [b.id, b.cloudId])
+            );
             for (const q of questions) {
+                if (q.ownerId && q.ownerId !== userId) continue;
+                const cloud = q.cloudId ? cloudQuestionMap.get(q.cloudId) : null;
+                if (cloud && getLocalRecordTime(q) <= getRemoteRecordTime(cloud)) continue;
                 const bankCloudId = localBankIdToCloudId.get(q.bankId);
                 if (!bankCloudId) continue;
                 const cloudId = q.cloudId || crypto.randomUUID();
@@ -2736,11 +2806,17 @@
                     updated_at: toIso(q.updatedAt || q.createdAt),
                     created_at: toIso(q.createdAt)
                 };
-                const { error } = await client.from('qbank_questions').upsert(payload, { onConflict: 'id' });
+                const { data: saved, error } = await client
+                    .from('qbank_questions')
+                    .upsert(payload, { onConflict: 'id' })
+                    .select('id, updated_at')
+                    .single();
                 if (error) throw error;
-                if (!q.cloudId || q.ownerId !== userId) {
-                    await db.questions.update(q.id, { cloudId, ownerId: userId, updatedAt: coerceDate(payload.updated_at) });
-                }
+                await db.questions.update(q.id, {
+                    cloudId,
+                    ownerId: userId,
+                    updatedAt: coerceDate(saved?.updated_at || payload.updated_at)
+                });
             }
         };
         const pullBanksFromCloud = async (client, userId) => {
@@ -2754,6 +2830,13 @@
             const localCloudBanks = await db.banks.where('ownerId').equals(userId).toArray();
             for (const localBank of localCloudBanks) {
                 if (!remoteIds.has(localBank.cloudId)) {
+                    if (hasLocalChangesAfterLastSync(localBank, userId)) {
+                        await db.banks.update(localBank.id, { ownerId: null });
+                        await db.questions.where('bankId').equals(localBank.id).modify((question) => {
+                            if (!question.ownerId || question.ownerId === userId) question.ownerId = null;
+                        });
+                        continue;
+                    }
                     await db.questions.where('bankId').equals(localBank.id).delete();
                     await db.banks.delete(localBank.id);
                 }
@@ -2769,7 +2852,11 @@
                     updatedAt: coerceDate(rb.updated_at)
                 };
                 if (existing) {
-                    await db.banks.update(existing.id, payload);
+                    const localTime = coerceDate(existing.updatedAt || existing.createdAt).getTime();
+                    const remoteTime = coerceDate(rb.updated_at).getTime();
+                    if (localTime <= remoteTime) {
+                        await db.banks.update(existing.id, payload);
+                    }
                     bankCloudToLocalId.set(rb.id, existing.id);
                 } else {
                     const newId = await db.banks.add(payload);
@@ -2789,6 +2876,10 @@
             const localCloudQuestions = await db.questions.where('ownerId').equals(userId).toArray();
             for (const localQ of localCloudQuestions) {
                 if (!remoteIds.has(localQ.cloudId)) {
+                    if (hasLocalChangesAfterLastSync(localQ, userId)) {
+                        await db.questions.update(localQ.id, { ownerId: null });
+                        continue;
+                    }
                     await db.questions.delete(localQ.id);
                 }
             }
@@ -2816,12 +2907,17 @@
                     updatedAt: coerceDate(rq.updated_at)
                 };
                 const existing = await db.questions.where('cloudId').equals(rq.id).first();
-                if (existing) await db.questions.update(existing.id, payload);
-                else await db.questions.add(payload);
+                if (existing) {
+                    const localTime = coerceDate(existing.updatedAt || existing.createdAt).getTime();
+                    const remoteTime = coerceDate(rq.updated_at).getTime();
+                    if (localTime <= remoteTime) {
+                        await db.questions.update(existing.id, payload);
+                    }
+                } else await db.questions.add(payload);
             }
         };
         const buildCompareStats = async (client, userId) => {
-            const [localBanks, localQuestions, cloudBanksRes, cloudQuestionsRes] = await Promise.all([
+            const [allLocalBanks, allLocalQuestions, cloudBanksRes, cloudQuestionsRes] = await Promise.all([
                 db.banks.toArray(),
                 db.questions.toArray(),
                 client.from('qbanks').select('id, name, updated_at').eq('user_id', userId),
@@ -2829,6 +2925,12 @@
             ]);
             if (cloudBanksRes.error) throw cloudBanksRes.error;
             if (cloudQuestionsRes.error) throw cloudQuestionsRes.error;
+            const localBanks = allLocalBanks.filter(bank => !bank.ownerId || bank.ownerId === userId);
+            const localBankIds = new Set(localBanks.map(bank => bank.id));
+            const localQuestions = allLocalQuestions.filter(q => {
+                if (q.ownerId && q.ownerId !== userId) return false;
+                return localBankIds.has(q.bankId);
+            });
             const cloudBanks = cloudBanksRes.data || [];
             const cloudQuestions = cloudQuestionsRes.data || [];
             const cloudBankMap = new Map(cloudBanks.map(b => [b.id, b]));
@@ -2926,7 +3028,7 @@
             renderSidebarBanks();
             renderAllQuestions();
         };
-        const withSyncGuard = async (task, timeoutMessage, { silent = false } = {}) => {
+        const withSyncGuard = async (task, timeoutMessage, { silent = false, showBusyUI = !silent, recordLastSync = false } = {}) => {
             if (state.cloud.syncing) {
                 if (!silent) showToast('同步正在进行中，请稍候…', 'info');
                 return;
@@ -2939,33 +3041,47 @@
                 return;
             }
             state.cloud.syncing = true;
-            setSyncBusyUI(true);
+            if (showBusyUI) setSyncBusyUI(true);
             if (syncUnlockTimer) {
                 clearTimeout(syncUnlockTimer);
                 syncUnlockTimer = null;
             }
-            syncUnlockTimer = setTimeout(() => {
-                if (!state.cloud.syncing) return;
-                updateCloudStatusText(timeoutMessage, 'muted');
-                if (!silent) showToast(timeoutMessage, 'info');
-            }, 120000);
+            let succeeded = false;
+            const timeoutPromise = new Promise((_, reject) => {
+                syncUnlockTimer = setTimeout(() => {
+                    const err = new Error(timeoutMessage);
+                    err.isSyncTimeout = true;
+                    reject(err);
+                }, 120000);
+            });
             try {
-                await task(client, user);
+                await Promise.race([task(client, user), timeoutPromise]);
+                succeeded = true;
             } catch (err) {
                 console.error('Cloud op failed', err);
-                updateCloudStatusText(`操作失败：${err.message || err}`, 'error');
-                if (!silent) showToast(`操作失败: ${err.message || err}`, 'error');
+                const message = err.message || err;
+                if (err.isSyncTimeout) {
+                    updateCloudStatusText(message, 'muted');
+                    if (!silent) showToast(message, 'info');
+                } else {
+                    updateCloudStatusText(`操作失败：${message}`, 'error');
+                    if (!silent) showToast(`操作失败: ${message}`, 'error');
+                }
             } finally {
                 if (syncUnlockTimer) {
                     clearTimeout(syncUnlockTimer);
                     syncUnlockTimer = null;
                 }
                 state.cloud.syncing = false;
-                setSyncBusyUI(false);
+                if (showBusyUI) setSyncBusyUI(false, '处理中...', { recordLastSync: succeeded && recordLastSync, userId: user.id });
             }
         };
+        let lastCompareTime = 0;
         const compareWithCloud = async ({ silent = false } = {}) => {
+            // Throttle silent compares: skip if one ran within the last 30 seconds
+            if (silent && Date.now() - lastCompareTime < 30000) return;
             await withSyncGuard(async (client, user) => {
+                lastCompareTime = Date.now();
                 updateCloudStatusText('正在对比云端...');
                 const result = await buildCompareStats(client, user.id);
                 state.cloud.compareStats = result.stats;
@@ -2986,14 +3102,10 @@
                 const result = await buildCompareStats(client, user.id);
                 state.cloud.compareStats = result.stats;
                 state.cloud.compareDetail = result.detail;
-                // 上传后再做一次对比，确保状态展示与云端一致
-                const verifyResult = await buildCompareStats(client, user.id);
-                state.cloud.compareStats = verifyResult.stats;
-                state.cloud.compareDetail = verifyResult.detail;
                 renderCompareSummary();
                 updateCloudStatusText('上传完成（刚刚）', 'success');
                 if (!silent) showToast('本地变更已上传', 'success');
-            }, '上传时间较长，仍在继续处理...', { silent });
+            }, '上传时间较长，仍在继续处理...', { silent, recordLastSync: true });
         };
         const pullCloudToLocal = async ({ silent = false } = {}) => {
             await withSyncGuard(async (client, user) => {
@@ -3008,7 +3120,7 @@
                 renderCompareSummary();
                 updateCloudStatusText('拉取完成（刚刚）', 'success');
                 if (!silent) showToast('云端数据已拉取到本地', 'success');
-            }, '拉取时间较长，仍在继续处理...', { silent });
+            }, '拉取时间较长，仍在继续处理...', { silent, recordLastSync: true });
         };
         const initCloudAuth = async () => {
             createSupabaseIfReady();
@@ -3026,12 +3138,15 @@
             state.cloud.user = data.session?.user || null;
             updateAuthUI();
             state.cloud.initialized = true;
-            const { data: authData } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            const { data: authData } = supabase.auth.onAuthStateChange(async (event, session) => {
                 state.cloud.user = session?.user || null;
                 updateAuthUI();
                 if (state.cloud.user) {
                     updateCloudStatusText(`已登录：${state.cloud.user.email || state.cloud.user.id}`, 'success');
-                    await compareWithCloud({ silent: true });
+                    // Only compare on explicit sign-in, not on token refresh (which fires on tab focus)
+                    if (event === 'SIGNED_IN') {
+                        await compareWithCloud({ silent: true });
+                    }
                 } else {
                     updateCloudStatusText('已退出登录。');
                     state.cloud.compareStats = null;
@@ -3473,12 +3588,6 @@
             document.getElementById('stat-progress-label').textContent = totalQ ? masteredQ + ' / ' + totalQ : '— / —';
             document.getElementById('stat-progress-bar').style.width = totalQ ? Math.round(masteredQ / totalQ * 100) + '%' : '0%';
 
-            // Update review button badge
-            const reviewBtn = document.getElementById('review-mode-btn');
-            if (reviewBtn && !reviewModeActive) {
-                reviewBtn.textContent = dueReviewQ > 0 ? '复习(' + dueReviewQ + ')' : '复习';
-            }
-            
             const filteredQuestions = getFilteredQuestions();
             const displayQuestions = state.ui.viewMode === 'list' ? sortQuestionsForList(filteredQuestions) : filteredQuestions;
             const { currentPage, pageSize } = state.pagination;
@@ -5270,7 +5379,7 @@
             if (DOMElements.exportScopeNote) DOMElements.exportScopeNote.textContent = scopeNote;
 
             // Sync: last-sync timestamp
-            const lastSync = localStorage.getItem('qbank.lastSync');
+            const lastSync = getLastSyncAt();
             if (DOMElements.ioLastSyncLine) DOMElements.ioLastSyncLine.textContent = lastSync ? `上次同步：${formatRelativeTime(lastSync)}` : '';
 
             // Sync: login note visibility
@@ -6304,18 +6413,6 @@
 
             showToast('试卷已生成：' + paper.questionCount + ' 题，满分 ' + paper.totalScore + ' 分', 'success');
         };
-        const addPaperGenButton = () => {
-            const subbar = document.getElementById('subbar');
-            if (!subbar) return;
-            const btn = document.createElement('button');
-            btn.id = 'generate-paper-btn';
-            btn.className = 'stat-pill';
-            btn.style.cssText = 'cursor:pointer;background:#f5f5f4;border:1px solid #e7e5e4;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:500;margin-left:8px;';
-            btn.innerHTML = '<span>📝 组卷</span>';
-            btn.title = '智能组卷';
-            btn.onclick = showPaperPreview;
-            subbar.appendChild(btn);
-        };
 
         // Add review mode button to subbar
 
@@ -6478,114 +6575,89 @@
             }
         };
 
-        // Add review & paper buttons to subbar as clean inline toolbar
+        // Stat-pill-driven actions: click numbers in subbar for paper gen / review / tag mgmt
         let reviewModeActive = false;
-        const addSubbarButtons = () => {
-            const subbar = document.getElementById('subbar');
-            if (!subbar) { console.warn('[Q-Bank] subbar not found'); return; }
 
-            // Create button group with divider style
-            const group = document.createElement('div');
-            group.id = 'subbar-toolbar-group';
-            group.style.cssText = 'display:inline-flex;align-items:center;gap:6px;margin-left:12px;padding-left:12px;border-left:0.5px solid var(--color-border-tertiary);';
-
-            // Review button
-            const reviewBtn = document.createElement('button');
-            reviewBtn.id = 'review-mode-btn';
-            reviewBtn.style.cssText = 'cursor:pointer;background:transparent;border:none;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:500;white-space:nowrap;color:var(--color-text-secondary);transition:all 0.15s;';
-            reviewBtn.textContent = '复习';
-            reviewBtn.title = '间隔重复复习模式';
-            reviewBtn.onmouseenter = function() { if(!reviewModeActive){reviewBtn.style.background='#f5f5f4';} };
-            reviewBtn.onmouseleave = function() { if(!reviewModeActive){reviewBtn.style.background='transparent';} };
-            reviewBtn.onclick = async function() {
-                if (reviewModeActive) {
-                    reviewModeActive = false;
-                    reviewBtn.textContent = '复习';
-                    reviewBtn.style.background = 'transparent';
-                    reviewBtn.style.color = 'var(--color-text-secondary)';
-                    state.pagination.pageSize = 9;
+        const toggleReviewMode = async function() {
+            const reviewPill = document.getElementById('stat-review-due-pill');
+            if (reviewModeActive) {
+                reviewModeActive = false;
+                if (reviewPill) reviewPill.classList.remove('review-active');
+                state.pagination.pageSize = 9;
+                state.questions = await db.questions.where('bankId').equals(state.currentBankId).toArray();
+                state.questions = state.questions.map(function(q) { return Object.assign({}, q, { tags: uniqueTags(q.tags || []) }); });
+                updateTagStats();
+                renderAllQuestions();
+            } else {
+                await loadQuestionsForCurrentBank();
+                var due = getDueForReview(state.questions);
+                if (due.length === 0) {
+                    showToast('今日无待复习题目', 'info');
                     state.questions = await db.questions.where('bankId').equals(state.currentBankId).toArray();
                     state.questions = state.questions.map(function(q) { return Object.assign({}, q, { tags: uniqueTags(q.tags || []) }); });
                     updateTagStats();
                     renderAllQuestions();
-                } else {
-                    reviewModeActive = true;
-                    reviewBtn.textContent = '退出复习';
-                    reviewBtn.style.background = '#fef3c7';
-                    reviewBtn.style.color = '#92400e';
-                    await loadQuestionsForCurrentBank();
-                    var due = getDueForReview(state.questions);
-                    if (due.length === 0) {
-                        reviewModeActive = false;
-                        reviewBtn.textContent = '复习';
-                        reviewBtn.style.background = 'transparent';
-                        reviewBtn.style.color = 'var(--color-text-secondary)';
-                        showToast('今日无待复习题目', 'info');
-                        state.questions = await db.questions.where('bankId').equals(state.currentBankId).toArray();
-                        state.questions = state.questions.map(function(q) { return Object.assign({}, q, { tags: uniqueTags(q.tags || []) }); });
-                        updateTagStats();
-                        renderAllQuestions();
-                        return;
-                    }
-                    state.questions = due;
-                    state.pagination.currentPage = 1;
-                    state.pagination.pageSize = 50;
-                    renderAllQuestions();
-                    setTimeout(function() {
-                        document.querySelectorAll('.question-card').forEach(function(card) {
-                            var footer = card.querySelector('div.p-4');
-                            if (!footer) return;
-                            var reviewRow = document.createElement('div');
-                            reviewRow.className = 'flex items-center gap-2 mt-3 pt-3';
-                            reviewRow.style.cssText = 'border-top:1px solid #e7e5e4;';
-                            reviewRow.innerHTML = '<span style="font-size:10px;color:#a8a29e;">\u590d\u4e60\u8bc4\u5206:</span>' +
-                                [1,2,3,4,5].map(function(n) { return '<button class="review-quality-btn" data-quality="' + n + '">' + n + '</button>'; }).join('');
-                            footer.appendChild(reviewRow);
-                            reviewRow.querySelectorAll('.review-quality-btn').forEach(function(btn) {
-                                btn.addEventListener('click', async function(ev) {
-                                    ev.stopPropagation();
-                                    var quality = parseInt(btn.dataset.quality);
-                                    reviewRow.querySelectorAll('.review-quality-btn').forEach(function(b) { b.classList.remove('selected'); });
-                                    btn.classList.add('selected');
-                                    var qid = parseInt(card.dataset.questionId);
-                                    var q = await db.questions.get(qid);
-                                    if (q) {
-                                        var smData = SM2.nextReview(q, quality);
-                                        var newStatus = q.reviewStatus;
-                                        if (quality >= 4 && smData.smInterval >= 21) newStatus = 'mastered';
-                                        else if (quality >= 3) newStatus = 'reviewing';
-                                        else newStatus = 'reviewing';
-                                        await db.questions.update(qid, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
-                                        showToast('已记录(' + quality + '/5)', 'success');
-                                        card.style.opacity = '0.4';
-                                        card.style.pointerEvents = 'none';
-                                    }
-                                });
+                    return;
+                }
+                reviewModeActive = true;
+                if (reviewPill) reviewPill.classList.add('review-active');
+                state.questions = due;
+                state.pagination.currentPage = 1;
+                state.pagination.pageSize = 50;
+                renderAllQuestions();
+                setTimeout(function() {
+                    document.querySelectorAll('.question-card').forEach(function(card) {
+                        var footer = card.querySelector('div.p-4');
+                        if (!footer) return;
+                        var reviewRow = document.createElement('div');
+                        reviewRow.className = 'flex items-center gap-2 mt-3 pt-3';
+                        reviewRow.style.cssText = 'border-top:1px solid #e7e5e4;';
+                        reviewRow.innerHTML = '<span style="font-size:10px;color:#a8a29e;">复习评分:</span>' +
+                            [1,2,3,4,5].map(function(n) { return '<button class="review-quality-btn" data-quality="' + n + '">' + n + '</button>'; }).join('');
+                        footer.appendChild(reviewRow);
+                        reviewRow.querySelectorAll('.review-quality-btn').forEach(function(btn) {
+                            btn.addEventListener('click', async function(ev) {
+                                ev.stopPropagation();
+                                var quality = parseInt(btn.dataset.quality);
+                                reviewRow.querySelectorAll('.review-quality-btn').forEach(function(b) { b.classList.remove('selected'); });
+                                btn.classList.add('selected');
+                                var qid = parseInt(card.dataset.questionId);
+                                var q = await db.questions.get(qid);
+                                if (q) {
+                                    var smData = SM2.nextReview(q, quality);
+                                    var newStatus = q.reviewStatus;
+                                    if (quality >= 4 && smData.smInterval >= 21) newStatus = 'mastered';
+                                    else if (quality >= 3) newStatus = 'reviewing';
+                                    else newStatus = 'reviewing';
+                                    await db.questions.update(qid, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
+                                    showToast('已记录(' + quality + '/5)', 'success');
+                                    card.style.opacity = '0.4';
+                                    card.style.pointerEvents = 'none';
+                                }
                             });
                         });
-                    }, 150);
-                }
-            };
+                    });
+                }, 150);
+            }
+        };
 
-            // Paper gen button
-            var paperBtn = document.createElement('button');
-            paperBtn.id = 'generate-paper-btn';
-            paperBtn.style.cssText = 'cursor:pointer;background:transparent;border:none;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:500;white-space:nowrap;color:var(--color-text-secondary);transition:all 0.15s;';
-            paperBtn.textContent = '组卷';
-            paperBtn.title = '智能组卷 - 自动抽取题目生成试卷';
-            paperBtn.onmouseenter = function() { paperBtn.style.background = '#f5f5f4'; };
-            paperBtn.onmouseleave = function() { paperBtn.style.background = 'transparent'; };
-            paperBtn.onclick = showPaperPreview;
+        const addSubbarButtons = () => {
+            const subbar = document.getElementById('subbar');
+            if (!subbar) { console.warn('[Q-Bank] subbar not found'); return; }
 
-            group.appendChild(reviewBtn);
-            group.appendChild(paperBtn);
-            subbar.appendChild(group);
+            // Wire stat pill clicks
+            var totalPill = document.getElementById('stat-total-pill');
+            var reviewPill = document.getElementById('stat-review-due-pill');
+            var tagsPill = document.getElementById('stat-tags-pill');
+            if (totalPill) totalPill.addEventListener('click', function() { triggerHapticFeedback(); showPaperPreview(); });
+            if (reviewPill) reviewPill.addEventListener('click', function() { triggerHapticFeedback(); toggleReviewMode(); });
+            if (tagsPill) tagsPill.addEventListener('click', function() { triggerHapticFeedback(); openTagManager(); });
 
-            // Wire up mobile bottom bar buttons
+            // Wire mobile bottom bar buttons
             var mobReview = document.getElementById('mobile-review-btn');
             var mobPaper = document.getElementById('mobile-paper-btn');
-            if (mobReview) mobReview.onclick = reviewBtn.onclick;
-            if (mobPaper) mobPaper.onclick = paperBtn.onclick;
+            if (mobReview) mobReview.onclick = toggleReviewMode;
+            if (mobPaper) mobPaper.onclick = showPaperPreview;
         };
 
         if (document.readyState === 'loading') {
