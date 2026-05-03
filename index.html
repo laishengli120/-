@@ -6191,6 +6191,143 @@
             return paper;
         };
 
+        const getPaperQuestions = (paper) => {
+            const result = [];
+            (paper.sections || []).forEach(section => {
+                (section.questions || []).forEach(q => result.push(q));
+            });
+            return result;
+        };
+
+        const parsePaperOptions = (question) => {
+            try {
+                const options = JSON.parse(question.options || '[]');
+                return Array.isArray(options) ? options : [];
+            } catch (e) {
+                return [];
+            }
+        };
+
+        const normalizeAnswerText = (value) => String(value || '')
+            .replace(/<[^>]*>/g, '')
+            .replace(/\s+/g, '')
+            .trim()
+            .toLowerCase();
+
+        const splitAnswerTokens = (answer) => String(answer || '')
+            .replace(/[，、；;|/\\]+/g, ',')
+            .replace(/\s+/g, ',')
+            .split(',')
+            .map(token => token.trim())
+            .filter(Boolean);
+
+        const normalizeLetterAnswer = (letters) => {
+            const seen = new Set();
+            return letters
+                .map(letter => String(letter || '').trim().toUpperCase())
+                .filter(letter => /^[A-Z]$/.test(letter))
+                .filter(letter => {
+                    if (seen.has(letter)) return false;
+                    seen.add(letter);
+                    return true;
+                })
+                .sort()
+                .join(',');
+        };
+
+        const getCorrectLettersFromStoredAnswer = (question, options) => {
+            const raw = String(question.answer || '').trim();
+            if (!raw) return '';
+
+            if (question.type === 'judgment') {
+                const yesTokens = ['正确', '对', '是', 'true', 't', 'yes', 'y', '✓', '✔'];
+                const noTokens = ['错误', '错', '否', 'false', 'f', 'no', 'n', '✗', '×', 'x'];
+                const normalized = raw.replace(/\s+/g, '').toLowerCase();
+                const expected = yesTokens.some(token => normalized.includes(token))
+                    ? true
+                    : (noTokens.some(token => normalized.includes(token)) ? false : null);
+                if (expected !== null) {
+                    if (options.length > 0) {
+                        const idx = options.findIndex(opt => {
+                            const text = normalizeAnswerText(opt.text);
+                            return expected
+                                ? ['正确', '对', '是', 'true', 't'].includes(text)
+                                : ['错误', '错', '否', 'false', 'f'].includes(text);
+                        });
+                        return String.fromCharCode(65 + (idx >= 0 ? idx : (expected ? 0 : 1)));
+                    }
+                    return expected ? 'T' : 'F';
+                }
+            }
+
+            const compact = raw.replace(/[，、；;,\s]+/g, '').toUpperCase();
+            if (/^[A-Z]+$/.test(compact)) return normalizeLetterAnswer(compact.split(''));
+
+            const tokens = splitAnswerTokens(raw);
+            const letters = [];
+            tokens.forEach(token => {
+                const upper = token.toUpperCase();
+                if (/^[A-Z]+$/.test(upper)) {
+                    upper.split('').forEach(letter => letters.push(letter));
+                    return;
+                }
+                const textKey = normalizeAnswerText(token);
+                const idx = options.findIndex(opt => normalizeAnswerText(opt.text) === textKey);
+                if (idx >= 0) letters.push(String.fromCharCode(65 + idx));
+            });
+            return normalizeLetterAnswer(letters);
+        };
+
+        const getCorrectPaperAnswer = (question) => {
+            const options = parsePaperOptions(question);
+            const optionLetters = options
+                .map((opt, idx) => opt && opt.isCorrect ? String.fromCharCode(65 + idx) : '')
+                .filter(Boolean);
+            return normalizeLetterAnswer(optionLetters) || getCorrectLettersFromStoredAnswer(question, options);
+        };
+
+        const getPaperUserAnswer = (question) => {
+            if (question.type === 'multi-choice') {
+                const checkboxes = document.querySelectorAll('input[name="q_' + question.id + '"]:checked');
+                return normalizeLetterAnswer(Array.from(checkboxes).map(cb => cb.value));
+            }
+            const checked = document.querySelector('input[name="q_' + question.id + '"]:checked');
+            return checked ? String(checked.value).trim().toUpperCase() : '';
+        };
+
+        const getCorrectPaperAnswerDisplay = (question) => {
+            const options = parsePaperOptions(question);
+            const correct = getCorrectPaperAnswer(question);
+            if (!correct) return renderInline(question.answer || '暂无');
+            if ((correct === 'T' || correct === 'F') && question.type === 'judgment') {
+                return correct === 'T' ? '正确' : '错误';
+            }
+            return correct.split(',').map(letter => {
+                const idx = letter.charCodeAt(0) - 65;
+                return options[idx] ? (letter + '. ' + renderInline(options[idx].text || '')) : letter;
+            }).join('，');
+        };
+
+        const isPaperManualQuestion = (question) => question.type === 'standard' || question.type === 'short-answer';
+
+        const applyPaperReviewUpdates = async (reviewUpdates) => {
+            for (var ri = 0; ri < reviewUpdates.length; ri++) {
+                var ru = reviewUpdates[ri];
+                try {
+                    var q = await db.questions.get(ru.id);
+                    if (q) {
+                        var smData = SM2.nextReview(q, ru.quality);
+                        var intervalDays = smData.smInterval;
+                        var newStatus = q.reviewStatus;
+                        if (ru.quality >= 4 && intervalDays >= 21) newStatus = 'mastered';
+                        else if (ru.quality >= 3) newStatus = 'reviewing';
+                        else newStatus = 'reviewing';
+                        await db.questions.update(ru.id, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
+                    }
+                } catch(e) { /* skip errors */ }
+            }
+        };
+
         const showPaperPreview = async () => {
             var bankName = state.currentBankId ? (state.banks.find(function(b) { return b.id === state.currentBankId; }) || {}).name || '试卷' : '试卷';
             var config = {
@@ -6231,13 +6368,8 @@
                             }
                             optionsHtml += '</div>';
                             // Build correct answer display (hidden initially)
-                            var correctLetters = (q.answer || '').split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-                            var correctTexts = correctLetters.map(function(cl) {
-                                var idx = cl.charCodeAt(0) - 65;
-                                return opts[idx] ? (cl + '. ' + (opts[idx].text || '')) : cl;
-                            }).join('\uff0c');
                             correctAnswerDisplay = '<div class="paper-correct-answer" style="display:none;margin-top:8px;padding:8px 12px;background:#ecfdf5;border-radius:8px;font-size:13px;">' +
-                                '<strong style="color:#065f46;">\u2713 \u6b63\u786e\u7b54\u6848\uff1a</strong> ' + correctTexts + '</div>';
+                                '<strong style="color:#065f46;">\u2713 \u6b63\u786e\u7b54\u6848\uff1a</strong> ' + getCorrectPaperAnswerDisplay(q) + '</div>';
                         }
                     } catch(e) {}
                     if (!optionsHtml && (q.type === 'single-choice' || q.type === 'multi-choice')) {
@@ -6256,11 +6388,11 @@
                     }
                     if (!optionsHtml && q.type === 'judgment') {
                         optionsHtml = '<div style="display:flex;gap:24px;padding-left:24px;margin-top:8px;">' +
-                            '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;"><input type="radio" name="q_' + q.id + '" value="\u2713" style="margin:0;"> \u2713 \u6b63\u786e</label>' +
-                            '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;"><input type="radio" name="q_' + q.id + '" value="\u2717" style="margin:0;"> \u2717 \u9519\u8bef</label>' +
+                            '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;"><input type="radio" name="q_' + q.id + '" value="T" style="margin:0;"> \u2713 \u6b63\u786e</label>' +
+                            '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;"><input type="radio" name="q_' + q.id + '" value="F" style="margin:0;"> \u2717 \u9519\u8bef</label>' +
                             '</div>';
                         correctAnswerDisplay = '<div class="paper-correct-answer" style="display:none;margin-top:8px;padding:8px 12px;background:#ecfdf5;border-radius:8px;font-size:13px;">' +
-                            '<strong style="color:#065f46;">\u2713 \u6b63\u786e\u7b54\u6848\uff1a</strong> ' + (q.answer || '') + '</div>';
+                            '<strong style="color:#065f46;">\u2713 \u6b63\u786e\u7b54\u6848\uff1a</strong> ' + getCorrectPaperAnswerDisplay(q) + '</div>';
                     }
                     // Analysis display (hidden initially)
                     var analysisHtml = '';
@@ -6269,10 +6401,22 @@
                             '<strong style="color:#1d4ed8;">\u89e3\u6790\uff1a</strong> ' + renderMarkdown(q.analysis) + '</div>';
                     }
 
-                    html += '<div class="paper-question-block" style="margin-bottom:14px;padding:14px;border:1px solid #e7e5e4;border-radius:10px;background:#fafaf9;">' +
+                    var manualGradeHtml = '';
+                    if (isPaperManualQuestion(q)) {
+                        var halfScore = Math.round((q.score || 0) * 50) / 100;
+                        manualGradeHtml = '<div class="paper-manual-grade" data-question-id="' + q.id + '" style="display:none;margin-top:10px;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:13px;">' +
+                            '<div style="font-weight:600;color:#9a3412;margin-bottom:8px;">手动判分并记录复习表现</div>' +
+                            '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+                            '<button type="button" class="paper-manual-grade-btn" data-score="0" data-quality="2" style="border:1px solid #fed7aa;background:#fff;color:#9a3412;border-radius:8px;padding:6px 10px;cursor:pointer;">0分 · 不会</button>' +
+                            '<button type="button" class="paper-manual-grade-btn" data-score="' + halfScore + '" data-quality="3" style="border:1px solid #fed7aa;background:#fff;color:#9a3412;border-radius:8px;padding:6px 10px;cursor:pointer;">' + halfScore + '分 · 基本会</button>' +
+                            '<button type="button" class="paper-manual-grade-btn" data-score="' + (q.score || 0) + '" data-quality="4" style="border:1px solid #fed7aa;background:#fff;color:#9a3412;border-radius:8px;padding:6px 10px;cursor:pointer;">' + (q.score || 0) + '分 · 掌握</button>' +
+                            '</div></div>';
+                    }
+
+                    html += '<div class="paper-question-block" data-question-id="' + q.id + '" style="margin-bottom:14px;padding:14px;border:1px solid #e7e5e4;border-radius:10px;background:#fafaf9;">' +
                         '<p style="font-size:14px;margin-bottom:6px;"><strong>' + q.paperNum + '.</strong> ' + renderMarkdown(q.stem) + '</p>' +
                         optionsHtml +
-                        (q.type === 'standard' || q.type === 'short-answer' ? '<div style="margin-top:8px;padding-left:24px;"><textarea style="width:100%;min-height:60px;border:1px solid #e7e5e4;border-radius:8px;padding:8px;font-size:13px;resize:vertical;" placeholder="\u5728\u6b64\u4f5c\u7b54..."></textarea><div class="paper-correct-answer" style="display:none;margin-top:8px;padding:8px 12px;background:#fef3c7;border-radius:8px;font-size:13px;"><strong style="color:#92400e;">\u53c2\u8003\u7b54\u6848\uff1a</strong> ' + renderMarkdown(q.answer || '\u6682\u65e0') + '</div></div>' : '') +
+                        (isPaperManualQuestion(q) ? '<div style="margin-top:8px;padding-left:24px;"><textarea style="width:100%;min-height:60px;border:1px solid #e7e5e4;border-radius:8px;padding:8px;font-size:13px;resize:vertical;" placeholder="\u5728\u6b64\u4f5c\u7b54..."></textarea><div class="paper-correct-answer" style="display:none;margin-top:8px;padding:8px 12px;background:#fef3c7;border-radius:8px;font-size:13px;"><strong style="color:#92400e;">\u53c2\u8003\u7b54\u6848\uff1a</strong> ' + renderMarkdown(q.answer || '\u6682\u65e0') + '</div>' + manualGradeHtml + '</div>' : '') +
                         correctAnswerDisplay +
                         analysisHtml +
                         '</div>';
@@ -6297,6 +6441,24 @@
                 html +
                 '</div></div>';
             modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+            modal.addEventListener('click', function(e) {
+                var gradeBtn = e.target.closest('.paper-manual-grade-btn');
+                if (!gradeBtn) return;
+                var panel = gradeBtn.closest('.paper-manual-grade');
+                if (!panel) return;
+                panel.dataset.selectedScore = gradeBtn.dataset.score;
+                panel.dataset.selectedQuality = gradeBtn.dataset.quality;
+                panel.querySelectorAll('.paper-manual-grade-btn').forEach(function(btn) {
+                    btn.style.background = '#fff';
+                    btn.style.color = '#9a3412';
+                    btn.style.borderColor = '#fed7aa';
+                    btn.style.fontWeight = '500';
+                });
+                gradeBtn.style.background = '#1c1917';
+                gradeBtn.style.color = '#fafaf9';
+                gradeBtn.style.borderColor = '#1c1917';
+                gradeBtn.style.fontWeight = '700';
+            });
             var closeBtn = modal.querySelector('#paper-close-btn');
             if (closeBtn) closeBtn.onclick = function() { modal.remove(); };
             document.body.appendChild(modal);
@@ -6304,110 +6466,116 @@
             setTimeout(function() {
                 var submitBtn = document.getElementById('paper-submit-btn');
                 if (!submitBtn) return;
-                submitBtn.onclick = function() {
-                    var totalQuestions = 0;
-                    var correctCount = 0;
-                    // Track results for SM-2 update
-                    var reviewUpdates = [];
+                var flatQuestions = getPaperQuestions(paper);
+                var objectiveReviewUpdates = [];
+                var objectiveScore = 0;
+                var objectiveCorrect = 0;
+                var objectiveTotal = flatQuestions.filter(q => !isPaperManualQuestion(q)).length;
+                var manualQuestions = flatQuestions.filter(isPaperManualQuestion);
 
-                    for (var si2 = 0; si2 < paper.sections.length; si2++) {
-                        for (var qi2 = 0; qi2 < paper.sections[si2].questions.length; qi2++) {
-                            var q2 = paper.sections[si2].questions[qi2];
-                            totalQuestions++;
-                            var userAnswer = '';
-                            if (q2.type === 'single-choice' || q2.type === 'judgment') {
-                                var checked = document.querySelector('input[name="q_' + q2.id + '"]:checked');
-                                userAnswer = checked ? checked.value : '';
-                            } else if (q2.type === 'multi-choice') {
-                                var checkboxes = document.querySelectorAll('input[name="q_' + q2.id + '"]:checked');
-                                userAnswer = Array.from(checkboxes).map(function(cb) { return cb.value; }).sort().join(',');
-                            } else {
-                                userAnswer = '\u5df2\u4f5c\u7b54';  // standard/short-answer always considered answered
-                            }
-                            var correctAnswer = (q2.answer || '').trim();
-                            var isCorrect = userAnswer && userAnswer === correctAnswer;
-                            if (q2.type === 'standard' || q2.type === 'short-answer') {
-                                isCorrect = false;  // user self-evaluates; not auto-scored
-                            }
-                            if (isCorrect) correctCount++;
+                const showScoreResult = function(score, detailText) {
+                    var resultEl = document.getElementById('paper-score-result');
+                    if (!resultEl) return;
+                    resultEl.style.display = 'block';
+                    resultEl.style.color = score >= paper.totalScore * 0.6 ? '#16a34a' : '#dc2626';
+                    resultEl.textContent = '得分：' + score + ' / ' + paper.totalScore + detailText;
+                };
 
-                            // Record for SM-2: quality 4 if correct, 2 if wrong
-                            reviewUpdates.push({ id: q2.id, quality: isCorrect ? 4 : 2 });
+                const finalizePaper = async function(finalScore, finalReviewUpdates, detailText) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = '已提交';
+                    submitBtn.style.opacity = '0.5';
+                    modal.querySelectorAll('.paper-manual-grade-btn').forEach(function(btn) { btn.disabled = true; });
+                    await applyPaperReviewUpdates(finalReviewUpdates);
+                    await refreshCurrentView();
+                    showScoreResult(finalScore, detailText);
+                    showToast('答题数据已同步至间隔复习', 'success');
+                    showToast('得分：' + finalScore + '/' + paper.totalScore, 'success');
+                };
+
+                const finalizeManualGrades = async function() {
+                    var manualPanels = Array.from(modal.querySelectorAll('.paper-manual-grade'));
+                    var ungraded = manualPanels.filter(panel => !panel.dataset.selectedQuality);
+                    if (ungraded.length > 0) {
+                        showToast('请先完成所有标准题的手动判分', 'error');
+                        ungraded[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                    var manualScore = 0;
+                    var manualPassed = 0;
+                    var manualReviewUpdates = manualPanels.map(function(panel) {
+                        var score = Number(panel.dataset.selectedScore || 0);
+                        var quality = parseInt(panel.dataset.selectedQuality || '2');
+                        var block = panel.closest('.paper-question-block');
+                        manualScore += score;
+                        if (quality >= 3) manualPassed++;
+                        if (block) {
+                            block.style.borderColor = quality >= 4 ? '#a7f3d0' : (quality >= 3 ? '#fde68a' : '#fecaca');
+                            block.style.background = quality >= 4 ? '#f0fdf4' : (quality >= 3 ? '#fffbeb' : '#fef2f2');
                         }
+                        return { id: parseInt(panel.dataset.questionId), quality };
+                    }).filter(item => item.id);
+                    var finalScore = Math.round((objectiveScore + manualScore) * 100) / 100;
+                    await finalizePaper(
+                        finalScore,
+                        objectiveReviewUpdates.concat(manualReviewUpdates),
+                        '（客观题正确 ' + objectiveCorrect + '/' + objectiveTotal + '，标准题已判 ' + manualPassed + '/' + manualQuestions.length + '）'
+                    );
+                };
+
+                submitBtn.onclick = async function() {
+                    if (submitBtn.dataset.phase === 'manual-grade') {
+                        await finalizeManualGrades();
+                        return;
                     }
 
-                    // Show correct answers and analysis for all questions
-                    document.querySelectorAll('.paper-correct-answer, .paper-analysis').forEach(function(el) {
+                    objectiveReviewUpdates = [];
+                    objectiveScore = 0;
+                    objectiveCorrect = 0;
+                    flatQuestions.forEach(function(q2) {
+                        if (isPaperManualQuestion(q2)) return;
+                        var userAnswer = getPaperUserAnswer(q2);
+                        var correctAnswer = getCorrectPaperAnswer(q2);
+                        var isCorrect = Boolean(userAnswer && correctAnswer && userAnswer === correctAnswer);
+                        if (isCorrect) {
+                            objectiveCorrect++;
+                            objectiveScore += Number(q2.score || 0);
+                        }
+                        objectiveReviewUpdates.push({ id: q2.id, quality: isCorrect ? 4 : 2 });
+                    });
+
+                    modal.querySelectorAll('.paper-correct-answer, .paper-analysis, .paper-manual-grade').forEach(function(el) {
                         el.style.display = 'block';
                     });
 
-                    // Highlight correct/incorrect
-                    document.querySelectorAll('.paper-question-block').forEach(function(block, idx) {
-                        var qData = null;
-                        // Find question data by accumulating through sections
-                        var totalSoFar = 0;
-                        for (var si3 = 0; si3 < paper.sections.length; si3++) {
-                            for (var qi3 = 0; qi3 < paper.sections[si3].questions.length; qi3++) {
-                                if (totalSoFar === idx) {
-                                    qData = paper.sections[si3].questions[qi3];
-                                    break;
-                                }
-                                totalSoFar++;
-                            }
-                            if (qData) break;
+                    modal.querySelectorAll('.paper-question-block').forEach(function(block) {
+                        var qData = flatQuestions.find(q => String(q.id) === String(block.dataset.questionId));
+                        if (!qData) return;
+                        if (isPaperManualQuestion(qData)) {
+                            block.style.borderColor = '#fde68a';
+                            block.style.background = '#fffbeb';
+                            return;
                         }
-                        if (qData) {
-                            var userAnswer = '';
-                            if (qData.type === 'single-choice' || qData.type === 'judgment') {
-                                var c = document.querySelector('input[name="q_' + qData.id + '"]:checked');
-                                userAnswer = c ? c.value : '';
-                            } else if (qData.type === 'multi-choice') {
-                                var cbs = document.querySelectorAll('input[name="q_' + qData.id + '"]:checked');
-                                userAnswer = Array.from(cbs).map(function(cb) { return cb.value; }).sort().join(',');
-                            }
-                            var correctAnswer = (qData.answer || '').trim();
-                            var isStandard = qData.type === 'standard' || qData.type === 'short-answer';
-                            var isCorrect = !isStandard && userAnswer && userAnswer === correctAnswer;
-                            block.style.borderColor = isStandard ? '#fde68a' : (isCorrect ? '#a7f3d0' : '#fecaca');
-                            block.style.background = isStandard ? '#fffbeb' : (isCorrect ? '#f0fdf4' : '#fef2f2');
-                        }
+                        var isCorrect = getPaperUserAnswer(qData) === getCorrectPaperAnswer(qData);
+                        block.style.borderColor = isCorrect ? '#a7f3d0' : '#fecaca';
+                        block.style.background = isCorrect ? '#f0fdf4' : '#fef2f2';
                     });
 
-                    var scorableQuestions = 0; for (var si3 = 0; si3 < paper.sections.length; si3++) { for (var qi3 = 0; qi3 < paper.sections[si3].questions.length; qi3++) { if (paper.sections[si3].questions[qi3].type === 'standard' || paper.sections[si3].questions[qi3].type === 'short-answer') continue; scorableQuestions++; } } var score = scorableQuestions > 0 ? Math.round((correctCount / Math.max(1, scorableQuestions)) * paper.totalScore * (scorableQuestions / paper.questionCount)) : Math.round((correctCount / totalQuestions) * paper.totalScore);
-                    var resultEl = document.getElementById('paper-score-result');
-                    if (resultEl) {
-                        resultEl.style.display = 'block';
-                        resultEl.style.color = score >= paper.totalScore * 0.6 ? '#16a34a' : '#dc2626';
-                        resultEl.textContent = '\u5f97\u5206\uff1a' + score + ' / ' + paper.totalScore + ' \uff08\u6b63\u786e ' + correctCount + '/' + totalQuestions + ' \u9898\uff09';
+                    modal.querySelectorAll('input, textarea').forEach(function(inp) { inp.disabled = true; });
+
+                    if (manualQuestions.length > 0) {
+                        submitBtn.dataset.phase = 'manual-grade';
+                        submitBtn.textContent = '保存标准题判分';
+                        showScoreResult(objectiveScore, '（客观题正确 ' + objectiveCorrect + '/' + objectiveTotal + '，请为标准题判分）');
+                        showToast('请为标准题手动判分后保存', 'info');
+                        return;
                     }
 
-                    // Disable inputs
-                    document.querySelectorAll('.shortcuts-panel-content input, .shortcuts-panel-content textarea').forEach(function(inp) { inp.disabled = true; });
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = '\u5df2\u63d0\u4ea4';
-                    submitBtn.style.opacity = '0.5';
-
-                    // Update SM-2 review status for each question
-                    (async function() {
-                        for (var ri = 0; ri < reviewUpdates.length; ri++) {
-                            var ru = reviewUpdates[ri];
-                            try {
-                                var q = await db.questions.get(ru.id);
-                                if (q) {
-                                    var smData = SM2.nextReview(q, ru.quality);
-                                    var intervalDays = smData.smInterval;
-                                    var newStatus = q.reviewStatus;
-                                    if (ru.quality >= 4 && intervalDays >= 21) newStatus = 'mastered';
-                                    else if (ru.quality >= 3) newStatus = 'reviewing';
-                                    else newStatus = 'reviewing';
-                                    await db.questions.update(ru.id, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
-                                }
-                            } catch(e) { /* skip errors */ }
-                        }
-                        showToast('\u7b54\u9898\u6570\u636e\u5df2\u540c\u6b65\u81f3\u95f4\u9694\u590d\u4e60', 'success');
-                    })();
-
-                    showToast('\u5f97\u5206\uff1a' + score + '/' + paper.totalScore, 'success');
+                    await finalizePaper(
+                        objectiveScore,
+                        objectiveReviewUpdates,
+                        '（客观题正确 ' + objectiveCorrect + '/' + objectiveTotal + '）'
+                    );
                 };
             }, 100);
 
