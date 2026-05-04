@@ -38,6 +38,22 @@ create index if not exists idx_qbank_questions_user_id on public.qbank_questions
 create index if not exists idx_qbank_questions_bank_id on public.qbank_questions(bank_id);
 create index if not exists idx_qbank_questions_updated_at on public.qbank_questions(updated_at);
 
+-- 确保已存在的表也启用级联删除（如果表是先建后改 SQL 的）
+do $$
+begin
+  if exists (
+    select 1 from information_schema.table_constraints
+    where constraint_name = 'qbank_questions_bank_id_fkey'
+      and table_name = 'qbank_questions'
+  ) then
+    alter table public.qbank_questions
+      drop constraint qbank_questions_bank_id_fkey;
+  end if;
+end $$;
+alter table public.qbank_questions
+  add constraint qbank_questions_bank_id_fkey
+    foreign key (bank_id) references public.qbanks(id) on delete cascade;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql

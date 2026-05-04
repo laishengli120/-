@@ -158,6 +158,17 @@
             border-color: var(--color-border-secondary);
             color: var(--color-text-primary);
         }
+        .topbar-subtle-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; border-radius: 6px; color: #94a3b8;
+            transition: color 0.15s, background 0.15s;
+        }
+        .topbar-subtle-btn:hover { color: #475569; background: #f1f5f9; }
+        @keyframes syncPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .sync-pulsing { animation: syncPulse 1.2s ease-in-out infinite; }
         .topbar-io-btn {
             height: 34px;
             border: 0.5px solid var(--color-border-tertiary);
@@ -592,9 +603,189 @@
         .q-status-dot.new       { background: #cbd5e1; }
         .settings-icon-btn { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 0.5px solid var(--color-border-tertiary); border-radius: 8px; background: var(--color-background-primary); color: var(--color-text-secondary); transition: all 0.15s ease; cursor: pointer; flex-shrink: 0; }
         .settings-icon-btn:hover { background: var(--color-background-secondary); border-color: var(--color-border-secondary); color: var(--color-text-primary); }
-        .settings-drawer-shell { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.34); backdrop-filter: blur(6px); z-index: 50; display: flex; justify-content: flex-end; }
-        .settings-drawer-panel { width: min(460px, 100vw); height: 100%; background: #ffffff; border-left: 1px solid #e5e7eb; box-shadow: -16px 0 48px rgba(15, 23, 42, 0.16); display: flex; flex-direction: column; }
-        .settings-drawer-hero { padding: 20px 20px 16px; border-bottom: 1px solid #e5e7eb; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); }
+
+        /* ── 云同步设置 — 居中模态框 ─────────────────────────────── */
+        .cloud-modal-shell {
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .cloud-modal-panel {
+            width: 100%;
+            max-width: 560px;
+            max-height: min(88vh, 720px);
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* reuse existing modal-panel animation */
+            transform: scale(0.95) translateY(8px);
+            opacity: 0;
+            transition: transform 0.25s var(--ease-out-expo), opacity 0.2s ease;
+        }
+        .cloud-modal-panel.show {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        .cloud-modal-header {
+            padding: 20px 24px 0;
+            flex-shrink: 0;
+        }
+        .cloud-modal-title-row {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+            margin-bottom: 16px;
+        }
+        .cloud-modal-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
+        .cloud-modal-title { font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+
+        /* ── 云同步模态框内部标签栏 ─────────────────────────────── */
+        .cloud-tab-bar {
+            display: flex;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 0 24px;
+            gap: 2px;
+        }
+        .cloud-tab {
+            padding: 10px 14px;
+            font-size: 13px; font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.15s;
+            background: none;
+            border-top: none; border-left: none; border-right: none;
+            white-space: nowrap;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .cloud-tab:hover { color: #111827; }
+        .cloud-tab.active { color: #111827; border-bottom-color: #111827; font-weight: 600; }
+        .cloud-tab-panel { display: none; }
+        .cloud-tab-panel.active { display: block; }
+        .cloud-modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px 24px;
+        }
+
+        /* ── AI 多账号切换 (redesigned) ────────────────────────── */
+        .ai-account-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+        .ai-account-item {
+            border-radius: 12px;
+            border: 1px solid #e5e7eb; background: #fff;
+            transition: all 0.15s ease;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+        .ai-account-item:hover { border-color: #c4b5fd; }
+        .ai-account-item.active {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 1px #7c3aed, 0 2px 6px rgba(124,58,237,0.08);
+        }
+        .ai-account-item.active::before {
+            content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 2.5px;
+            background: #7c3aed; border-radius: 0 3px 3px 0;
+        }
+        .ai-account-item.expanded {
+            border-color: #7c3aed;
+            background: linear-gradient(180deg, #fafafe 0%, #f5f3ff 40%);
+        }
+        .ai-account-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            user-select: none;
+        }
+        .ai-account-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .ai-account-dot.tested { background: #22c55e; }
+        .ai-account-dot.untested { background: #eab308; }
+        .ai-account-dot.error { background: #ef4444; }
+        .ai-account-dot.idle { background: #e5e7eb; }
+        .ai-account-name { font-size: 13px; font-weight: 600; color: #1f2937; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ai-account-model { font-size: 10px; color: #6b7280; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ai-account-actions { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+        .ai-account-btn {
+            font-size: 10px; font-weight: 600;
+            padding: 4px 8px; border-radius: 6px;
+            border: 1px solid transparent; cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .ai-account-btn.switch {
+            background: #7c3aed; color: #fff; border-color: #7c3aed;
+        }
+        .ai-account-btn.switch:hover { background: #6d28d9; }
+        .ai-account-btn.test {
+            background: transparent; color: #6b7280; border-color: #e5e7eb;
+        }
+        .ai-account-btn.test:hover { background: #f9fafb; border-color: #cbd5e1; }
+        .ai-account-btn.test.testing {
+            opacity: 0.6; pointer-events: none;
+        }
+        .ai-account-delete-btn {
+            width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; color: #9ca3af; transition: all 0.15s;
+            background: transparent; border: none; cursor: pointer; flex-shrink: 0;
+            font-size: 14px; line-height: 1;
+        }
+        .ai-account-delete-btn:hover { color: #ef4444; background: rgba(239,68,68,0.08); }
+        .ai-account-chevron {
+            width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+            color: #9ca3af; transition: transform 0.2s ease; flex-shrink: 0;
+            font-size: 10px;
+        }
+        .ai-account-item.expanded .ai-account-chevron { transform: rotate(180deg); }
+        .ai-account-inline-form {
+            display: none;
+            padding: 0 12px 14px;
+            border-top: 1px solid #e9d5ff;
+            margin: 0 6px;
+        }
+        .ai-account-item.expanded .ai-account-inline-form { display: block; }
+        .ai-account-edit-btn {
+            font-size: 10px; color: #7c3aed; font-weight: 500;
+            cursor: pointer; padding: 2px 6px; border-radius: 4px;
+            background: transparent; border: none;
+        }
+        .ai-account-edit-btn:hover { background: #f5f3ff; }
+        .ai-add-account-btn {
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 9px; border-radius: 12px;
+            border: 1px dashed #c4b5fd; color: #7c3aed;
+            background: transparent; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .ai-add-account-btn:hover { background: #f5f3ff; border-style: solid; }
+
+        /* ── Mobile responsive ───────────────────────────────────── */
+        @media (max-width: 640px) {
+            .cloud-modal-shell {
+                padding: 0;
+                align-items: stretch;
+                justify-content: flex-end;
+            }
+            .cloud-modal-panel {
+                max-height: 92vh;
+                max-width: 100%;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -8px 40px rgba(15, 23, 42, 0.15);
+            }
+            .cloud-tab { padding: 10px 10px; font-size: 12px; }
+            .cloud-modal-header { padding: 16px 16px 0; }
+            .cloud-modal-body { padding: 16px 16px 20px; }
+            .cloud-tab-bar { padding: 0 16px; }
+        }
+
+        /* keep legacy classes for other panels */
         .settings-drawer-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
         .settings-drawer-title { margin-top: 6px; font-size: 22px; line-height: 1.15; font-weight: 800; color: #0f172a; }
         .settings-drawer-desc { margin-top: 8px; font-size: 13px; line-height: 1.6; color: #64748b; max-width: 36ch; }
@@ -656,6 +847,98 @@
         .conn-test-result.err { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
         .conn-test-result.testing { display: block; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
+        /* ── Sync log ── (redesigned) */
+        .sync-log-filter-bar { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+        .sync-log-filter-chip {
+            font-size: 11px; padding: 4px 10px; border-radius: 999px;
+            border: 1px solid #e5e7eb; background: #fff; color: #6b7280;
+            cursor: pointer; transition: all 0.15s ease; user-select: none;
+            font-weight: 500;
+        }
+        .sync-log-filter-chip:hover { border-color: #cbd5e1; color: #111827; }
+        .sync-log-filter-chip.active { background: #111827; color: #fff; border-color: #111827; }
+        .sync-log-entry {
+            position: relative;
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+            margin-bottom: 6px; overflow: hidden; transition: box-shadow 0.15s ease;
+        }
+        .sync-log-entry::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--log-accent, #cbd5e1);
+        }
+        .sync-log-entry:hover { box-shadow: 0 1px 4px rgba(15,23,42,0.06); }
+        .sync-log-entry.has-conflict { background: #fffbeb; }
+        .sync-log-entry.is-error { background: #fef2f2; }
+        .sync-log-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px 8px 14px;
+            cursor: default;
+        }
+        .sync-log-row.expandable { cursor: pointer; }
+        .sync-log-time {
+            font-size: 10px; color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap; flex-shrink: 0; min-width: 56px;
+        }
+        .sync-log-summary {
+            flex: 1; min-width: 0;
+            font-size: 12px; color: #1e293b; font-weight: 500;
+            display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+        }
+        .sync-log-num-chip {
+            font-size: 10px; font-weight: 600;
+            padding: 1px 6px; border-radius: 999px;
+            background: var(--log-chip-bg, #f1f5f9); color: var(--log-chip-fg, #475569);
+        }
+        .sync-log-conflict-chip {
+            font-size: 10px; font-weight: 600;
+            padding: 1px 7px; border-radius: 999px;
+            background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+        }
+        .sync-log-chevron {
+            font-size: 10px; color: #cbd5e1; flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .sync-log-entry.open .sync-log-chevron { transform: rotate(90deg); color: #64748b; }
+        .sync-log-detail {
+            display: none;
+            border-top: 1px dashed #e5e7eb;
+            background: rgba(248, 250, 252, 0.6);
+            padding: 4px 12px 6px 18px;
+        }
+        .sync-log-entry.open .sync-log-detail { display: block; }
+        .sync-log-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 4px 0; font-size: 11px;
+        }
+        .sync-log-item-icon {
+            width: 14px; height: 14px; flex-shrink: 0;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 10px; color: #94a3b8;
+        }
+        .sync-log-item-name { flex: 1; min-width: 0; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sync-log-item-action {
+            font-size: 10px; color: #64748b; flex-shrink: 0;
+            padding: 1px 5px; border-radius: 4px; background: #f1f5f9;
+        }
+        .sync-log-field-chips { display: inline-flex; gap: 3px; flex-shrink: 0; }
+        .sync-log-field-chip {
+            font-size: 9px; padding: 1px 5px; border-radius: 4px;
+            background: #eff6ff; color: #1d4ed8; font-weight: 500;
+        }
+        .sync-log-field-chip.more {
+            background: #f1f5f9; color: #64748b; cursor: pointer;
+        }
+        .sync-log-empty-hero {
+            text-align: center; padding: 28px 16px;
+            color: #94a3b8;
+        }
+        .sync-log-empty-hero .icon {
+            font-size: 32px; margin-bottom: 6px; opacity: 0.6;
+        }
+        .sync-log-empty-hero .title { font-size: 13px; color: #475569; font-weight: 500; margin-bottom: 4px; }
+        .sync-log-empty-hero .desc { font-size: 11px; color: #94a3b8; }
+
         /* Danger zone: name-confirm input */
         .danger-confirm-wrap { margin-top: 10px; display: none; }
         .danger-confirm-wrap.visible { display: block; }
@@ -672,10 +955,6 @@
         .tag-category-group { border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px; }
         .tag-category-title { font-size: 11px; color: #6b7280; margin-bottom: 6px; font-weight: 600; }
         @media (max-width: 767px) {
-
-          .settings-drawer-panel {
-              width: 100vw;
-          }
           .cloud-status-hero,
           .cloud-detail-grid {
               grid-template-columns: 1fr;
@@ -960,18 +1239,18 @@
 
             <!-- Actions -->
             <div class="hidden md:flex items-center gap-2 ml-auto">
-                <!-- Cloud sync status pill (compact) -->
-                <button id="sidebar-cloud-config-btn" class="hidden items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] font-medium transition" style="border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-secondary); font-family: 'JetBrains Mono', monospace;" title="云端同步状态">
+                <!-- Cloud sync status pill (compact) - always visible, direct access -->
+                <button id="sidebar-cloud-config-btn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px] text-[11px] font-medium transition" style="border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-secondary); font-family: 'JetBrains Mono', monospace;" title="云端同步设置">
                     <span id="auth-status-dot" class="inline-block w-2 h-2 rounded-full bg-gray-300 flex-shrink-0"></span>
                     <span id="auth-status-text" class="hidden lg:inline">云端未连接</span>
                 </button>
 
-                <!-- Top cloud buttons (hidden by default, shown when syncing) -->
-                <button id="top-cloud-upload-btn" class="hidden topbar-icon-btn" title="上传本地变更">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <!-- Subtle manual sync buttons (demoted, auto-sync is primary) -->
+                <button id="top-cloud-upload-btn" class="topbar-subtle-btn hidden" title="上传本地变更">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 </button>
-                <button id="top-cloud-pull-btn" class="hidden topbar-icon-btn" title="拉取云端到本地">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <button id="top-cloud-pull-btn" class="topbar-subtle-btn hidden" title="拉取云端到本地">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 </button>
 
                 <button id="io-btn" class="topbar-io-btn" title="导入/导出 (Alt+M)">
@@ -1135,6 +1414,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
             <span class="text-[10px]">管理</span>
         </button>
+        <button id="mobile-cloud-btn" class="text-gray-500 font-medium p-2 rounded-lg flex flex-col items-center gap-1 flex-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+            <span class="text-[10px]">云同步</span>
+        </button>
     </div>
 
     <div id="question-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -1248,12 +1531,24 @@
                     <button type="button" id="cancel-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
                         取消 <span class="hidden sm:inline text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Esc</span>
                     </button>
+                    <button type="button" id="version-history-btn" class="hidden bg-white border border-slate-300 hover:bg-slate-50 text-slate-600 font-medium py-2 px-3 rounded-lg transition text-sm flex items-center gap-1.5" title="查看版本历史">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        历史
+                    </button>
                     <button type="button" id="save-and-add-another-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center gap-1.5">
                         保存并继续 <span class="hidden sm:inline text-[10px] text-gray-500 font-mono border border-gray-300 px-1 rounded bg-gray-100">Ctrl+↵</span>
                     </button>
                     <button type="submit" form="question-form" class="bg-black hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition text-sm flex items-center gap-1.5">
                         保存 <span class="hidden sm:inline text-[10px] text-gray-200 font-mono border border-gray-500 px-1 rounded bg-black/20">Ctrl+S</span>
                     </button>
+                </div>
+                <!-- Version history panel -->
+                <div id="version-history-panel" class="hidden mt-3 p-4 rounded-2xl" style="background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid #e2e8f0;">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-500">版本历史</span>
+                        <button id="close-version-history-btn" class="text-[10px] text-slate-400 hover:text-slate-600">关闭</button>
+                    </div>
+                    <div id="version-history-list" class="space-y-1 max-h-32 overflow-y-auto text-xs text-slate-600"></div>
                 </div>
             </div>
         </div>
@@ -1270,13 +1565,14 @@
         </div>
     </div>
 
-    <div id="confirm-modal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center border border-gray-100">
-            <h3 id="confirm-title" class="text-lg font-bold text-gray-900 mb-2">确认操作</h3>
-            <p id="confirm-message" class="text-sm text-gray-500 mb-6">此操作不可撤销。</p>
+    <div id="confirm-modal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[60] flex items-center justify-center hidden p-4">
+        <div id="confirm-modal-card" class="bg-gradient-to-b from-white to-slate-50 rounded-[18px] shadow-xl shadow-slate-200/50 w-full max-w-md p-6 text-center border border-slate-200/80">
+            <h3 id="confirm-title" class="text-lg font-bold text-slate-800 mb-2">确认操作</h3>
+            <div id="confirm-message" class="text-sm text-slate-500 mb-6 whitespace-pre-wrap"></div>
             <div class="flex justify-center gap-3">
                 <button id="confirm-ok-btn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition shadow-sm">确认</button>
-                <button id="confirm-cancel-btn" autofocus class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 px-6 rounded-lg text-sm font-medium transition">取消</button>
+                <button id="confirm-middle-btn" class="hidden bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition shadow-sm"></button>
+                <button id="confirm-cancel-btn" autofocus class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 py-2 px-6 rounded-lg text-sm font-medium transition">取消</button>
             </div>
         </div>
     </div>
@@ -1293,7 +1589,6 @@
             <!-- Tab bar -->
             <div class="io-tab-bar">
                 <button class="io-tab active" data-io-tab="transfer">导入 / 导出</button>
-                <button class="io-tab" data-io-tab="sync">云同步</button>
                 <button class="io-tab" data-io-tab="danger">
                     <span class="text-red-500">危险操作</span>
                 </button>
@@ -1362,47 +1657,6 @@
                     </div>
                 </div>
 
-                <!-- Panel: 云同步 -->
-                <div class="io-panel p-6 space-y-4" data-io-panel="sync">
-                    <button id="io-open-cloud-modal-btn" class="text-xs text-blue-600 hover:underline">⚙ 云同步设置（Supabase 配置 / 登录）</button>
-                    <!-- Sync stats -->
-                    <div id="io-sync-stats-wrap" class="hidden">
-                        <div class="sync-stats-row">
-                            <div class="sync-stat-box local">
-                                <div id="io-stat-local" class="ssb-num">—</div>
-                                <div class="ssb-label">仅本地</div>
-                            </div>
-                            <div class="sync-stat-box cloud">
-                                <div id="io-stat-cloud" class="ssb-num">—</div>
-                                <div class="ssb-label">仅云端</div>
-                            </div>
-                            <div class="sync-stat-box synced">
-                                <div id="io-stat-synced" class="ssb-num">—</div>
-                                <div class="ssb-label">已同步</div>
-                            </div>
-                        </div>
-                        <div id="io-last-sync-line" class="last-sync-line"></div>
-                    </div>
-                    <!-- Login required note -->
-                    <div id="sync-login-note" class="sync-login-note">请先点击上方「云同步设置」登录账号，才能进行上传和拉取。</div>
-                    <!-- Action buttons -->
-                    <div class="flex flex-wrap gap-2">
-                        <button id="io-cloud-upload-btn" class="bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            上传本地变更
-                        </button>
-                        <button id="io-cloud-pull-btn" class="bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-700 py-2 px-4 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            拉取云端到本地
-                        </button>
-                    </div>
-                    <!-- Sync progress -->
-                    <div id="io-sync-progress-wrap" class="sync-progress-wrap">
-                        <div class="sync-progress-bar-track"><div id="io-sync-progress-fill" class="sync-progress-bar-fill"></div></div>
-                        <div id="io-sync-progress-label" class="sync-progress-label">准备中...</div>
-                    </div>
-                </div>
-
                 <!-- Panel: 危险操作 -->
                 <div class="io-panel p-6" data-io-panel="danger">
                     <div class="bg-red-50 p-5 rounded-xl border border-red-100 space-y-3">
@@ -1454,120 +1708,162 @@
         </div>
     </div>
 
-    <div id="cloud-modal" class="settings-drawer-shell hidden">
-        <div class="settings-drawer-panel">
-            <div class="settings-drawer-hero">
-                <div class="flex items-start justify-between gap-4">
+    <div id="cloud-modal" class="cloud-modal-shell hidden">
+        <div class="cloud-modal-panel" id="cloud-modal-panel">
+            <!-- Header -->
+            <div class="cloud-modal-header">
+                <div class="cloud-modal-title-row">
                     <div>
-                        <div class="settings-drawer-kicker">云端同步</div>
-                        <h3 class="settings-drawer-title">多端数据同步</h3>
-                        <p class="settings-drawer-desc">配置 Supabase 连接，实现跨设备题库同步与团队协作。</p>
+                        <div class="cloud-modal-kicker">云端同步</div>
+                        <div class="cloud-modal-title">多端数据同步</div>
                     </div>
-                    <button id="cloud-modal-close-btn" class="p-1 rounded-md text-gray-500 hover:bg-gray-100">
+                    <button id="cloud-modal-close-btn" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition flex-shrink-0 mt-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-            </div>
-            <div class="p-5 space-y-4 overflow-y-auto flex-1">
-                <!-- Status cards -->
-                <div class="cloud-status-hero">
-                    <div class="cloud-status-card">
-                        <div class="cloud-status-label">同步状态</div>
-                        <div id="cloud-modal-status" class="cloud-status-value">未配置 Supabase。</div>
-                    </div>
-                    <div class="cloud-status-card">
-                        <div class="cloud-status-label">当前账号</div>
-                        <div id="cloud-user-email" class="cloud-status-value">未登录</div>
-                    </div>
+                <!-- Status pill (sticky across all tabs) -->
+                <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-full border" style="background:#f8fafc;border-color:#e5e7eb;">
+                    <span id="auth-status-dot-modal" class="inline-block w-2 h-2 rounded-full flex-shrink-0 bg-gray-300"></span>
+                    <div id="cloud-modal-status" class="text-xs font-medium text-slate-700 truncate flex-1 min-w-0">未配置 Supabase。</div>
+                    <span id="pill-sync-time" class="text-[10px] text-slate-400 flex-shrink-0 hidden">—</span>
                 </div>
+            </div>
 
-                <!-- Step 1: Connection config -->
-                <div id="cloud-config-section" class="cloud-panel">
-                    <div class="cloud-panel-header">
+            <!-- Tab bar -->
+            <div class="cloud-tab-bar">
+                <button class="cloud-tab active" data-cloud-tab="connection">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    连接配置
+                </button>
+                <button class="cloud-tab" data-cloud-tab="ai" style="color:#7c3aed;">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    AI 标签推荐
+                </button>
+                <button class="cloud-tab" data-cloud-tab="sync-log">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    同步记录
+                </button>
+            </div>
+
+            <!-- Offline banner (hidden by default) -->
+            <div id="cloud-offline-banner" class="hidden flex items-center gap-2 px-5 py-2 text-xs font-medium" style="background:#fef3c7;color:#92400e;border-bottom:1px solid #fde68a;">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 000-7.07m-4.243 4.243a1 1 0 010-1.414"/></svg>
+                <span>当前离线，操作将在恢复网络后继续</span>
+            </div>
+
+            <!-- Tab body -->
+            <div class="cloud-modal-body">
+
+                <!-- Panel: 连接配置 -->
+                <div class="cloud-tab-panel active" data-cloud-panel="connection">
+                    <div id="cloud-config-section" class="space-y-4">
+                        <p class="text-sm text-gray-500">在 <a href="https://supabase.com/dashboard" target="_blank" class="text-blue-600 underline">Supabase 控制台</a> → Project Settings → API 中找到以下两个值。</p>
                         <div>
-                            <div class="cloud-panel-title">① 连接配置</div>
-                            <p class="cloud-panel-desc">在 <a href="https://supabase.com/dashboard" target="_blank" class="text-blue-600 underline">Supabase 控制台</a> → Project Settings → API 中找到以下两个值。</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Project URL</label>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Project URL</label>
                             <input id="supabase-url-input" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="https://xxxx.supabase.co">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">Anon / Public Key</label>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Anon / Public Key</label>
                             <input id="supabase-anon-key-input" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="eyJ...">
                         </div>
                         <div id="conn-test-result" class="conn-test-result"></div>
-                        <div class="flex gap-2 pt-1">
+                        <div class="flex gap-2">
                             <button id="test-connection-btn" class="cloud-secondary-btn text-sm py-2 px-4">测试连接</button>
                             <button id="save-supabase-config-btn" class="cloud-primary-btn text-sm py-2 px-4">保存配置</button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Step 2: Auth — logged out view -->
-                <div id="cloud-auth-section" class="cloud-panel">
-                    <div class="cloud-panel-header mb-0">
-                        <div class="cloud-panel-title">② 账号</div>
-                    </div>
-                    <!-- Logged-out: tab toggle 登录 / 注册 -->
-                    <div id="auth-logged-out-wrap">
-                        <div class="auth-mode-tab-bar mt-3">
-                            <button class="auth-mode-tab active" data-auth-mode="signin">登录</button>
-                            <button class="auth-mode-tab" data-auth-mode="signup">注册新账号</button>
-                        </div>
-                        <div class="space-y-3">
-                            <input id="auth-email-input" type="email" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="邮箱">
-                            <input id="auth-password-input" type="password" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="密码">
-                            <div class="pt-1">
-                                <button id="auth-sign-in-btn" class="cloud-primary-btn w-full text-center">登录</button>
-                                <button id="auth-sign-up-btn" class="cloud-primary-btn w-full text-center hidden">注册</button>
+                    <!-- 账号登录/注册（与连接配置合并） -->
+                    <div id="cloud-auth-section" class="mt-6 pt-5 border-t border-gray-100">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">账号</h4>
+                        <!-- Logged-out: tab toggle 登录 / 注册 -->
+                        <div id="auth-logged-out-wrap">
+                            <div class="auth-mode-tab-bar">
+                                <button class="auth-mode-tab active" data-auth-mode="signin">登录</button>
+                                <button class="auth-mode-tab" data-auth-mode="signup">注册新账号</button>
+                            </div>
+                            <div class="space-y-3">
+                                <input id="auth-email-input" type="email" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="邮箱">
+                                <input id="auth-password-input" type="password" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black" placeholder="密码">
+                                <div class="pt-1">
+                                    <button id="auth-sign-in-btn" class="cloud-primary-btn w-full text-center">登录</button>
+                                    <button id="auth-sign-up-btn" class="cloud-primary-btn w-full text-center hidden">注册</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Logged-in view -->
-                    <div id="auth-logged-in-wrap" class="hidden space-y-3 mt-3">
-                        <div class="flex items-center gap-2 text-sm text-gray-700">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                            <span id="auth-logged-in-email" class="font-medium"></span>
+                        <!-- Logged-in view -->
+                        <div id="auth-logged-in-wrap" class="hidden space-y-3">
+                            <div class="flex items-center gap-2.5 p-3 rounded-xl" style="background:#ecfdf5;border:1px solid #a7f3d0;">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0"></span>
+                                <span id="auth-logged-in-email" class="font-medium text-sm text-emerald-800 flex-1 min-w-0 truncate"></span>
+                            </div>
+                            <button id="auth-sign-out-btn" class="cloud-secondary-btn text-red-600 border-red-200 hover:bg-red-50 text-sm py-2 px-4 w-full">登出</button>
                         </div>
-                        <button id="auth-sign-out-btn" class="cloud-secondary-btn text-red-600 border-red-200 hover:bg-red-50 text-sm py-2 px-4">登出</button>
                     </div>
                 </div>
 
-                <!-- AI 标签推荐配置 -->
-                <div class="cloud-panel" style="border-color:#c4b5fd;background:linear-gradient(180deg,#fafafe 0%,#f5f3ff 100%);">
-                    <div class="cloud-panel-header">
-                        <div>
-                            <div class="cloud-panel-title" style="color:#7c3aed;">AI 标签推荐</div>
-                            <p class="cloud-panel-desc">配置 AI API 以在录入题目时智能推荐标签。不配置则仅使用本地 TF-IDF 匹配。</p>
+                <!-- Panel: AI 标签推荐 -->
+                <div class="cloud-tab-panel" data-cloud-panel="ai">
+                    <p class="text-sm text-gray-500 mb-4">配置 AI API 以在录入题目时智能推荐标签。支持多账号切换，不配置则仅使用本地 TF-IDF 匹配。</p>
+
+                    <!-- Account list -->
+                    <div id="ai-account-list" class="ai-account-list"></div>
+                    <button id="ai-add-account-btn" class="ai-add-account-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        添加新账号配置
+                    </button>
+
+                </div>
+
+                <!-- Panel: 同步记录 -->
+                <div class="cloud-tab-panel" data-cloud-panel="sync-log">
+                    <div id="sync-log-section">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-800">同步记录</div>
+                                <p class="text-[11px] text-slate-400 mt-0.5">自动记录最近拉取与上传摘要</p>
+                            </div>
+                            <button id="clear-sync-log-btn" class="text-[11px] px-2.5 py-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition border border-slate-200">清空</button>
                         </div>
-                    </div>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">API Base URL</label>
-                            <input id="ai-api-url" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" placeholder="https://api.deepseek.com/chat/completions">
-                            <p class="text-[10px] text-gray-400 mt-1">OpenAI: https://api.openai.com/v1/chat/completions · DeepSeek: https://api.deepseek.com/chat/completions</p>
+                        <!-- filter bar -->
+                        <div id="sync-log-filters" class="sync-log-filter-bar">
+                            <button class="sync-log-filter-chip active" data-filter="all">全部</button>
+                            <button class="sync-log-filter-chip" data-filter="push">上传</button>
+                            <button class="sync-log-filter-chip" data-filter="pull">拉取</button>
+                            <button class="sync-log-filter-chip" data-filter="conflict">冲突</button>
+                            <button class="sync-log-filter-chip" data-filter="error">错误</button>
                         </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">API Key</label>
-                            <input id="ai-api-key" type="password" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" placeholder="sk-...">
+                        <div id="sync-log-list" class="min-h-[60px]"></div>
+                        <div id="sync-log-empty" class="sync-log-empty-hero">
+                            <div class="icon">📭</div>
+                            <div class="title">暂无同步记录</div>
+                            <div class="desc">执行上传或拉取操作后，记录将显示在这里</div>
                         </div>
-                        <div>
-                            <label class="block text-xs text-gray-500 mb-1">Model</label>
-                            <input id="ai-api-model" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" placeholder="deepseek-chat">
-                            <p class="text-[10px] text-gray-400 mt-1">OpenAI: gpt-4o-mini · DeepSeek: deepseek-chat</p>
-                        </div>
-                        <div class="flex gap-2 pt-1">
-                            <button id="ai-test-btn" class="cloud-secondary-btn text-sm py-2 px-4" style="border-color:#c4b5fd;color:#7c3aed;">测试连接</button>
-                            <button id="ai-save-btn" class="cloud-primary-btn text-sm py-2 px-4" style="background:#7c3aed;">保存配置</button>
-                        </div>
-                        <div id="ai-test-result" class="conn-test-result"></div>
                     </div>
                 </div>
+
+            </div><!-- /.cloud-modal-body -->
+
+            <!-- Bottom toolbar (sticky) -->
+            <div id="cloud-modal-footer" class="hidden flex-shrink-0 px-6 py-3 border-t border-gray-100" style="background:#fafbfc;">
+                <div class="flex items-center gap-2">
+                    <button id="cloud-footer-upload-btn" class="text-xs font-medium px-3.5 py-2 rounded-lg border transition flex items-center gap-1.5" style="background:#fff;border-color:#e5e7eb;color:#1e293b;">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                        上传
+                    </button>
+                    <button id="cloud-footer-pull-btn" class="text-xs font-medium px-3.5 py-2 rounded-lg border transition flex items-center gap-1.5" style="background:#fff;border-color:#e5e7eb;color:#1e293b;">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                        拉取
+                    </button>
+                    <div class="flex-1"></div>
+                    <button id="cloud-footer-sign-out-btn" class="text-xs font-medium px-3 py-2 rounded-lg transition flex items-center gap-1.5 text-red-500 hover:bg-red-50 border border-transparent">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        退出登录
+                    </button>
+                </div>
             </div>
-        </div>
+
+        </div><!-- /.cloud-modal-panel -->
     </div>
 
     <div id="toast-container" class="toast-container"></div>
@@ -1622,6 +1918,13 @@
                 if (q.smReps == null) q.smReps = 0;
             });
         });
+        db.version(9).stores({
+            banks: '++id, cloudId, ownerId, name, createdAt, updatedAt',
+            questions: '++id, bankId, cloudId, ownerId, stem, answer, analysis, tags, reviewStatus, createdAt, updatedAt, type, subQuestions, smEF, smReps, smInterval, smNextReview, smLastReview',
+            tombstones: '++id, entity, cloudId, createdAt',
+            questionVersions: '++id, questionId, versionData, createdAt',
+            syncLogs: '++id, timestamp, type'
+        });
 
         const DEFAULT_SUPABASE_URL = 'https://oynrflmlzramuqocbyis.supabase.co';
         const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95bnJmbG1senJhbXVxb2NieWlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjM3OTUsImV4cCI6MjA5MjQ5OTc5NX0.9pDTVXWChVD6GfskNDZbW-n-hUzXAkkdPWSuFwNrGZU';
@@ -1638,7 +1941,8 @@
                 activePreviewAnchor: 'stem',
                 viewMode: localStorage.getItem('questionViewMode') || 'grid',
                 listSort: { key: null, direction: 'asc' },
-                tagEditor: { tags: [] }
+                tagEditor: { tags: [] },
+                reviewModeActive: false
             },
             tagStats: [],
             cloud: {
@@ -1648,7 +1952,20 @@
                 syncing: false,
                 initialized: false,
                 compareStats: null,
-                compareDetail: { banks: {}, questions: {} }
+                compareDetail: { banks: {}, questions: {} },
+                lastPullAt: localStorage.getItem('qbank.lastPullAt') || null,
+                lastPushAt: localStorage.getItem('qbank.lastPushAt') || null,
+                lastKnownCloudTimes: (() => {
+                    try {
+                        const raw = localStorage.getItem('qbank.lastKnownCloudTimes');
+                        if (!raw) return null;
+                        const parsed = JSON.parse(raw);
+                        return {
+                            banks: new Map(parsed.banks || []),
+                            questions: new Map(parsed.questions || [])
+                        };
+                    } catch (e) { return null; }
+                })()
             }
         };
 
@@ -1690,6 +2007,10 @@
             form: document.getElementById('question-form'),
             cancelBtn: document.getElementById('cancel-btn'),
             saveAndAddAnotherBtn: document.getElementById('save-and-add-another-btn'),
+            versionHistoryBtn: document.getElementById('version-history-btn'),
+            versionHistoryPanel: document.getElementById('version-history-panel'),
+            versionHistoryList: document.getElementById('version-history-list'),
+            closeVersionHistoryBtn: document.getElementById('close-version-history-btn'),
             previewArea: document.getElementById('preview-area'),
             questionIdInput: document.getElementById('question-id'),
             questionTypeSelect: document.getElementById('question-type'),
@@ -1713,23 +2034,20 @@
             activeFilterStrip: document.getElementById('active-filter-strip'),
             confirmModal: document.getElementById('confirm-modal'),
             confirmOkBtn: document.getElementById('confirm-ok-btn'),
+            confirmMiddleBtn: document.getElementById('confirm-middle-btn'),
             confirmCancelBtn: document.getElementById('confirm-cancel-btn'),
             viewQuestionModal: document.getElementById('view-question-modal'),
             viewModalTitle: document.getElementById('view-modal-title'),
             viewModalContent: document.getElementById('view-modal-content'),
             viewModalCloseBtn: document.getElementById('view-modal-close-btn'),
             ioBtn: document.getElementById('io-btn'),
-            topCloudUploadBtn: document.getElementById('top-cloud-upload-btn'),
-            topCloudPullBtn: document.getElementById('top-cloud-pull-btn'),
             sidebarCloudConfigBtn: document.getElementById('sidebar-cloud-config-btn'),
             authStatusDot: document.getElementById('auth-status-dot'),
             authStatusText: document.getElementById('auth-status-text'),
             ioModal: document.getElementById('io-modal'),
             ioCloseBtn: document.getElementById('io-close-btn'),
-            ioOpenCloudModalBtn: document.getElementById('io-open-cloud-modal-btn'),
             ioOpenTagManagerBtn: document.getElementById('io-open-tag-manager-btn'),
-            ioCloudUploadBtn: document.getElementById('io-cloud-upload-btn'),
-            ioCloudPullBtn: document.getElementById('io-cloud-pull-btn'),
+            clearSyncLogBtn: document.getElementById('clear-sync-log-btn'),
             importJsonInput: document.getElementById('import-json-input'),
             importDocxInput: document.getElementById('import-docx-input'),
             exportJsonBtn: document.getElementById('export-json-btn'),
@@ -1759,6 +2077,7 @@
             copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
             toastContainer: document.getElementById('toast-container'),
             cloudModal: document.getElementById('cloud-modal'),
+            cloudModalPanel: document.getElementById('cloud-modal-panel'),
             cloudModalCloseBtn: document.getElementById('cloud-modal-close-btn'),
             supabaseUrlInput: document.getElementById('supabase-url-input'),
             supabaseAnonKeyInput: document.getElementById('supabase-anon-key-input'),
@@ -1778,15 +2097,6 @@
             importJsonProgressWrap: document.getElementById('import-json-progress-wrap'),
             importJsonProgressFill: document.getElementById('import-json-progress-fill'),
             importJsonProgressLabel: document.getElementById('import-json-progress-label'),
-            ioSyncStatsWrap: document.getElementById('io-sync-stats-wrap'),
-            ioStatLocal: document.getElementById('io-stat-local'),
-            ioStatCloud: document.getElementById('io-stat-cloud'),
-            ioStatSynced: document.getElementById('io-stat-synced'),
-            ioLastSyncLine: document.getElementById('io-last-sync-line'),
-            syncLoginNote: document.getElementById('sync-login-note'),
-            ioSyncProgressWrap: document.getElementById('io-sync-progress-wrap'),
-            ioSyncProgressFill: document.getElementById('io-sync-progress-fill'),
-            ioSyncProgressLabel: document.getElementById('io-sync-progress-label'),
             dangerBankNameHint: document.getElementById('danger-bank-name-hint'),
             dangerConfirmInput: document.getElementById('danger-confirm-input'),
             // Cloud drawer new elements
@@ -1800,8 +2110,13 @@
             authSignInBtn: document.getElementById('auth-sign-in-btn'),
             authSignUpBtn: document.getElementById('auth-sign-up-btn'),
             authSignOutBtn: document.getElementById('auth-sign-out-btn'),
-            cloudUserEmail: document.getElementById('cloud-user-email'),
-            cloudModalStatus: document.getElementById('cloud-modal-status')
+            cloudFooterUploadBtn: document.getElementById('cloud-footer-upload-btn'),
+            cloudFooterPullBtn: document.getElementById('cloud-footer-pull-btn'),
+            cloudFooterSignOutBtn: document.getElementById('cloud-footer-sign-out-btn'),
+            cloudModalFooter: document.getElementById('cloud-modal-footer'),
+            cloudModalStatus: document.getElementById('cloud-modal-status'),
+            authStatusDotModal: document.getElementById('auth-status-dot-modal'),
+            pillSyncTime: document.getElementById('pill-sync-time')
         };
 
         // --- 4. UTILS & HELPERS ---
@@ -2000,7 +2315,8 @@
 
             var existing = getEditorTags();
             var localTags = suggestAutoTags(text).filter(function(t) { return !existing.includes(t); });
-            var hasAI = !!(aiConfig.url && aiConfig.key && stemText.trim().length >= 10);
+            var activeAccount = getActiveAiAccount();
+            var hasAI = !!(activeAccount && activeAccount.url && activeAccount.key && stemText.trim().length >= 10);
             var hasCachedAi = _cachedAiTags && _cachedAiTags.length > 0;
             var cachedFiltered = hasCachedAi ? _cachedAiTags.filter(function(t) { return !existing.includes(t) && !localTags.includes(t); }) : [];
 
@@ -2181,52 +2497,259 @@
                 .slice(0, 5);
         };
 
-        // ── AI API Tag Suggestion ─────────────────────────────────────────────
-        let aiConfig = {
-            url: localStorage.getItem('qbank.ai.url') || '',
-            key: localStorage.getItem('qbank.ai.key') || '',
-            model: localStorage.getItem('qbank.ai.model') || 'deepseek-chat'
+        // ── AI API Tag Suggestion（多账号切换）───────────────────────────────────
+        const AI_ACCOUNTS_KEY = 'qbank.ai.accounts';
+        const AI_ACTIVE_KEY = 'qbank.ai.activeAccountId';
+
+        const loadAiAccounts = () => {
+            try {
+                const raw = localStorage.getItem(AI_ACCOUNTS_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        };
+        const saveAiAccounts = (accounts) => {
+            try { localStorage.setItem(AI_ACCOUNTS_KEY, JSON.stringify(accounts)); } catch (e) {}
         };
 
-        const saveAiConfig = () => {
-            var urlEl = document.getElementById('ai-api-url');
-            var keyEl = document.getElementById('ai-api-key');
-            var modelEl = document.getElementById('ai-api-model');
-            if (urlEl) aiConfig.url = urlEl.value.trim();
-            if (keyEl) aiConfig.key = keyEl.value.trim();
-            if (modelEl) aiConfig.model = modelEl.value.trim() || 'gpt-4o-mini';
-            localStorage.setItem('qbank.ai.url', aiConfig.url);
-            localStorage.setItem('qbank.ai.key', aiConfig.key);
-            localStorage.setItem('qbank.ai.model', aiConfig.model);
-            showToast('AI 配置已保存', 'success');
+        // 初始化 AI 账号列表
+        state.cloud.aiAccounts = loadAiAccounts();
+        state.cloud.activeAiAccountId = localStorage.getItem(AI_ACTIVE_KEY) || null;
+        // 兼容旧版单账号配置迁移
+        if (state.cloud.aiAccounts.length === 0) {
+            const oldUrl = localStorage.getItem('qbank.ai.url');
+            const oldKey = localStorage.getItem('qbank.ai.key');
+            const oldModel = localStorage.getItem('qbank.ai.model');
+            if (oldUrl && oldKey) {
+                const migrated = { id: generateUUID(), name: '默认账号', url: oldUrl, key: oldKey, model: oldModel || 'deepseek-chat' };
+                state.cloud.aiAccounts = [migrated];
+                state.cloud.activeAiAccountId = migrated.id;
+                saveAiAccounts(state.cloud.aiAccounts);
+                localStorage.setItem(AI_ACTIVE_KEY, migrated.id);
+                // 清除旧 key
+                ['qbank.ai.url', 'qbank.ai.key', 'qbank.ai.model'].forEach(k => localStorage.removeItem(k));
+            }
+        }
+        // 设置 edtingAiAccountId 初始为 null
+        state.cloud.editingAiAccountId = null;
+
+        const getActiveAiAccount = () => {
+            if (!state.cloud.activeAiAccountId || state.cloud.aiAccounts.length === 0) return null;
+            return state.cloud.aiAccounts.find(a => a.id === state.cloud.activeAiAccountId) || null;
         };
 
-        const loadAiConfigToForm = () => {
-            var urlEl = document.getElementById('ai-api-url');
-            var keyEl = document.getElementById('ai-api-key');
-            var modelEl = document.getElementById('ai-api-model');
-            if (urlEl) urlEl.value = aiConfig.url;
-            if (keyEl) keyEl.value = aiConfig.key;
-            if (modelEl) modelEl.value = aiConfig.model;
+        const renderAiAccountList = () => {
+            const container = document.getElementById('ai-account-list');
+            if (!container) return;
+            const accounts = state.cloud.aiAccounts;
+            if (accounts.length === 0) {
+                container.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">暂无 AI 账号，请添加。</p>';
+                return;
+            }
+            // 当前活跃账号排第一
+            const sorted = [...accounts].sort((a, b) => {
+                if (a.id === state.cloud.activeAiAccountId) return -1;
+                if (b.id === state.cloud.activeAiAccountId) return 1;
+                return 0;
+            });
+            container.innerHTML = sorted.map(a => {
+                const isActive = a.id === state.cloud.activeAiAccountId;
+                const isExpanded = a.id === (container.dataset.expandedAi || '');
+                const testStatus = a.testStatus || null; // null | 'ok' | 'err'
+                const dotClass = testStatus === 'ok' ? 'tested'
+                    : testStatus === 'err' ? 'error'
+                    : (a.testedAt ? 'untested' : 'idle');
+                return `<div class="ai-account-item${isActive ? ' active' : ''}${isExpanded ? ' expanded' : ''}" data-ai-id="${a.id}">
+                    <div class="ai-account-header" data-select-ai="${a.id}">
+                        <span class="ai-account-dot ${dotClass}" title="${testStatus === 'ok' ? '连接正常' : testStatus === 'err' ? '连接失败' : '未测试'}"></span>
+                        <span class="ai-account-name">${escapeHtml(a.name)}</span>
+                        <span class="ai-account-model">${escapeHtml(a.model)}</span>
+                        <span class="ai-account-actions">
+                            ${!isActive ? `<button class="ai-account-btn switch" data-activate-ai="${a.id}">切换</button>` : ''}
+                            ${false && !isActive ? '' : ''}
+                        </span>
+                        <button class="ai-account-delete-btn" data-delete-ai="${a.id}" title="删除此账号">×</button>
+                        <span class="ai-account-chevron">▾</span>
+                    </div>
+                    <div class="ai-account-inline-form" data-form-ai="${a.id}">
+                        <div class="space-y-3 pt-2">
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">账号备注名</label>
+                                <input id="ai-name-${a.id}" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" value="${escapeHtml(a.name)}" placeholder="例如：DeepSeek 个人账号">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">API Base URL</label>
+                                <input id="ai-url-${a.id}" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" value="${escapeHtml(a.url)}" placeholder="https://api.deepseek.com/chat/completions">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">API Key</label>
+                                <input id="ai-key-${a.id}" type="password" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" value="${escapeHtml(a.key)}" placeholder="sk-...">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Model</label>
+                                <input id="ai-model-${a.id}" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500" value="${escapeHtml(a.model)}" placeholder="deepseek-chat">
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button class="cloud-secondary-btn text-sm py-2 px-4" style="border-color:#c4b5fd;color:#7c3aed;" data-test-ai="${a.id}">测试连接</button>
+                                <button class="cloud-primary-btn text-sm py-2 px-4" style="background:#7c3aed;" data-save-ai="${a.id}">保存</button>
+                                <button class="cloud-secondary-btn text-sm py-2 px-3 ml-auto" data-cancel-ai="${a.id}">取消</button>
+                            </div>
+                            <div id="ai-test-result-${a.id}" class="conn-test-result"></div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // 点击卡片空白区域 → 切换账号
+            container.querySelectorAll('[data-select-ai]').forEach(header => {
+                header.addEventListener('click', (e) => {
+                    if (e.target.closest('[data-delete-ai]')) return;
+                    if (e.target.closest('[data-activate-ai]')) return;
+                    if (e.target.closest('.ai-account-chevron')) return;
+                    e.stopPropagation();
+                    const id = header.dataset.selectAi;
+                    selectAiAccount(id);
+                });
+            });
+            // 切换按钮
+            container.querySelectorAll('[data-activate-ai]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectAiAccount(btn.dataset.activateAi);
+                });
+            });
+            // 展开/收起（点击 chevron 或编辑按钮）
+            container.querySelectorAll('.ai-account-chevron').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const item = el.closest('.ai-account-item');
+                    if (!item) return;
+                    toggleAiExpand(item.dataset.aiId);
+                });
+            });
+            container.querySelectorAll('.ai-account-edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleAiExpand(btn.dataset.editAi);
+                });
+            });
+            // 保存按钮
+            container.querySelectorAll('[data-save-ai]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    saveAiAccountInline(btn.dataset.saveAi);
+                });
+            });
+            // 取消按钮
+            container.querySelectorAll('[data-cancel-ai]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.cancelAi;
+                    const container = document.getElementById('ai-account-list');
+                    if (container) container.dataset.expandedAi = '';
+                    renderAiAccountList();
+                });
+            });
+            // 测试按钮
+            container.querySelectorAll('[data-test-ai]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    testAiConnectionInline(btn.dataset.testAi);
+                });
+            });
+            // 删除按钮
+            container.querySelectorAll('[data-delete-ai]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.deleteAi;
+                    showConfirmation('删除 AI 账号', '确定要删除这个 AI 账号配置吗？此操作不可撤销。', () => deleteAiAccount(id));
+                });
+            });
         };
 
-        const testAiConnection = async () => {
-            saveAiConfig();
-            var resultEl = document.getElementById('ai-test-result');
-            if (!aiConfig.url || !aiConfig.key) {
+        const toggleAiExpand = (accountId) => {
+            const container = document.getElementById('ai-account-list');
+            if (!container) return;
+            const current = container.dataset.expandedAi;
+            if (current === accountId) {
+                container.dataset.expandedAi = '';
+            } else {
+                container.dataset.expandedAi = accountId;
+            }
+            renderAiAccountList();
+        };
+
+        const selectAiAccount = (accountId) => {
+            state.cloud.activeAiAccountId = accountId;
+            localStorage.setItem(AI_ACTIVE_KEY, accountId);
+            const container = document.getElementById('ai-account-list');
+            if (container) container.dataset.expandedAi = '';
+            renderAiAccountList();
+            showToast('已切换 AI 账号', 'success');
+        };
+
+        const deleteAiAccount = (accountId) => {
+            state.cloud.aiAccounts = state.cloud.aiAccounts.filter(a => a.id !== accountId);
+            if (state.cloud.activeAiAccountId === accountId) {
+                state.cloud.activeAiAccountId = state.cloud.aiAccounts.length > 0 ? state.cloud.aiAccounts[0].id : null;
+            }
+            saveAiAccounts(state.cloud.aiAccounts);
+            localStorage.setItem(AI_ACTIVE_KEY, state.cloud.activeAiAccountId || '');
+            const container = document.getElementById('ai-account-list');
+            if (container) container.dataset.expandedAi = '';
+            renderAiAccountList();
+            showToast('AI 账号已删除', 'success');
+        };
+
+        const saveAiAccountInline = (accountId) => {
+            const name = document.getElementById('ai-name-' + accountId)?.value?.trim();
+            const url = document.getElementById('ai-url-' + accountId)?.value?.trim();
+            const key = document.getElementById('ai-key-' + accountId)?.value?.trim();
+            const model = document.getElementById('ai-model-' + accountId)?.value?.trim() || 'deepseek-chat';
+            if (!name || !url || !key) {
+                showToast('请填写账号名、API URL 和 Key', 'error');
+                return;
+            }
+            const idx = state.cloud.aiAccounts.findIndex(a => a.id === accountId);
+            if (idx !== -1) {
+                state.cloud.aiAccounts[idx] = { ...state.cloud.aiAccounts[idx], name, url, key, model };
+            }
+            saveAiAccounts(state.cloud.aiAccounts);
+            const container = document.getElementById('ai-account-list');
+            if (container) container.dataset.expandedAi = '';
+            renderAiAccountList();
+            showToast('AI 账号已保存', 'success');
+            // 保存后自动测试连接
+            testAiConnectionInline(accountId);
+        };
+
+        const testAiConnectionInline = async (accountId) => {
+            const url = document.getElementById('ai-url-' + accountId)?.value?.trim();
+            const key = document.getElementById('ai-key-' + accountId)?.value?.trim();
+            const model = document.getElementById('ai-model-' + accountId)?.value?.trim() || 'deepseek-chat';
+            const resultEl = document.getElementById('ai-test-result-' + accountId);
+            if (!url || !key) {
                 if (resultEl) { resultEl.className = 'conn-test-result err'; resultEl.textContent = '请填写 API URL 和 Key'; }
                 return;
             }
             if (resultEl) { resultEl.className = 'conn-test-result testing'; resultEl.textContent = '测试中...'; }
+            // 测试按钮显示 loading 态
+            const container = document.getElementById('ai-account-list');
+            const testBtn = container?.querySelector(`[data-test-ai="${accountId}"]`);
+            if (testBtn) testBtn.classList.add('testing');
+            // 清除之前的状态
+            const idx = state.cloud.aiAccounts.findIndex(a => a.id === accountId);
+            if (idx !== -1) {
+                state.cloud.aiAccounts[idx] = { ...state.cloud.aiAccounts[idx], testStatus: null, testedAt: null };
+            }
             try {
-                var resp = await fetch(aiConfig.url, {
+                var resp = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + aiConfig.key
+                        'Authorization': 'Bearer ' + key
                     },
                     body: JSON.stringify({
-                        model: aiConfig.model,
+                        model: model,
                         messages: [
                             { role: 'user', content: '为以下题目推荐标签（类别：难度、题型、来源、考点、章节、年份），直接回复JSON：{"tags":["考点:罗尔定理","难度:中等"]}。题目：设函数f(x)在区间[a,b]上连续，在(a,b)内可导，且f(a)=f(b)，则至少存在一点ξ∈(a,b)，使得f\'(ξ)=0' }
                         ],
@@ -2239,34 +2762,54 @@
                 var data = await resp.json();
                 var msg = data.choices?.[0]?.message || {};
                 var content = msg.content || msg.reasoning_content || '';
-                // Extract JSON from response (handle reasoning models that wrap output)
                 var match = content.match(/\{[\s\S]*\}/);
                 if (match) {
                     try {
                         var parsed = JSON.parse(match[0]);
                         if (parsed.tags) {
                             if (resultEl) { resultEl.className = 'conn-test-result ok'; resultEl.textContent = '连接成功！推荐标签：' + parsed.tags.join(', '); }
+                            persistTestStatus(accountId, 'ok');
                             return;
                         }
                     } catch(e) {}
                 }
                 if (resultEl) { resultEl.className = 'conn-test-result ok'; resultEl.textContent = '连接成功（响应：' + content.substring(0, 80) + '...）'; }
+                persistTestStatus(accountId, 'ok');
             } catch (e) {
                 if (resultEl) { resultEl.className = 'conn-test-result err'; resultEl.textContent = '连接失败：' + e.message; }
+                persistTestStatus(accountId, 'err');
+            } finally {
+                if (testBtn) testBtn.classList.remove('testing');
             }
         };
 
+        const persistTestStatus = (accountId, status) => {
+            const idx = state.cloud.aiAccounts.findIndex(a => a.id === accountId);
+            if (idx !== -1) {
+                state.cloud.aiAccounts[idx] = {
+                    ...state.cloud.aiAccounts[idx],
+                    testStatus: status,
+                    testedAt: new Date().toISOString()
+                };
+                saveAiAccounts(state.cloud.aiAccounts);
+                renderAiAccountList();
+            }
+        };
+
+        // testAiConnectionInline / loadAiConfigToForm 已由内联表单替代，见上方
+
         const suggestTagsViaAI = async (text) => {
-            if (!aiConfig.url || !aiConfig.key || !text || text.trim().length < 10) return [];
+            const account = getActiveAiAccount();
+            if (!account || !account.url || !account.key || !text || text.trim().length < 10) return [];
             try {
-                var response = await fetch(aiConfig.url, {
+                var response = await fetch(account.url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + aiConfig.key
+                        'Authorization': 'Bearer ' + account.key
                     },
                     body: JSON.stringify({
-                        model: aiConfig.model,
+                        model: account.model,
                         messages: [
                             { role: 'user', content: '为以下题目推荐所有相关标签，至少推荐一个。类别：' + TAG_CATEGORIES.join('、') + '。只输出JSON：\n{"tags":["考点:行政复议","考点:赔偿法"]}\n\n题目：' + text.trim() }
                         ],
@@ -2278,7 +2821,6 @@
                 if (!response.ok) return [];
                 var data = await response.json();
                 var msg = data.choices?.[0]?.message || {};
-                // DeepSeek reasoning models put output in reasoning_content
                 var content = msg.content || msg.reasoning_content || '';
                 var match = content.match(/\{[\s\S]*\}/);
                 if (match) {
@@ -2510,8 +3052,22 @@
             return localStorage.getItem('qbank.lastSync');
         };
         const setLastSyncAt = (ts, userId = state.cloud?.user?.id) => {
-            if (userId) localStorage.setItem(getLastSyncKey(userId), ts);
-            localStorage.setItem('qbank.lastSync', ts);
+            if (userId) {
+                localStorage.setItem(getLastSyncKey(userId), ts);
+            } else {
+                localStorage.setItem('qbank.lastSync', ts);
+            }
+        };
+        const persistLastKnownCloudTimes = () => {
+            try {
+                const times = state.cloud.lastKnownCloudTimes;
+                if (!times) return;
+                const serializable = {
+                    banks: Array.from(times.banks.entries()),
+                    questions: Array.from(times.questions.entries())
+                };
+                localStorage.setItem('qbank.lastKnownCloudTimes', JSON.stringify(serializable));
+            } catch (e) { /* quota exceeded — not critical */ }
         };
         const getLocalRecordTime = (record) => coerceDate(record?.updatedAt || record?.createdAt).getTime();
         const getRemoteRecordTime = (record) => coerceDate(record?.updated_at || record?.created_at).getTime();
@@ -2527,57 +3083,25 @@
         };
         const updateCloudStatusText = (text, tone = 'muted') => {
             DOMElements.cloudModalStatus.textContent = text;
-            if (tone === 'error') DOMElements.cloudModalStatus.className = 'cloud-status-value text-red-600';
-            else if (tone === 'success') DOMElements.cloudModalStatus.className = 'cloud-status-value text-emerald-700';
-            else DOMElements.cloudModalStatus.className = 'cloud-status-value text-slate-700';
+            if (tone === 'error') DOMElements.cloudModalStatus.className = 'text-xs font-medium truncate flex-1 min-w-0 text-red-600';
+            else if (tone === 'success') DOMElements.cloudModalStatus.className = 'text-xs font-medium truncate flex-1 min-w-0 text-emerald-700';
+            else DOMElements.cloudModalStatus.className = 'text-xs font-medium truncate flex-1 min-w-0 text-slate-500';
         };
-        const setSyncBusyUI = (busy, label = '处理中...', { recordLastSync = false, userId = state.cloud?.user?.id } = {}) => {
-            const buttons = [
-                DOMElements.topCloudUploadBtn,
-                DOMElements.topCloudPullBtn,
-                DOMElements.ioCloudUploadBtn,
-                DOMElements.ioCloudPullBtn
-            ].filter(Boolean);
+        const setSyncBusyUI = (busy, label = '处理中...', { recordLastSync = false, userId = state.cloud?.user?.id, syncStartTs = null } = {}) => {
+            // 同步时给状态圆点加脉冲动画
+            if (DOMElements.authStatusDot) {
+                if (busy) DOMElements.authStatusDot.classList.add('sync-pulsing');
+                else DOMElements.authStatusDot.classList.remove('sync-pulsing');
+            }
             if (busy) {
-                buttons.forEach(btn => {
-                    btn.disabled = true;
-                    btn.classList.add('opacity-70', 'cursor-wait');
-                    if (!btn.dataset.idleHtml) btn.dataset.idleHtml = btn.innerHTML;
-                    btn.textContent = '处理中...';
-                });
-                if (DOMElements.ioSyncProgressWrap) {
-                    clearInterval(DOMElements.ioSyncProgressWrap._animInterval);
-                    clearTimeout(DOMElements.ioSyncProgressWrap._hideTimer);
-                    DOMElements.ioSyncProgressWrap.classList.add('visible');
-                    if (DOMElements.ioSyncProgressLabel) DOMElements.ioSyncProgressLabel.textContent = label;
-                    if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '0%';
-                    // Animate indeterminate-style progress during sync
-                    let _prog = 0;
-                    DOMElements.ioSyncProgressWrap._animInterval = setInterval(() => {
-                        _prog = Math.min(_prog + Math.random() * 8, 85);
-                        if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = _prog + '%';
-                    }, 300);
-                }
+                // 同步进行中
             } else {
-                buttons.forEach(btn => {
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-70', 'cursor-wait');
-                    if (btn.dataset.idleHtml) btn.innerHTML = btn.dataset.idleHtml;
-                });
-                if (DOMElements.ioSyncProgressWrap) {
-                    clearInterval(DOMElements.ioSyncProgressWrap._animInterval);
-                    clearTimeout(DOMElements.ioSyncProgressWrap._hideTimer);
-                    if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '100%';
-                    DOMElements.ioSyncProgressWrap._hideTimer = setTimeout(() => {
-                        DOMElements.ioSyncProgressWrap.classList.remove('visible');
-                        if (DOMElements.ioSyncProgressFill) DOMElements.ioSyncProgressFill.style.width = '0%';
-                    }, 700);
-                }
                 if (recordLastSync) {
-                    // Persist last sync time
-                    const ts = new Date().toISOString();
+                    // 关键：使用同步**开始**时的时间戳，而非当前时间。
+                    // 这样在同步进行中发生的本地编辑（updatedAt > syncStartTs）
+                    // 会被 hasLocalChangesAfterLastSync 正确识别并保护。
+                    const ts = syncStartTs || new Date().toISOString();
                     setLastSyncAt(ts, userId);
-                    if (DOMElements.ioLastSyncLine) DOMElements.ioLastSyncLine.textContent = `上次同步：${formatRelativeTime(ts)}`;
                 }
             }
         };
@@ -2586,25 +3110,40 @@
             const loggedIn = Boolean(state.cloud.user);
             const email = loggedIn ? (state.cloud.user.email || state.cloud.user.id) : '';
 
-            // Cloud drawer: status cards
-            if (DOMElements.cloudUserEmail) DOMElements.cloudUserEmail.textContent = loggedIn ? email : '未登录';
-
-            // Cloud drawer: hide config section when logged in
-            if (DOMElements.cloudConfigSection) DOMElements.cloudConfigSection.classList.toggle('hidden', loggedIn);
+            // Cloud modal: status dot
+            if (DOMElements.authStatusDotModal) {
+                if (!hasConfig) DOMElements.authStatusDotModal.className = 'inline-block w-2 h-2 rounded-full flex-shrink-0 bg-gray-300';
+                else if (loggedIn) DOMElements.authStatusDotModal.className = 'inline-block w-2 h-2 rounded-full flex-shrink-0 bg-green-500';
+                else DOMElements.authStatusDotModal.className = 'inline-block w-2 h-2 rounded-full flex-shrink-0 bg-yellow-400';
+            }
+            // Pill sync time
+            const syncTimeEl = DOMElements.pillSyncTime;
+            if (syncTimeEl) {
+                if (loggedIn) {
+                    const t = localStorage.getItem('qbank.lastSync');
+                    if (t) {
+                        syncTimeEl.textContent = FORMAT_SYNC_TIME(new Date(t)) + ' 同步';
+                        syncTimeEl.classList.remove('hidden');
+                    } else {
+                        syncTimeEl.textContent = '尚未同步';
+                        syncTimeEl.classList.remove('hidden');
+                    }
+                } else {
+                    syncTimeEl.classList.add('hidden');
+                }
+            }
 
             // Cloud drawer: auth section — show correct wrap
             if (DOMElements.authLoggedOutWrap) DOMElements.authLoggedOutWrap.classList.toggle('hidden', loggedIn);
             if (DOMElements.authLoggedInWrap) DOMElements.authLoggedInWrap.classList.toggle('hidden', !loggedIn);
             if (DOMElements.authLoggedInEmail) DOMElements.authLoggedInEmail.textContent = email;
 
-            // IO modal: sync tab login note + button states
-            const syncReady = hasConfig && loggedIn;
-            if (DOMElements.syncLoginNote) DOMElements.syncLoginNote.classList.toggle('visible', !syncReady);
-            [DOMElements.ioCloudUploadBtn, DOMElements.ioCloudPullBtn].filter(Boolean).forEach(btn => {
-                btn.classList.toggle('sync-btn-locked', !syncReady);
-            });
+            // Bottom toolbar — only show when configured + logged in
+            if (DOMElements.cloudModalFooter) {
+                DOMElements.cloudModalFooter.classList.toggle('hidden', !loggedIn || !hasConfig);
+            }
 
-            // Topbar buttons
+            // Topbar dot + status text
             if (!hasConfig) {
                 if (DOMElements.authStatusDot) DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-gray-300';
                 if (DOMElements.authStatusText) DOMElements.authStatusText.textContent = '云端未连接';
@@ -2615,17 +3154,33 @@
                 if (DOMElements.authStatusDot) DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-green-500';
                 if (DOMElements.authStatusText) DOMElements.authStatusText.textContent = `已登录 ${email}`.trim();
                 updateCloudStatusText(`已登录：${email}`, 'success');
+                if (state.cloud.syncing && DOMElements.authStatusDot) {
+                    DOMElements.authStatusDot.classList.add('sync-pulsing');
+                }
             } else {
                 if (DOMElements.authStatusDot) DOMElements.authStatusDot.className = 'inline-block w-2 h-2 rounded-full bg-yellow-400';
                 if (DOMElements.authStatusText) DOMElements.authStatusText.textContent = '已配置，未登录';
                 updateCloudStatusText('已配置，未登录。');
             }
         };
+
+        const updateOfflineBanner = () => {
+            const banner = document.getElementById('cloud-offline-banner');
+            if (!banner) return;
+            banner.classList.toggle('hidden', navigator.onLine !== false);
+        };
+
         const openCloudModal = () => {
             DOMElements.supabaseUrlInput.value = state.cloud.supabaseUrl;
             DOMElements.supabaseAnonKeyInput.value = state.cloud.supabaseAnonKey;
-            loadAiConfigToForm();
+            renderAiAccountList();
+            renderSyncLog();
+            updateOfflineBanner();
             DOMElements.cloudModal.classList.remove('hidden');
+            // 动画：延迟一帧添加 show 类触发 transition
+            requestAnimationFrame(() => {
+                DOMElements.cloudModalPanel.classList.add('show');
+            });
             updateAuthUI();
             renderCompareSummary();
             if (!state.cloud.supabaseUrl || !state.cloud.supabaseAnonKey) {
@@ -2636,7 +3191,10 @@
                 updateCloudStatusText('配置已加载，请登录后开始同步。');
             }
         };
-        const closeCloudModal = () => DOMElements.cloudModal.classList.add('hidden');
+        const closeCloudModal = () => {
+            DOMElements.cloudModalPanel.classList.remove('show');
+            setTimeout(() => DOMElements.cloudModal.classList.add('hidden'), 200);
+        };
         const createSupabaseIfReady = () => {
             if (!state.cloud.supabaseUrl || !state.cloud.supabaseAnonKey) {
                 supabase = null;
@@ -2726,6 +3284,25 @@
                     await db.tombstones.delete(item.id);
                     continue;
                 }
+                // 题库删除时额外检查：是否有子题在删除请求**之后**被编辑过？
+                // bank.updated_at 不会因子题修改而 bump，所以前面的 cloudTime > deleteTime 检查
+                // 检测不到"另一台设备改了这个库下的某道题"的情况。
+                if (item.entity === 'bank') {
+                    const { data: childChanges, error: childError } = await client
+                        .from('qbank_questions')
+                        .select('id')
+                        .eq('bank_id', item.cloudId)
+                        .eq('user_id', userId)
+                        .gt('updated_at', toIso(item.createdAt))
+                        .limit(1);
+                    if (childError) continue;
+                    if (childChanges && childChanges.length > 0) {
+                        // 放弃 bank 删除：保留云端题库，让下一次 pull 把它（连同已编辑的子题）重新拉回本地
+                        skippedBankDeletes.add(item.cloudId);
+                        await db.tombstones.delete(item.id);
+                        continue;
+                    }
+                }
                 const { error } = await client
                     .from(table)
                     .delete()
@@ -2741,11 +3318,35 @@
             ]);
             if (cloudRes.error) throw cloudRes.error;
             const cloudMap = new Map((cloudRes.data || []).map(b => [b.id, b]));
+            const conflicts = [];
+            const items = [];
+            const knownTimes = state.cloud.lastKnownCloudTimes?.banks || new Map();
+            let upserted = 0;
             for (const bank of banks) {
                 if (bank.ownerId && bank.ownerId !== userId) continue;
+                if (bank.cloudId && !bank.ownerId) continue; // 被拉取孤立（云端已删），跳过防复活
                 const cloud = bank.cloudId ? cloudMap.get(bank.cloudId) : null;
-                if (cloud && getLocalRecordTime(bank) <= getRemoteRecordTime(cloud)) continue;
+                const knownTime = bank.cloudId ? (knownTimes.get(bank.cloudId) || 0) : 0;
+                const localChangedSinceSync = knownTime > 0 && getLocalRecordTime(bank) > knownTime;
+                const remoteChangedSinceSync = cloud && knownTime > 0 && getRemoteRecordTime(cloud) > knownTime;
+                if (cloud && getLocalRecordTime(bank) <= getRemoteRecordTime(cloud)) {
+                    // 本地确实没改过 → 安全跳过，等下次 pull
+                    if (!localChangedSinceSync) continue;
+                    // 否则：本地有未同步编辑，但服务器 now() 抢跑了本地时钟 → 跨设备冲突，强制 push（LWW）
+                }
+                // 冲突检测：云端在我们上次拉取后被其他人编辑过
+                if (cloud && bank.cloudId && remoteChangedSinceSync) {
+                    conflicts.push({ entity: 'bank', cloudId: bank.cloudId, name: bank.name });
+                }
+                upserted++;
+                const isNew = !bank.cloudId;
                 const cloudId = bank.cloudId || crypto.randomUUID();
+                items.push({
+                    entity: 'bank', id: bank.id, cloudId: bank.cloudId,
+                    name: bank.name,
+                    action: isNew ? 'created' : 'updated',
+                    fieldsChanged: []
+                });
                 const payload = {
                     id: cloudId,
                     user_id: userId,
@@ -2759,18 +3360,25 @@
                     .select('id, updated_at')
                     .single();
                 if (error) throw error;
+                // Use the server-returned timestamp to avoid local clock skew
+                const serverUpdatedAt = saved?.updated_at ? coerceDate(saved.updated_at) : coerceDate(payload.updated_at);
                 await db.banks.update(bank.id, {
                     cloudId,
                     ownerId: userId,
-                    updatedAt: coerceDate(saved?.updated_at || payload.updated_at)
+                    updatedAt: serverUpdatedAt
                 });
+                // Update known cloud time so this push doesn't appear as a conflict on next sync
+                if (!state.cloud.lastKnownCloudTimes) state.cloud.lastKnownCloudTimes = { banks: new Map(), questions: new Map() };
+                state.cloud.lastKnownCloudTimes.banks.set(cloudId, serverUpdatedAt.getTime());
             }
+            persistLastKnownCloudTimes();
+            return { conflicts, upserted, items };
         };
         const pushLocalQuestionsToCloud = async (client, userId) => {
             const [questions, cloudBanks, cloudQuestionsRes] = await Promise.all([
                 db.questions.toArray(),
                 db.banks.toArray(),
-                client.from('qbank_questions').select('id, updated_at').eq('user_id', userId)
+                client.from('qbank_questions').select('id, updated_at, stem, answer, analysis, tags, options, sub_questions, type, review_status').eq('user_id', userId)
             ]);
             if (cloudQuestionsRes.error) throw cloudQuestionsRes.error;
             const cloudQuestionMap = new Map((cloudQuestionsRes.data || []).map(q => [q.id, q]));
@@ -2779,13 +3387,50 @@
                     .filter(b => (!b.ownerId || b.ownerId === userId) && b.cloudId)
                     .map(b => [b.id, b.cloudId])
             );
+            const conflicts = [];
+            const items = [];
+            const knownTimes = state.cloud.lastKnownCloudTimes?.questions || new Map();
+            let upserted = 0;
             for (const q of questions) {
                 if (q.ownerId && q.ownerId !== userId) continue;
+                if (q.cloudId && !q.ownerId) continue; // 被拉取孤立（云端已删），跳过防复活
                 const cloud = q.cloudId ? cloudQuestionMap.get(q.cloudId) : null;
-                if (cloud && getLocalRecordTime(q) <= getRemoteRecordTime(cloud)) continue;
+                const knownTime = q.cloudId ? (knownTimes.get(q.cloudId) || 0) : 0;
+                const localChangedSinceSync = knownTime > 0 && getLocalRecordTime(q) > knownTime;
+                const remoteChangedSinceSync = cloud && knownTime > 0 && getRemoteRecordTime(cloud) > knownTime;
+                if (cloud && getLocalRecordTime(q) <= getRemoteRecordTime(cloud)) {
+                    if (!localChangedSinceSync) continue;
+                    // 本地有未同步编辑但服务器时间抢跑 → 跨设备冲突，强制 push（LWW）
+                }
+                // 冲突检测：云端在我们上次拉取后被其他人编辑过
+                if (cloud && q.cloudId && remoteChangedSinceSync) {
+                    conflicts.push({ entity: 'question', cloudId: q.cloudId, stem: (q.stem || '').substring(0, 40) });
+                }
                 const bankCloudId = localBankIdToCloudId.get(q.bankId);
-                if (!bankCloudId) continue;
+                if (!bankCloudId) continue; // 本地题库尚未同步 → 该题暂不推送
+                upserted++;
+                const isNew = !q.cloudId;
                 const cloudId = q.cloudId || crypto.randomUUID();
+                const localPayload = {
+                    stem: q.stem || '', answer: q.answer || '', analysis: q.analysis || '',
+                    tags: Array.isArray(q.tags) ? q.tags : [], options: q.options || null,
+                    subQuestions: q.subQuestions || null, type: q.type || 'standard',
+                    reviewStatus: q.reviewStatus || 'new'
+                };
+                // 字段级 diff：用云端的真实旧值作为基线，避免把非空字段误判为"被修改"
+                const cloudPayload = !isNew && cloud ? {
+                    stem: cloud.stem || '', answer: cloud.answer || '', analysis: cloud.analysis || '',
+                    tags: Array.isArray(cloud.tags) ? cloud.tags : [], options: cloud.options || null,
+                    subQuestions: cloud.sub_questions || null, type: cloud.type || 'standard',
+                    reviewStatus: cloud.review_status || 'new'
+                } : null;
+                const changed = cloudPayload ? diffFields(cloudPayload, localPayload) : [];
+                items.push({
+                    entity: 'question', id: q.id, cloudId: q.cloudId,
+                    stem: (q.stem || '').substring(0, 50),
+                    action: isNew ? 'created' : 'updated',
+                    fieldsChanged: changed
+                });
                 const payload = {
                     id: cloudId,
                     user_id: userId,
@@ -2812,12 +3457,19 @@
                     .select('id, updated_at')
                     .single();
                 if (error) throw error;
+                // Use the server-returned timestamp to avoid local clock skew
+                const serverUpdatedAt = saved?.updated_at ? coerceDate(saved.updated_at) : coerceDate(payload.updated_at);
                 await db.questions.update(q.id, {
                     cloudId,
                     ownerId: userId,
-                    updatedAt: coerceDate(saved?.updated_at || payload.updated_at)
+                    updatedAt: serverUpdatedAt
                 });
+                // Update known cloud time so this push doesn't appear as a conflict on next sync
+                if (!state.cloud.lastKnownCloudTimes) state.cloud.lastKnownCloudTimes = { banks: new Map(), questions: new Map() };
+                state.cloud.lastKnownCloudTimes.questions.set(cloudId, serverUpdatedAt.getTime());
             }
+            persistLastKnownCloudTimes();
+            return { conflicts, upserted, items };
         };
         const pullBanksFromCloud = async (client, userId) => {
             const { data, error } = await client
@@ -2852,6 +3504,11 @@
                     updatedAt: coerceDate(rb.updated_at)
                 };
                 if (existing) {
+                    // 保护本地未同步的编辑：如果本地在上次同步后有修改，不覆盖
+                    if (hasLocalChangesAfterLastSync(existing, userId)) {
+                        bankCloudToLocalId.set(rb.id, existing.id);
+                        continue;
+                    }
                     const localTime = coerceDate(existing.updatedAt || existing.createdAt).getTime();
                     const remoteTime = coerceDate(rb.updated_at).getTime();
                     if (localTime <= remoteTime) {
@@ -2863,16 +3520,48 @@
                     bankCloudToLocalId.set(rb.id, newId);
                 }
             }
-            return bankCloudToLocalId;
+            // 收集详情 + 记录云端时间戳
+            const items = [];
+            for (const rb of remote) {
+                const existing = await db.banks.where('cloudId').equals(rb.id).first();
+                items.push({
+                    entity: 'bank', id: existing?.id, cloudId: rb.id,
+                    name: rb.name,
+                    action: existing ? 'updated' : 'created'
+                });
+            }
+            // 被删除的本地条目
+            for (const localBank of localCloudBanks) {
+                if (!remoteIds.has(localBank.cloudId)) {
+                    items.push({
+                        entity: 'bank', id: localBank.id, cloudId: localBank.cloudId,
+                        name: localBank.name,
+                        action: 'deleted' + (hasLocalChangesAfterLastSync(localBank, userId) ? '-orphaned' : '')
+                    });
+                }
+            }
+            // 记录云端时间戳用于冲突检测
+            if (!state.cloud.lastKnownCloudTimes) state.cloud.lastKnownCloudTimes = { banks: new Map(), questions: new Map() };
+            for (const rb of remote) {
+                state.cloud.lastKnownCloudTimes.banks.set(rb.id, coerceDate(rb.updated_at).getTime());
+            }
+            persistLastKnownCloudTimes();
+            return { bankMap: bankCloudToLocalId, items };
         };
         const pullQuestionsFromCloud = async (client, userId, bankCloudToLocalId) => {
-            const { data, error } = await client
-                .from('qbank_questions')
-                .select('id, user_id, bank_id, type, stem, answer, analysis, tags, review_status, sm_ef, sm_reps, sm_interval, sm_next_review, sm_last_review, options, sub_questions, created_at, updated_at')
-                .eq('user_id', userId);
+            const lastPullAt = state.cloud.lastPullAt;
+            // 增量拉取：全量 ID（检测删除，轻量）+ 仅变更数据（updated_at > lastPullAt）
+            const fullFields = 'id, user_id, bank_id, type, stem, answer, analysis, tags, review_status, sm_ef, sm_reps, sm_interval, sm_next_review, sm_last_review, options, sub_questions, created_at, updated_at';
+            let dataQuery = client.from('qbank_questions').select(fullFields).eq('user_id', userId);
+            if (lastPullAt) dataQuery = dataQuery.gt('updated_at', lastPullAt);
+            const [{ data: allIds, error: idError }, { data: remoteChanged, error }] = await Promise.all([
+                client.from('qbank_questions').select('id').eq('user_id', userId),
+                dataQuery
+            ]);
+            if (idError) throw idError;
             if (error) throw error;
-            const remote = data || [];
-            const remoteIds = new Set(remote.map(item => item.id));
+            const remoteIds = new Set((allIds || []).map(item => item.id));
+            const remote = remoteChanged || [];
             const localCloudQuestions = await db.questions.where('ownerId').equals(userId).toArray();
             for (const localQ of localCloudQuestions) {
                 if (!remoteIds.has(localQ.cloudId)) {
@@ -2908,6 +3597,8 @@
                 };
                 const existing = await db.questions.where('cloudId').equals(rq.id).first();
                 if (existing) {
+                    // 保护本地未同步的编辑：如果本地在上次同步后有修改，不覆盖
+                    if (hasLocalChangesAfterLastSync(existing, userId)) continue;
                     const localTime = coerceDate(existing.updatedAt || existing.createdAt).getTime();
                     const remoteTime = coerceDate(rq.updated_at).getTime();
                     if (localTime <= remoteTime) {
@@ -2915,6 +3606,56 @@
                     }
                 } else await db.questions.add(payload);
             }
+            // 收集详情 + 记录云端时间戳
+            const items = [];
+            for (const rq of remote) {
+                const existing = await db.questions.where('cloudId').equals(rq.id).first();
+                const payload_f = {
+                    stem: rq.stem || '', answer: rq.answer || '', analysis: rq.analysis || '',
+                    tags: Array.isArray(rq.tags) ? rq.tags : [], options: rq.options || null,
+                    subQuestions: rq.sub_questions || null, type: rq.type || 'standard',
+                    reviewStatus: rq.review_status || 'new'
+                };
+                const existing_f = existing ? {
+                    stem: existing.stem || '', answer: existing.answer || '', analysis: existing.analysis || '',
+                    tags: existing.tags || [], options: existing.options || null,
+                    subQuestions: existing.subQuestions || null, type: existing.type || 'standard',
+                    reviewStatus: existing.reviewStatus || 'new'
+                } : null;
+                const changed = existing_f ? diffFields(existing_f, payload_f) : [];
+                items.push({
+                    entity: 'question', id: existing?.id, cloudId: rq.id,
+                    stem: (rq.stem || '').substring(0, 50),
+                    action: existing ? 'updated' : 'created',
+                    fieldsChanged: changed
+                });
+            }
+            for (const localQ of localCloudQuestions) {
+                if (!remoteIds.has(localQ.cloudId)) {
+                    items.push({
+                        entity: 'question', id: localQ.id, cloudId: localQ.cloudId,
+                        stem: (localQ.stem || '').substring(0, 50),
+                        action: 'deleted' + (hasLocalChangesAfterLastSync(localQ, userId) ? '-orphaned' : '')
+                    });
+                }
+            }
+            // 记录云端时间戳用于冲突检测
+            if (!state.cloud.lastKnownCloudTimes) state.cloud.lastKnownCloudTimes = { banks: new Map(), questions: new Map() };
+            for (const rq of remote) {
+                state.cloud.lastKnownCloudTimes.questions.set(rq.id, coerceDate(rq.updated_at).getTime());
+            }
+            // Also update timestamps for records not included in incremental pull
+            // (they haven't changed remotely since lastPullAt, so their known time = lastPullAt)
+            if (lastPullAt) {
+                const lastPullTime = coerceDate(lastPullAt).getTime();
+                for (const idRecord of (allIds || [])) {
+                    if (!state.cloud.lastKnownCloudTimes.questions.has(idRecord.id)) {
+                        state.cloud.lastKnownCloudTimes.questions.set(idRecord.id, lastPullTime);
+                    }
+                }
+            }
+            persistLastKnownCloudTimes();
+            return { items };
         };
         const buildCompareStats = async (client, userId) => {
             const [allLocalBanks, allLocalQuestions, cloudBanksRes, cloudQuestionsRes] = await Promise.all([
@@ -3010,21 +3751,6 @@
             return { stats, detail };
         };
         const renderCompareSummary = () => {
-            const s = state.cloud.compareStats;
-            // Update IO modal sync stats card
-            if (DOMElements.ioSyncStatsWrap) {
-                if (s) {
-                    DOMElements.ioSyncStatsWrap.classList.remove('hidden');
-                    const localOnly = (s.questions?.localOnly || 0) + (s.banks?.localOnly || 0);
-                    const cloudOnly = (s.questions?.cloudOnly || 0) + (s.banks?.cloudOnly || 0);
-                    const synced = (s.questions?.synced || 0) + (s.banks?.synced || 0);
-                    if (DOMElements.ioStatLocal) DOMElements.ioStatLocal.textContent = localOnly;
-                    if (DOMElements.ioStatCloud) DOMElements.ioStatCloud.textContent = cloudOnly;
-                    if (DOMElements.ioStatSynced) DOMElements.ioStatSynced.textContent = synced;
-                } else {
-                    DOMElements.ioSyncStatsWrap.classList.add('hidden');
-                }
-            }
             renderSidebarBanks();
             renderAllQuestions();
         };
@@ -3041,6 +3767,10 @@
                 return;
             }
             state.cloud.syncing = true;
+            // 在同步**开始**前快照时间戳，结束时把这个时间戳作为 lastSyncAt。
+            // 防止同步进行中产生的本地编辑被误判为"已同步"，
+            // 并在下一次 pull 时被云端覆盖。
+            const syncStartTs = new Date().toISOString();
             if (showBusyUI) setSyncBusyUI(true);
             if (syncUnlockTimer) {
                 clearTimeout(syncUnlockTimer);
@@ -3073,7 +3803,7 @@
                     syncUnlockTimer = null;
                 }
                 state.cloud.syncing = false;
-                if (showBusyUI) setSyncBusyUI(false, '处理中...', { recordLastSync: succeeded && recordLastSync, userId: user.id });
+                if (showBusyUI) setSyncBusyUI(false, '处理中...', { recordLastSync: succeeded && recordLastSync, userId: user.id, syncStartTs });
             }
         };
         let lastCompareTime = 0;
@@ -3091,27 +3821,387 @@
                 if (!silent) showToast('云端对比完成', 'success');
             }, '对比时间较长，仍在继续处理...', { silent });
         };
-        const uploadLocalChanges = async ({ silent = false } = {}) => {
-            await withSyncGuard(async (client, user) => {
-                updateCloudStatusText('正在上传本地变更...');
-                await processTombstones(client, user.id);
-                await pushLocalBanksToCloud(client, user.id);
-                await pushLocalQuestionsToCloud(client, user.id);
-                await initBanks();
-                await fetchAndRender();
-                const result = await buildCompareStats(client, user.id);
-                state.cloud.compareStats = result.stats;
-                state.cloud.compareDetail = result.detail;
-                renderCompareSummary();
-                updateCloudStatusText('上传完成（刚刚）', 'success');
-                if (!silent) showToast('本地变更已上传', 'success');
-            }, '上传时间较长，仍在继续处理...', { silent, recordLastSync: true });
+        // ── 同步日志 ──
+        const FORMAT_SYNC_TIME = (d) => {
+            const now = new Date();
+            const diff = now - d;
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const h = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${m}-${day} ${h}:${min}`;
         };
+
+        // ── 字段标签 + 差异计算 ──
+        const FIELD_LABELS = {
+            stem: '题干', answer: '答案', analysis: '解析', tags: '标签',
+            options: '选项', subQuestions: '子问题', type: '题型',
+            reviewStatus: '复习状态', name: '名称'
+        };
+        const diffFields = (oldObj, newObj) => {
+            if (!oldObj || !newObj) return [];
+            const keys = Object.keys(FIELD_LABELS);
+            return keys.filter(k =>
+                (k in oldObj || k in newObj) &&
+                JSON.stringify(oldObj[k] || null) !== JSON.stringify(newObj[k] || null)
+            );
+        };
+        const formatFieldsSummary = (fields) => {
+            return fields.map(f => FIELD_LABELS[f] || f).join('、');
+        };
+
+
+        const addSyncLog = async (type, summary, details = {}) => {
+            try {
+                const log = { timestamp: new Date(), type, summary, details };
+                await db.syncLogs.add(log);
+                // 只保留最近 50 条
+                const all = await db.syncLogs.orderBy('id').reverse().toArray();
+                if (all.length > 50) {
+                    await db.syncLogs.bulkDelete(all.slice(50).map(l => l.id));
+                }
+                renderSyncLog();
+            } catch (e) { /* 同步日志写入失败不阻塞 */ }
+        };
+
+        let syncLogFilter = 'all'; // 'all' | 'push' | 'pull' | 'conflict' | 'error'
+
+        const renderSyncLog = async () => {
+            const section = document.getElementById('sync-log-section');
+            const list = document.getElementById('sync-log-list');
+            const emptyHint = document.getElementById('sync-log-empty');
+            if (!section || !list) return;
+            try {
+                let logs = await db.syncLogs.orderBy('id').reverse().toArray();
+                const filtered = syncLogFilter === 'all'
+                    ? logs : logs.filter(l => l.type === syncLogFilter);
+                if (filtered.length === 0) {
+                    list.innerHTML = '';
+                    if (emptyHint) emptyHint.style.display = '';
+                    return;
+                }
+                if (emptyHint) emptyHint.style.display = 'none';
+
+                const accentColors = {
+                    pull: '#16a34a', push: '#2563eb', conflict: '#d97706', error: '#dc2626'
+                };
+                const chipColors = {
+                    pull: { bg: '#dcfce7', fg: '#166534' },
+                    push: { bg: '#dbeafe', fg: '#1e40af' },
+                    conflict: { bg: '#fef3c7', fg: '#92400e' },
+                    error: { bg: '#fee2e2', fg: '#991b1b' }
+                };
+                const labels = { pull: '拉取', push: '上传', conflict: '冲突', error: '错误' };
+                const actionIcons = { created: '＋', updated: '↻', 'deleted': '✕', 'deleted-orphaned': '◈' };
+                const actionLabels = { created: '新建', updated: '更新', 'deleted': '删除', 'deleted-orphaned': '孤立' };
+
+                list.innerHTML = filtered.slice(0, 10).map((l, i) => {
+                    const accent = accentColors[l.type] || accentColors.pull;
+                    const chip = chipColors[l.type] || chipColors.pull;
+                    const lab = labels[l.type] || l.type;
+                    const time = FORMAT_SYNC_TIME(new Date(l.timestamp));
+                    const items = l.details?.items || [];
+                    const hasConflicts = l.type === 'conflict' || (l.details?.conflicts || 0) > 0;
+                    const hasItems = items.length > 0;
+                    // summary numbers
+                    const upserted = l.details?.upserted || 0;
+                    const conflictCount = l.details?.conflicts || 0;
+
+                    const itemsHtml = items.map(item => {
+                        const icon = actionIcons[item.action] || '·';
+                        const al = actionLabels[item.action] || item.action;
+                        const name = item.stem || item.name || '(未知)';
+                        const fields = item.fieldsChanged || [];
+                        const MAX_VISIBLE = 3;
+                        const visible = fields.slice(0, MAX_VISIBLE);
+                        const extra = fields.length - MAX_VISIBLE;
+                        const chipsHtml = visible.map(f =>
+                            `<span class="sync-log-field-chip">${escapeHtml(formatFieldsSummary([f]))}</span>`
+                        ).join('');
+                        const moreHtml = extra > 0
+                            ? `<span class="sync-log-field-chip more" title="${escapeHtml(fields.slice(MAX_VISIBLE).map(f => formatFieldsSummary([f])).join(', '))}">+${extra}</span>`
+                            : '';
+                        return `<div class="sync-log-item">
+                            <span class="sync-log-item-icon">${icon}</span>
+                            <span class="sync-log-item-name">${escapeHtml(name)}</span>
+                            <span class="sync-log-field-chips">${chipsHtml}${moreHtml}</span>
+                            <span class="sync-log-item-action">${al}</span>
+                        </div>`;
+                    }).join('');
+
+                    // Build summary chips
+                    let summaryChips = '';
+                    if (upserted > 0) {
+                        summaryChips += `<span class="sync-log-num-chip" style="--log-chip-bg:${chip.bg};--log-chip-fg:${chip.fg}">${upserted} 条</span>`;
+                    }
+                    if (conflictCount > 0) {
+                        summaryChips += `<span class="sync-log-conflict-chip">⚠ ${conflictCount} 条冲突</span>`;
+                    }
+
+                    const rowClass = `sync-log-row${hasItems ? ' expandable' : ''}`;
+                    return `<div class="sync-log-entry${hasConflicts ? ' has-conflict' : ''}${l.type === 'error' ? ' is-error' : ''}${hasItems ? ' has-detail' : ''}"
+                            style="--log-accent:${accent};"
+                            data-log-index="${i}" data-log-type="${l.type}">
+                        <div class="${rowClass}">
+                            <span class="sync-log-time">${time}</span>
+                            <div class="sync-log-summary">
+                                <span>${escapeHtml(l.summary)}</span>
+                                ${summaryChips}
+                            </div>
+                            ${hasItems ? '<span class="sync-log-chevron">▸</span>' : ''}
+                        </div>
+                        ${hasItems ? `<div class="sync-log-detail">${itemsHtml}</div>` : ''}
+                    </div>`;
+                }).join('');
+
+            } catch (e) { /* 渲染失败不阻塞 */ }
+        };
+
+        // 展开/折叠 handler（持久引用，避免每次 renderSyncLog 重复绑定导致 handler 泄露）
+        const syncLogExpandHandler = (e) => {
+            const row = e.target.closest('.sync-log-row');
+            if (!row) return;
+            const entry = row.closest('.sync-log-entry');
+            if (!entry || !entry.classList.contains('has-detail')) return;
+            entry.classList.toggle('open');
+        };
+        document.getElementById('sync-log-list')?.addEventListener('click', syncLogExpandHandler);
+
+        // 过滤器按钮绑定（通过委托）
+        document.getElementById('sync-log-filters')?.addEventListener('click', (e) => {
+            const chip = e.target.closest('.sync-log-filter-chip');
+            if (!chip) return;
+            const filter = chip.dataset.filter;
+            if (!filter) return;
+            syncLogFilter = filter;
+            chip.parentElement.querySelectorAll('.sync-log-filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            renderSyncLog();
+        });
+
+        // 清空二次确认
+        document.getElementById('clear-sync-log-btn')?.addEventListener('click', async () => {
+            showConfirmation('清空同步记录', '确定要清空所有同步记录吗？此操作不可撤销。', async () => {
+                await db.syncLogs.clear();
+                renderSyncLog();
+            });
+        });
+
+
+        // 上传前弹出冲突对比对话框 —— 匹配项目 premium UI 风格
+        const showSyncConflictDialog = (stats, onPullThenUpload, onUploadAnyway, onCancel) => {
+            const localOnly = (stats.banks?.localOnly || 0) + (stats.questions?.localOnly || 0);
+            const localNewer = (stats.banks?.localNewer || 0) + (stats.questions?.localNewer || 0);
+            const cloudOnly = (stats.banks?.cloudOnly || 0) + (stats.questions?.cloudOnly || 0);
+            const cloudNewer = (stats.banks?.cloudNewer || 0) + (stats.questions?.cloudNewer || 0);
+            const synced = (stats.banks?.synced || 0) + (stats.questions?.synced || 0);
+            const hasCloudChanges = cloudOnly > 0 || cloudNewer > 0;
+            const localUploads = localOnly + localNewer;
+            const cloudPending = cloudOnly + cloudNewer;
+
+            const statCard = (num, label, color, bg, border) =>
+                `<div class="inline-flex flex-col items-center justify-center rounded-2xl px-4 py-3 min-w-[80px]" style="background:${bg};border:1px solid ${border};">
+                    <span style="font-size:22px;font-weight:700;color:${color};line-height:1.2;">${num}</span>
+                    <span style="font-size:10px;color:#64748b;margin-top:2px;">${label}</span>
+                </div>`;
+
+            const statsHtml = `
+                <div class="flex justify-center gap-3 mb-4">
+                    ${statCard(localUploads, '待上传', '#2563eb', 'linear-gradient(135deg,#eff6ff,#dbeafe)', '#93c5fd')}
+                    ${statCard(cloudPending, '未拉取', '#16a34a', 'linear-gradient(135deg,#f0fdf4,#dcfce7)', '#86efac')}
+                    ${statCard(synced, '已同步', '#475569', 'linear-gradient(135deg,#f8fafc,#f1f5f9)', '#cbd5e1')}
+                </div>`;
+
+            let detailHtml = '';
+            if (localNewer > 0) detailHtml += `<p class="text-xs text-amber-700 mb-1">· 本地 ${localNewer} 条修改将覆盖云端版本</p>`;
+            if (cloudNewer > 0) detailHtml += `<p class="text-xs text-sky-700 mb-1">· 云端 ${cloudNewer} 条比本地更新，不会被覆盖</p>`;
+            if (localOnly > 0 && cloudOnly === 0) detailHtml += `<p class="text-xs text-slate-500 mb-1">· 本地 ${localOnly} 条新数据，云端无冲突</p>`;
+            if (hasCloudChanges) {
+                detailHtml += `<p class="text-xs text-rose-600 font-medium mt-3">避免覆盖其他设备的修改，建议先拉取再上传</p>`;
+            } else {
+                detailHtml += `<p class="text-xs text-slate-400 mt-2">云端未检测到冲突，可安全上传</p>`;
+            }
+
+            document.getElementById('confirm-title').textContent = '上传前对比';
+            document.getElementById('confirm-message').innerHTML = statsHtml + detailHtml;
+
+            // 扩大卡片宽度以容纳三列统计
+            const card = document.getElementById('confirm-modal-card');
+            card.style.maxWidth = '420px';
+
+            const middleBtn = DOMElements.confirmMiddleBtn;
+            const okBtn = DOMElements.confirmOkBtn;
+            const cancelBtn = DOMElements.confirmCancelBtn;
+
+            if (hasCloudChanges) {
+                middleBtn.classList.remove('hidden');
+                middleBtn.textContent = '先拉取再上传';
+                middleBtn.className = 'bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 py-2 px-5 rounded-lg text-sm font-medium transition shadow-sm';
+                middleBtn.onclick = () => { hideConfirmation(); onPullThenUpload(); };
+            } else {
+                middleBtn.classList.add('hidden');
+            }
+
+            okBtn.className = hasCloudChanges
+                ? 'bg-slate-800 hover:bg-slate-900 text-white py-2 px-5 rounded-lg text-sm font-medium transition shadow-sm'
+                : 'bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded-lg text-sm font-medium transition shadow-sm';
+            okBtn.textContent = hasCloudChanges ? '直接上传' : '确认上传';
+            okBtn.onclick = () => { hideConfirmation(); onUploadAnyway(); };
+
+            cancelBtn.className = 'bg-white border border-slate-300 hover:bg-slate-50 text-slate-500 py-2 px-5 rounded-lg text-sm font-medium transition';
+            cancelBtn.textContent = '取消';
+            cancelBtn.onclick = () => { hideConfirmation(); onCancel(); };
+
+            DOMElements.confirmModal.classList.remove('hidden');
+        };
+
+        const uploadLocalChanges = async ({ silent = false } = {}) => {
+            if (state.cloud.syncing) {
+                if (!silent) showToast('同步正在进行中，请稍候…', 'info');
+                return;
+            }
+            const client = ensureCloudReady();
+            if (!client) return;
+            const user = state.cloud.user;
+            if (!user) {
+                if (!silent) showToast('请先登录账号', 'error');
+                return;
+            }
+
+            const doUpload = async (s) => {
+                await withSyncGuard(async (c, u) => {
+                    updateCloudStatusText('正在上传本地变更...');
+                    await processTombstones(c, u.id);
+                    const bankResult = await pushLocalBanksToCloud(c, u.id);
+                    const qResult = await pushLocalQuestionsToCloud(c, u.id);
+                    await initBanks();
+                    await fetchAndRender();
+                    const result = await buildCompareStats(c, u.id);
+                    state.cloud.compareStats = result.stats;
+                    state.cloud.compareDetail = result.detail;
+                    renderCompareSummary();
+                    updateCloudStatusText('上传完成（刚刚）', 'success');
+
+                    // 记录同步日志
+                    const total = (bankResult?.upserted || 0) + (qResult?.upserted || 0);
+                    const bkConflicts = bankResult?.conflicts || [];
+                    const qConflicts = qResult?.conflicts || [];
+                    const allConflicts = [...bkConflicts, ...qConflicts];
+                    const allItems = [...(bankResult?.items || []), ...(qResult?.items || [])];
+                    if (total > 0 || allConflicts.length > 0) {
+                        let summary = `上传 ${total} 条`;
+                        if (allConflicts.length > 0) summary += `，覆盖 ${allConflicts.length} 条跨设备编辑`;
+                        await addSyncLog('push', summary, { upserted: total, conflicts: allConflicts.length, items: allItems });
+                    }
+                    clearCloudDirty();
+                    localStorage.setItem('qbank.lastPushAt', new Date().toISOString());
+                    state.cloud.lastPushAt = new Date().toISOString();
+
+                    if (!s) {
+                        if (allConflicts.length > 0) {
+                            showToast(`${total} 条已上传（覆盖 ${allConflicts.length} 条其他设备的修改）`, 'warning');
+                        } else if (total > 0) {
+                            showToast('本地变更已上传', 'success');
+                        } else {
+                            showToast('没有需要上传的变更', 'info');
+                        }
+                    }
+                }, '上传时间较长，仍在继续处理...', { silent: s, recordLastSync: true });
+            };
+
+            if (!silent) {
+                try {
+                    updateCloudStatusText('正在对比云端...');
+                    const result = await buildCompareStats(client, user.id);
+                    state.cloud.compareStats = result.stats;
+                    state.cloud.compareDetail = result.detail;
+                    renderCompareSummary();
+                    updateCloudStatusText('对比完成（刚刚）', 'success');
+
+                    const s = result.stats;
+                    const cloudChanges = (s.banks?.cloudNewer || 0) + (s.questions?.cloudNewer || 0)
+                                       + (s.banks?.cloudOnly || 0) + (s.questions?.cloudOnly || 0);
+                    const localChanges = (s.banks?.localOnly || 0) + (s.questions?.localOnly || 0)
+                                       + (s.banks?.localNewer || 0) + (s.questions?.localNewer || 0);
+
+                    if (!localChanges && !cloudChanges) {
+                        showToast('没有需要上传的变更', 'info');
+                        return;
+                    }
+                    if (localChanges === 0 && cloudChanges > 0) {
+                        showToast('本地没有待上传的变更，建议先拉取云端数据', 'info');
+                        return;
+                    }
+
+                    showSyncConflictDialog(
+                        s,
+                        async () => {
+                            // Pull-then-upload as a single guarded operation to prevent race conditions
+                            await withSyncGuard(async (c, u) => {
+                                updateCloudStatusText('正在拉取云端数据...');
+                                const pullResult = await pullBanksFromCloud(c, u.id);
+                                const bankMap = pullResult.bankMap;
+                                const bankItems = pullResult.items || [];
+                                const qResult = await pullQuestionsFromCloud(c, u.id, bankMap);
+                                const qItems = qResult?.items || [];
+                                await initBanks();
+                                await fetchAndRender();
+                                const pullCompare = await buildCompareStats(c, u.id);
+                                state.cloud.compareStats = pullCompare.stats;
+                                state.cloud.compareDetail = pullCompare.detail;
+                                renderCompareSummary();
+                                clearCloudDirty();
+                                localStorage.setItem('qbank.lastPullAt', new Date().toISOString());
+                                state.cloud.lastPullAt = new Date().toISOString();
+                                await addSyncLog('pull', '拉取完成（先拉后传）', { items: [...bankItems, ...qItems] });
+
+                                updateCloudStatusText('正在上传本地变更...');
+                                await processTombstones(c, u.id);
+                                const bankResult = await pushLocalBanksToCloud(c, u.id);
+                                const qUpResult = await pushLocalQuestionsToCloud(c, u.id);
+                                await initBanks();
+                                await fetchAndRender();
+                                const result = await buildCompareStats(c, u.id);
+                                state.cloud.compareStats = result.stats;
+                                state.cloud.compareDetail = result.detail;
+                                renderCompareSummary();
+                                updateCloudStatusText('拉取并上传完成（刚刚）', 'success');
+                                const total = (bankResult?.upserted || 0) + (qUpResult?.upserted || 0);
+                                const allConflicts = [...(bankResult?.conflicts || []), ...(qUpResult?.conflicts || [])];
+                                const allItems = [...(bankResult?.items || []), ...(qUpResult?.items || [])];
+                                if (total > 0 || allConflicts.length > 0) {
+                                    await addSyncLog('push', `上传 ${total} 条（先拉后传）`, { upserted: total, conflicts: allConflicts.length, items: allItems });
+                                }
+                                clearCloudDirty();
+                                localStorage.setItem('qbank.lastPushAt', new Date().toISOString());
+                                state.cloud.lastPushAt = new Date().toISOString();
+                            }, '拉取并上传时间较长，仍在继续...', { recordLastSync: true });
+                            showToast('拉取并上传完成', 'success');
+                        },
+                        async () => { await doUpload(silent); },
+                        () => { updateCloudStatusText('已取消上传。'); }
+                    );
+                    return;
+                } catch (err) {
+                    console.error('上传前对比失败，跳过对比直接上传', err);
+                }
+            }
+
+            await doUpload(silent);
+        };
+
         const pullCloudToLocal = async ({ silent = false } = {}) => {
             await withSyncGuard(async (client, user) => {
                 updateCloudStatusText('正在拉取云端数据...');
-                const bankMap = await pullBanksFromCloud(client, user.id);
-                await pullQuestionsFromCloud(client, user.id, bankMap);
+                const pullResult = await pullBanksFromCloud(client, user.id);
+                const bankMap = pullResult.bankMap;
+                const bankItems = pullResult.items || [];
+                const qResult = await pullQuestionsFromCloud(client, user.id, bankMap);
+                const qItems = qResult?.items || [];
+                const allPullItems = [...bankItems, ...qItems];
                 await initBanks();
                 await fetchAndRender();
                 const result = await buildCompareStats(client, user.id);
@@ -3119,7 +4209,20 @@
                 state.cloud.compareDetail = result.detail;
                 renderCompareSummary();
                 updateCloudStatusText('拉取完成（刚刚）', 'success');
-                if (!silent) showToast('云端数据已拉取到本地', 'success');
+
+                const s = result.stats;
+                const totalPulled = (s.banks?.cloudOnly || 0) + (s.banks?.cloudNewer || 0)
+                                  + (s.questions?.cloudOnly || 0) + (s.questions?.cloudNewer || 0);
+                // combine items from pull functions (not easily accessible here, use compareStats)
+                await addSyncLog('pull', totalPulled > 0 ? `拉取 ${totalPulled} 条` : '云端已是最新',
+                    { banks: s.banks, questions: s.questions, items: allPullItems });
+                clearCloudDirty();
+                localStorage.setItem('qbank.lastPullAt', new Date().toISOString());
+                state.cloud.lastPullAt = new Date().toISOString();
+
+                if (!silent) {
+                    showToast(totalPulled > 0 ? `云端 ${totalPulled} 条数据已拉取` : '云端已是最新', 'success');
+                }
             }, '拉取时间较长，仍在继续处理...', { silent, recordLastSync: true });
         };
         const initCloudAuth = async () => {
@@ -3258,6 +4361,7 @@
                 showConfirmation(`删除题库 "${bank.name}"?`, '该题库下的所有题目将被永久删除！', async () => {
                     // 删除该库下的所有题目
                     await deleteBankLocalWithTombstone(bankId);
+                    markCloudDirty();
                     // 重新初始化
                     await initBanks();
                     await fetchAndRender();
@@ -3301,6 +4405,7 @@
             if (name) {
                 const now = new Date();
                 const id = await db.banks.add({ name, createdAt: now, updatedAt: now });
+                markCloudDirty();
                 await initBanks();
                 switchBank(id);
                 closeNewBankModal();
@@ -3350,9 +4455,16 @@
 
         // --- UI Rendering ---
         // 核心修改：只渲染当前 bankId 下的题目
+        const isQuestionDueForReview = (q, now = new Date()) => {
+            if (!q || q.reviewStatus === 'mastered') return false;
+            if (!q.smNextReview) return true;
+            return new Date(q.smNextReview) <= now;
+        };
+
         let getFilteredQuestions = () => {
             return state.questions.filter(q => {
                 if (q.bankId !== state.currentBankId) return false;
+                if (state.ui.reviewModeActive && !isQuestionDueForReview(q)) return false;
                 const tags = uniqueTags(q.tags || []);
                 const searchMatch = state.filters.search ? 
                     (q.stem?.toLowerCase().includes(state.filters.search) ||
@@ -3388,6 +4500,7 @@
             const card = document.createElement('div');
             card.className = 'question-card relative group bg-white border-[0.5px] border-gray-200 rounded-xl flex flex-col transition duration-200 hover:shadow-sm hover:-translate-y-0.5 min-h-[180px] cursor-pointer';
             card.dataset.id = q.id;
+            card.dataset.questionId = q.id;
 
             const tags = uniqueTags(q.tags || []);
             const visibleTags = tags.slice(0, 3);
@@ -3577,9 +4690,7 @@
             // Calculate due-for-review count
             const now = new Date();
             const dueReviewQ = bankQuestions.filter(function(q) {
-                if (q.reviewStatus === 'mastered') return false;
-                if (!q.smNextReview) return true;
-                return new Date(q.smNextReview) <= now;
+                return isQuestionDueForReview(q, now);
             }).length;
             document.getElementById('stat-total').textContent = totalQ || '—';
             document.getElementById('stat-mastered').textContent = totalQ ? masteredQ : '—';
@@ -3864,6 +4975,7 @@
                 // reviewStatus already set from pill-group in questionData
                 await db.questions.add(questionData);
             }
+            markCloudDirty();
             return true;
         };
 
@@ -3891,6 +5003,8 @@
             DOMElements.form.reset(); DOMElements.questionIdInput.value = '';
             DOMElements.modalTitle.textContent = '录入题目'; DOMElements.questionTypeSelect.value = typeToSet;
             DOMElements.questionTypeSelect.dataset.previousType = typeToSet;
+            if (DOMElements.versionHistoryBtn) DOMElements.versionHistoryBtn.classList.add('hidden');
+            if (DOMElements.versionHistoryPanel) DOMElements.versionHistoryPanel.classList.add('hidden');
             updateFormUIForType(typeToSet);
             if (['single-choice', 'multi-choice', 'judgment'].includes(typeToSet)) renderOptionsEditor(typeToSet);
             if (typeToSet === 'material') renderSubQuestionsEditor();
@@ -4051,6 +5165,9 @@
                 DOMElements.questionTypeSelect.value = question.type;
                 DOMElements.questionTypeSelect.dataset.previousType = question.type;
                 setModalReviewStatus(question.reviewStatus || 'new');
+                // 显示版本历史按钮
+                if (DOMElements.versionHistoryBtn) DOMElements.versionHistoryBtn.classList.remove('hidden');
+                if (DOMElements.versionHistoryPanel) DOMElements.versionHistoryPanel.classList.add('hidden');
                 updateFormUIForType(question.type);
                 if (['single-choice', 'multi-choice', 'judgment'].includes(question.type)) renderOptionsEditor(question.type, JSON.parse(question.options || '[]'));
                 if (question.type === 'material') renderSubQuestionsEditor(JSON.parse(question.subQuestions || '[]'));
@@ -4083,7 +5200,10 @@
             _dirtySnapshot = null;
             DOMElements.modal.classList.add('hidden');
         };
-        
+
+        // 全局函数：供版本历史等模块调用的编辑器入口
+        window.openQuestionEditor = (question = null) => openModal(question);
+
         // --- UI Utils (更新UI显示) ---
         const updateFormUIForType = (type) => {
             const isChoice = ['single-choice', 'multi-choice', 'judgment'].includes(type);
@@ -4385,32 +5505,34 @@
         const openIOModal = () => { triggerHapticFeedback(); DOMElements.ioModal.classList.remove('hidden'); refreshIoModalLabels(); };
         const closeIOModal = () => DOMElements.ioModal.classList.add('hidden');
         DOMElements.ioBtn.addEventListener('click', openIOModal);
-        if (DOMElements.topCloudUploadBtn) DOMElements.topCloudUploadBtn.addEventListener('click', async () => {
-            await uploadLocalChanges();
-        });
-        if (DOMElements.topCloudPullBtn) DOMElements.topCloudPullBtn.addEventListener('click', async () => {
-            await pullCloudToLocal();
-        });
         if (DOMElements.sidebarCloudConfigBtn) DOMElements.sidebarCloudConfigBtn.addEventListener('click', openCloudModal);
         DOMElements.mobileIoBtn.addEventListener('click', openIOModal);
+        // 移动端云同步按钮直接打开云同步设置
+        const mobileCloudBtn = document.getElementById('mobile-cloud-btn');
+        if (mobileCloudBtn) mobileCloudBtn.addEventListener('click', openCloudModal);
         DOMElements.ioCloseBtn.addEventListener('click', closeIOModal);
-        DOMElements.ioOpenCloudModalBtn.addEventListener('click', () => {
-            closeIOModal();
-            openCloudModal();
-        });
         DOMElements.ioOpenTagManagerBtn.addEventListener('click', () => {
             closeIOModal();
             openTagManager();
         });
-        DOMElements.ioCloudUploadBtn.addEventListener('click', async () => {
-            await uploadLocalChanges();
-        });
-        DOMElements.ioCloudPullBtn.addEventListener('click', async () => {
-            await pullCloudToLocal();
-        });
         DOMElements.cloudModalCloseBtn.addEventListener('click', closeCloudModal);
         DOMElements.cloudModal.addEventListener('click', (e) => {
             if (e.target === DOMElements.cloudModal) closeCloudModal();
+        });
+        // 云同步模态框内部 Tab 切换
+        document.querySelectorAll('#cloud-modal .cloud-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.cloudTab;
+                // 切换 tab 激活状态
+                document.querySelectorAll('#cloud-modal .cloud-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // 切换 panel
+                document.querySelectorAll('#cloud-modal .cloud-tab-panel').forEach(p => p.classList.remove('active'));
+                const panel = document.querySelector(`#cloud-modal .cloud-tab-panel[data-cloud-panel="${tabName}"]`);
+                if (panel) panel.classList.add('active');
+                // 切到同步记录 tab 时刷新日志
+                if (tabName === 'sync-log') renderSyncLog();
+            });
         });
         DOMElements.saveSupabaseConfigBtn.addEventListener('click', async () => {
             const url = DOMElements.supabaseUrlInput.value.trim();
@@ -4476,6 +5598,24 @@
             updateCloudStatusText('已登出。');
         });
 
+        // 底部工具栏按钮
+        if (DOMElements.cloudFooterUploadBtn) {
+            DOMElements.cloudFooterUploadBtn.addEventListener('click', () => uploadLocalChanges({ silent: false }));
+        }
+        if (DOMElements.cloudFooterPullBtn) {
+            DOMElements.cloudFooterPullBtn.addEventListener('click', () => pullCloudToLocal({ silent: false }));
+        }
+        if (DOMElements.cloudFooterSignOutBtn) {
+            DOMElements.cloudFooterSignOutBtn.addEventListener('click', async () => {
+                const client = ensureCloudReady();
+                if (!client) return;
+                const { error } = await client.auth.signOut();
+                if (error) { showToast(`登出失败: ${error.message}`, 'error'); return; }
+                showToast('已登出', 'success');
+                updateCloudStatusText('已登出。');
+            });
+        }
+
         // --- 卡片操作事件 ---
         DOMElements.grid.addEventListener('click', async (e) => {
             const card = e.target.closest('.question-card');
@@ -4526,6 +5666,8 @@
                 e.stopPropagation();
                 showConfirmation('确认删除?', '此操作将永久删除该题目。', async () => {
                     await deleteQuestionLocalWithTombstone(id);
+                    markCloudDirty();
+                    markDirty();
                     await fetchAndRender();
                 });
                 return;
@@ -4861,7 +6003,15 @@
             };
         };
 
-        const hideConfirmation = () => DOMElements.confirmModal.classList.add('hidden');
+        const hideConfirmation = () => {
+            DOMElements.confirmModal.classList.add('hidden');
+            const card = document.getElementById('confirm-modal-card');
+            if (card) card.style.maxWidth = '';
+            // Reset buttons to default style (for sync conflict dialog cleanup)
+            DOMElements.confirmMiddleBtn.classList.add('hidden');
+            DOMElements.confirmOkBtn.className = 'bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg text-sm font-medium transition shadow-sm';
+            DOMElements.confirmOkBtn.textContent = '确认';
+        };
         DOMElements.confirmCancelBtn.addEventListener('click', hideConfirmation);
         DOMElements.confirmModal.addEventListener('click', (e) => {
             if (e.target === DOMElements.confirmModal) hideConfirmation();
@@ -5378,11 +6528,6 @@
             [DOMElements.exportJsonCount, DOMElements.exportCsvCount, DOMElements.exportDocxCount].forEach(el => { if (el) el.textContent = countLabel; });
             if (DOMElements.exportScopeNote) DOMElements.exportScopeNote.textContent = scopeNote;
 
-            // Sync: last-sync timestamp
-            const lastSync = getLastSyncAt();
-            if (DOMElements.ioLastSyncLine) DOMElements.ioLastSyncLine.textContent = lastSync ? `上次同步：${formatRelativeTime(lastSync)}` : '';
-
-            // Sync: login note visibility
             updateAuthUI();
         };
 
@@ -5518,11 +6663,68 @@
             });
         }
 
-        // AI config buttons
-        var aiSaveBtn = document.getElementById('ai-save-btn');
-        var aiTestBtn = document.getElementById('ai-test-btn');
-        if (aiSaveBtn) aiSaveBtn.addEventListener('click', saveAiConfig);
-        if (aiTestBtn) aiTestBtn.addEventListener('click', testAiConnection);
+        // AI 多账号：添加新账号（创建空账号并展开）
+        var aiAddAccountBtn = document.getElementById('ai-add-account-btn');
+        if (aiAddAccountBtn) aiAddAccountBtn.addEventListener('click', () => {
+            const newAccount = { id: generateUUID(), name: '新账号', url: '', key: '', model: 'deepseek-chat' };
+            state.cloud.aiAccounts.push(newAccount);
+            if (state.cloud.aiAccounts.length === 1) {
+                state.cloud.activeAiAccountId = newAccount.id;
+                localStorage.setItem(AI_ACTIVE_KEY, newAccount.id);
+            }
+            saveAiAccounts(state.cloud.aiAccounts);
+            const container = document.getElementById('ai-account-list');
+            if (container) container.dataset.expandedAi = newAccount.id;
+            renderAiAccountList();
+            // 聚焦到名称输入框
+            setTimeout(() => {
+                const nameInput = document.getElementById('ai-name-' + newAccount.id);
+                if (nameInput) { nameInput.focus(); nameInput.select(); }
+            }, 100);
+        });
+
+        // ── 自动同步引擎 ──
+        // ── 脏标记：追踪本地未上传变更，确保切走/关闭时不丢数据 ──
+        const CLOUD_DIRTY_KEY = 'qbank.dirty';
+        const markCloudDirty = () => { try { localStorage.setItem(CLOUD_DIRTY_KEY, '1'); } catch(e){} };
+        const clearCloudDirty = () => { try { localStorage.removeItem(CLOUD_DIRTY_KEY); } catch(e){} };
+        const isCloudDirty = () => localStorage.getItem(CLOUD_DIRTY_KEY) === '1';
+
+        // 浏览器关闭前同步设置脏标记（确保 visibilitychange 可能未触发时也记录）
+        window.addEventListener('beforeunload', () => { markCloudDirty(); });
+        window.addEventListener('online', updateOfflineBanner);
+        window.addEventListener('offline', updateOfflineBanner);
+        // 页面隐藏时也标记（visibilitychange 通常先于 beforeunload 触发）
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) markCloudDirty();
+        }, { once: false });
+
+        const initAutoSync = () => {
+            // 页面加载后延迟执行一次完整同步
+            const doFullSync = async () => {
+                if (!state.cloud.user || state.cloud.syncing) return;
+                try {
+                    await pullCloudToLocal({ silent: true });
+                    await uploadLocalChanges({ silent: true });
+                } catch (e) { /* 自动同步失败不打扰用户 */ }
+            };
+
+            // 打开页面后 3 秒自动同步（等页面渲染完）
+            setTimeout(doFullSync, 3000);
+
+            // 切到后台 → 自动上传
+            document.addEventListener('visibilitychange', () => {
+                if (!state.cloud.user || state.cloud.syncing) return;
+                if (document.hidden) {
+                    uploadLocalChanges({ silent: true });
+                } else {
+                    // 切回前台 → 自动拉取
+                    setTimeout(() => {
+                        if (!document.hidden) pullCloudToLocal({ silent: true });
+                    }, 1500);
+                }
+            });
+        };
 
         document.addEventListener('DOMContentLoaded', async () => {
             setPreviewVisible(state.ui.previewVisible);
@@ -5536,6 +6738,10 @@
             await initBanks();
             await fetchAndRender();
             if (state.cloud.user) await compareWithCloud({ silent: true });
+            // 启动自动同步（打开时拉取，切后台时上传）
+            initAutoSync();
+            // 渲染同步记录
+            renderSyncLog();
         });
     
 
@@ -5642,6 +6848,7 @@
                 for (const id of ids) {
                     await deleteQuestionLocalWithTombstone(id);
                 }
+                markCloudDirty();
                 showToast('已删除 ' + ids.length + ' 道题', 'success');
                 exitBatchMode();
                 await refreshCurrentView();
@@ -6017,23 +7224,28 @@
 
         const getDueForReview = (questions) => {
             const now = new Date();
-            return questions.filter(q => {
-                if (!q.smNextReview) return q.reviewStatus !== 'mastered';
-                return new Date(q.smNextReview) <= now && q.reviewStatus !== 'mastered';
-            });
+            return questions.filter(q => isQuestionDueForReview(q, now));
+        };
+
+        const getReviewStatusFromQuality = (quality, intervalDays) => {
+            if (quality >= 4 && intervalDays >= 21) return 'mastered';
+            return 'reviewing';
+        };
+
+        const applyReviewQualityToQuestion = async (questionId, quality) => {
+            const q = await db.questions.get(questionId);
+            if (!q) return null;
+            const smData = SM2.nextReview(q, quality);
+            const newStatus = getReviewStatusFromQuality(quality, smData.smInterval);
+            await db.questions.update(questionId, { ...smData, reviewStatus: newStatus, updatedAt: new Date() });
+            return { question: q, smData, reviewStatus: newStatus };
         };
 
         const recordReview = async (questionId, quality) => {
-            const q = await db.questions.get(questionId);
-            if (!q) return;
-            const smData = SM2.nextReview(q, quality);
-            const intervalDays = smData.smInterval;
-            let newStatus = q.reviewStatus;
-            if (quality >= 4 && intervalDays >= 21) newStatus = 'mastered';
-            else if (quality >= 3) newStatus = 'reviewing';
-            else newStatus = 'reviewing';
-            await db.questions.update(questionId, { ...smData, reviewStatus: newStatus, updatedAt: new Date() });
+            const result = await applyReviewQualityToQuestion(questionId, quality);
+            if (!result) return;
             showToast(`已记录复习 (品质: ${quality}/5)`, 'success');
+            markCloudDirty();
             await refreshCurrentView();
         };
 
@@ -6051,34 +7263,10 @@
                     </div>`;
                 return;
             }
-            state.questions = dueQuestions;
+            state.ui.reviewModeActive = true;
             state.pagination.currentPage = 1;
             state.pagination.pageSize = 50;
             renderAllQuestions();
-
-            // Add review UI to each card
-            setTimeout(() => {
-                document.querySelectorAll('.question-card').forEach(card => {
-                    const footer = card.querySelector('.question-card-content');
-                    if (!footer) return;
-                    const reviewRow = document.createElement('div');
-                    reviewRow.className = 'flex items-center gap-2 mt-3 pt-3 border-t border-gray-100';
-                    reviewRow.innerHTML = `
-                        <span style="font-size:10px;color:#a8a29e;">复习评分:</span>
-                        ${[1,2,3,4,5].map(n => `<button class="review-quality-btn" data-quality="${n}" title="${n===1?'完全不会':n===3?'一般':n===5?'非常熟练':''}">${n}</button>`).join('')}
-                    `;
-                    footer.appendChild(reviewRow);
-                    reviewRow.querySelectorAll('.review-quality-btn').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const quality = parseInt(btn.dataset.quality);
-                            reviewRow.querySelectorAll('.review-quality-btn').forEach(b => b.classList.remove('selected'));
-                            btn.classList.add('selected');
-                            recordReview(parseInt(card.dataset.questionId), quality);
-                        });
-                    });
-                });
-            }, 100);
         };
 
         // ========================================================================
@@ -6087,6 +7275,13 @@
         const generatePaper = async (config) => {
             await loadQuestionsForCurrentBank();
             let pool = [...state.questions];
+            if (config.dueOnly) {
+                pool = getDueForReview(pool);
+            }
+            if (Array.isArray(config.questionIds) && config.questionIds.length) {
+                const allowedIds = new Set(config.questionIds.map(Number));
+                pool = pool.filter(function(q) { return allowedIds.has(Number(q.id)); });
+            }
 
             // Filter by config
             if (config.tagFilters && config.tagFilters.length) {
@@ -6314,24 +7509,16 @@
             for (var ri = 0; ri < reviewUpdates.length; ri++) {
                 var ru = reviewUpdates[ri];
                 try {
-                    var q = await db.questions.get(ru.id);
-                    if (q) {
-                        var smData = SM2.nextReview(q, ru.quality);
-                        var intervalDays = smData.smInterval;
-                        var newStatus = q.reviewStatus;
-                        if (ru.quality >= 4 && intervalDays >= 21) newStatus = 'mastered';
-                        else if (ru.quality >= 3) newStatus = 'reviewing';
-                        else newStatus = 'reviewing';
-                        await db.questions.update(ru.id, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
-                    }
+                    await applyReviewQualityToQuestion(ru.id, ru.quality);
                 } catch(e) { /* skip errors */ }
             }
         };
 
-        const showPaperPreview = async () => {
+        const showPaperPreview = async (options = {}) => {
             var bankName = state.currentBankId ? (state.banks.find(function(b) { return b.id === state.currentBankId; }) || {}).name || '试卷' : '试卷';
             var config = {
-                title: bankName,
+                title: options.dueOnly ? (bankName + ' · 待复习卷') : bankName,
+                dueOnly: Boolean(options.dueOnly),
                 sections: [
                     { type: 'single-choice', count: 5, score: 3 },
                     { type: 'multi-choice', count: 3, score: 5 },
@@ -6340,6 +7527,10 @@
                 ]
             };
             var paper = await generatePaper(config);
+            if (!paper.questionCount) {
+                showToast(options.dueOnly ? '今日无待复习题目' : '当前题库暂无可组卷题目', 'info');
+                return;
+            }
 
             var html = '<div style="text-align:center;padding:16px 0;border-bottom:2px solid #1c1917;margin-bottom:16px;">' +
                 '<h1 style="font-size:20px;font-weight:700;margin-bottom:4px;">' + paper.title + '</h1>' +
@@ -6694,6 +7885,63 @@
             return result;
         };
 
+        // ── 版本历史 UI ──
+        const renderVersionHistory = async (questionId) => {
+            if (!questionId) return;
+            const versions = await getVersionHistory(questionId);
+            const list = DOMElements.versionHistoryList;
+            if (!list) return;
+            if (versions.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 text-center py-2">暂无历史版本</p>';
+            } else {
+                list.innerHTML = versions.map((v, i) => {
+                    const d = new Date(v.createdAt);
+                    const time = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    const label = i === 0 ? '最新' : `v${versions.length - i}`;
+                    return `<div class="flex items-center gap-2 py-1 px-2 rounded-lg hover:bg-white/60 transition cursor-pointer version-item" data-version-id="${v.id}">
+                        <span class="text-[10px] text-slate-400 w-8 flex-shrink-0">${label}</span>
+                        <span class="flex-1 text-[11px] text-slate-500">${time}</span>
+                        <button class="text-[10px] text-blue-500 hover:text-blue-700 font-medium flex-shrink-0 version-restore-btn" data-version-id="${v.id}">恢复</button>
+                    </div>`;
+                }).join('');
+                // 绑定恢复按钮
+                list.querySelectorAll('.version-restore-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const vid = parseInt(btn.dataset.versionId);
+                        if (vid) await restoreVersion(vid);
+                        await renderVersionHistory(questionId);
+                    });
+                });
+            }
+            DOMElements.versionHistoryPanel.classList.remove('hidden');
+        };
+
+        // 版本历史按钮事件
+        DOMElements.versionHistoryBtn?.addEventListener('click', async () => {
+            const qid = parseInt(DOMElements.questionIdInput.value);
+            if (qid) await renderVersionHistory(qid);
+        });
+        DOMElements.closeVersionHistoryBtn?.addEventListener('click', () => {
+            DOMElements.versionHistoryPanel.classList.add('hidden');
+        });
+        // 编辑题目时显示版本历史按钮 - 通过监听 questionIdInput
+        const origShowModal = DOMElements.modal?.classList?.remove ? true : false;
+        // 替代方案：在打开编辑器时设置按钮可见性
+        // 在 fillForm 之后显示按钮
+        // Let's use a MutationObserver-like approach instead
+        // Just show the button whenever questionIdInput has a value
+        const origFormReset = DOMElements.form?.reset;
+        if (DOMElements.form && DOMElements.form.reset) {
+            const _reset = DOMElements.form.reset.bind(DOMElements.form);
+            DOMElements.form.reset = function() {
+                _reset();
+                DOMElements.questionIdInput.value = '';
+                DOMElements.versionHistoryBtn?.classList.add('hidden');
+                DOMElements.versionHistoryPanel?.classList.add('hidden');
+            };
+        }
+
         // ========================================================================
         // NEW FEATURE: Enhanced Toast with Progress Bar
         // ========================================================================
@@ -6744,68 +7992,31 @@
         };
 
         // Stat-pill-driven actions: click numbers in subbar for paper gen / review / tag mgmt
-        let reviewModeActive = false;
-
         const toggleReviewMode = async function() {
             const reviewPill = document.getElementById('stat-review-due-pill');
-            if (reviewModeActive) {
-                reviewModeActive = false;
+            if (state.ui.reviewModeActive) {
+                state.ui.reviewModeActive = false;
                 if (reviewPill) reviewPill.classList.remove('review-active');
                 state.pagination.pageSize = 9;
-                state.questions = await db.questions.where('bankId').equals(state.currentBankId).toArray();
-                state.questions = state.questions.map(function(q) { return Object.assign({}, q, { tags: uniqueTags(q.tags || []) }); });
-                updateTagStats();
+                state.pagination.currentPage = 1;
+                await loadQuestionsForCurrentBank();
                 renderAllQuestions();
             } else {
                 await loadQuestionsForCurrentBank();
                 var due = getDueForReview(state.questions);
                 if (due.length === 0) {
                     showToast('今日无待复习题目', 'info');
-                    state.questions = await db.questions.where('bankId').equals(state.currentBankId).toArray();
-                    state.questions = state.questions.map(function(q) { return Object.assign({}, q, { tags: uniqueTags(q.tags || []) }); });
-                    updateTagStats();
+                    state.ui.reviewModeActive = false;
+                    if (reviewPill) reviewPill.classList.remove('review-active');
                     renderAllQuestions();
                     return;
                 }
-                reviewModeActive = true;
+                state.ui.reviewModeActive = true;
                 if (reviewPill) reviewPill.classList.add('review-active');
-                state.questions = due;
                 state.pagination.currentPage = 1;
                 state.pagination.pageSize = 50;
                 renderAllQuestions();
-                setTimeout(function() {
-                    document.querySelectorAll('.question-card').forEach(function(card) {
-                        var footer = card.querySelector('div.p-4');
-                        if (!footer) return;
-                        var reviewRow = document.createElement('div');
-                        reviewRow.className = 'flex items-center gap-2 mt-3 pt-3';
-                        reviewRow.style.cssText = 'border-top:1px solid #e7e5e4;';
-                        reviewRow.innerHTML = '<span style="font-size:10px;color:#a8a29e;">复习评分:</span>' +
-                            [1,2,3,4,5].map(function(n) { return '<button class="review-quality-btn" data-quality="' + n + '">' + n + '</button>'; }).join('');
-                        footer.appendChild(reviewRow);
-                        reviewRow.querySelectorAll('.review-quality-btn').forEach(function(btn) {
-                            btn.addEventListener('click', async function(ev) {
-                                ev.stopPropagation();
-                                var quality = parseInt(btn.dataset.quality);
-                                reviewRow.querySelectorAll('.review-quality-btn').forEach(function(b) { b.classList.remove('selected'); });
-                                btn.classList.add('selected');
-                                var qid = parseInt(card.dataset.questionId);
-                                var q = await db.questions.get(qid);
-                                if (q) {
-                                    var smData = SM2.nextReview(q, quality);
-                                    var newStatus = q.reviewStatus;
-                                    if (quality >= 4 && smData.smInterval >= 21) newStatus = 'mastered';
-                                    else if (quality >= 3) newStatus = 'reviewing';
-                                    else newStatus = 'reviewing';
-                                    await db.questions.update(qid, Object.assign({}, smData, { reviewStatus: newStatus, updatedAt: new Date() }));
-                                    showToast('已记录(' + quality + '/5)', 'success');
-                                    card.style.opacity = '0.4';
-                                    card.style.pointerEvents = 'none';
-                                }
-                            });
-                        });
-                    });
-                }, 150);
+                showToast('已筛出 ' + due.length + ' 道待复习题；提交组卷后会自动同步复习计划', 'info');
             }
         };
 
@@ -6817,7 +8028,7 @@
             var totalPill = document.getElementById('stat-total-pill');
             var reviewPill = document.getElementById('stat-review-due-pill');
             var tagsPill = document.getElementById('stat-tags-pill');
-            if (totalPill) totalPill.addEventListener('click', function() { triggerHapticFeedback(); showPaperPreview(); });
+            if (totalPill) totalPill.addEventListener('click', function() { triggerHapticFeedback(); showPaperPreview({ dueOnly: state.ui.reviewModeActive }); });
             if (reviewPill) reviewPill.addEventListener('click', function() { triggerHapticFeedback(); toggleReviewMode(); });
             if (tagsPill) tagsPill.addEventListener('click', function() { triggerHapticFeedback(); openTagManager(); });
 
@@ -6825,7 +8036,7 @@
             var mobReview = document.getElementById('mobile-review-btn');
             var mobPaper = document.getElementById('mobile-paper-btn');
             if (mobReview) mobReview.onclick = toggleReviewMode;
-            if (mobPaper) mobPaper.onclick = showPaperPreview;
+            if (mobPaper) mobPaper.onclick = function() { showPaperPreview({ dueOnly: state.ui.reviewModeActive }); };
         };
 
         if (document.readyState === 'loading') {
