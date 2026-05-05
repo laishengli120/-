@@ -771,18 +771,30 @@
             .cloud-modal-shell {
                 padding: 0;
                 align-items: stretch;
-                justify-content: flex-end;
             }
             .cloud-modal-panel {
-                max-height: 92vh;
+                max-height: 100vh;
+                height: 100%;
                 max-width: 100%;
-                border-radius: 20px 20px 0 0;
-                box-shadow: 0 -8px 40px rgba(15, 23, 42, 0.15);
+                border-radius: 0;
+                box-shadow: none;
             }
             .cloud-tab { padding: 10px 10px; font-size: 12px; }
             .cloud-modal-header { padding: 16px 16px 0; }
             .cloud-modal-body { padding: 16px 16px 20px; }
             .cloud-tab-bar { padding: 0 16px; }
+
+            /* IO modal: full-screen on mobile */
+            #io-modal {
+                padding: 0 !important;
+                align-items: stretch !important;
+            }
+            #io-modal > div {
+                border-radius: 0 !important;
+                max-height: 100vh !important;
+                height: 100% !important;
+                max-width: 100% !important;
+            }
         }
 
         /* keep legacy classes for other panels */
@@ -1584,7 +1596,7 @@
                     <h3 class="text-lg font-bold text-gray-900">当前题库数据管理</h3>
                     <p id="io-bank-name-label" class="text-xs text-gray-400 mt-0.5"></p>
                 </div>
-                <button id="io-close-btn" class="p-1 text-gray-400 hover:text-gray-900"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button id="io-close-btn" class="border border-stone-200 bg-stone-50 rounded-lg px-3.5 py-1.5 text-[13px] text-gray-600 hover:bg-gray-100 transition">关闭</button>
             </div>
             <!-- Tab bar -->
             <div class="io-tab-bar">
@@ -1717,9 +1729,7 @@
                         <div class="cloud-modal-kicker">云端同步</div>
                         <div class="cloud-modal-title">多端数据同步</div>
                     </div>
-                    <button id="cloud-modal-close-btn" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition flex-shrink-0 mt-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <button id="cloud-modal-close-btn" class="border border-stone-200 bg-stone-50 rounded-lg px-3.5 py-1.5 text-[13px] text-gray-600 hover:bg-gray-100 transition flex-shrink-0">关闭</button>
                 </div>
                 <!-- Status pill (sticky across all tabs) -->
                 <div class="flex items-center gap-2 mb-3 px-3 py-2 rounded-full border" style="background:#f8fafc;border-color:#e5e7eb;">
