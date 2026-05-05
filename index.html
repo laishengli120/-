@@ -239,6 +239,10 @@
             border-bottom-style: solid;
             color: #92400e;
         }
+        .stat-pill.mastered-active strong {
+            border-bottom-style: solid;
+            color: #166534;
+        }
         .subbar-divider {
             width: 0.5px; height: 16px;
             background: var(--color-border-tertiary);
@@ -1283,7 +1287,7 @@
                 <strong id="stat-total">—</strong>
                 <span>道题</span>
             </div>
-            <div class="stat-pill">
+            <div class="stat-pill clickable" id="stat-mastered-pill" title="点击筛选已掌握题目">
                 <strong id="stat-mastered" class="green">—</strong>
                 <span>已掌握</span>
             </div>
@@ -1952,7 +1956,8 @@
                 viewMode: localStorage.getItem('questionViewMode') || 'grid',
                 listSort: { key: null, direction: 'asc' },
                 tagEditor: { tags: [] },
-                reviewModeActive: false
+                reviewModeActive: false,
+                masteredModeActive: false
             },
             tagStats: [],
             cloud: {
@@ -4475,6 +4480,7 @@
             return state.questions.filter(q => {
                 if (q.bankId !== state.currentBankId) return false;
                 if (state.ui.reviewModeActive && !isQuestionDueForReview(q)) return false;
+                if (state.ui.masteredModeActive && q.reviewStatus !== 'mastered') return false;
                 const tags = uniqueTags(q.tags || []);
                 const searchMatch = state.filters.search ? 
                     (q.stem?.toLowerCase().includes(state.filters.search) ||
@@ -7075,6 +7081,14 @@
                 questions = questions.filter(q => state.filters.tags.every(filterTag => (q.tags || []).includes(filterTag)));
             }
 
+            // Apply review / mastered mode filters
+            if (state.ui.reviewModeActive) {
+                questions = questions.filter(q => isQuestionDueForReview(q));
+            }
+            if (state.ui.masteredModeActive) {
+                questions = questions.filter(q => q.reviewStatus === 'mastered');
+            }
+
             return questions;
         };
 
@@ -8039,10 +8053,45 @@
                 }
                 state.ui.reviewModeActive = true;
                 if (reviewPill) reviewPill.classList.add('review-active');
+                // 与已掌握模式互斥
+                if (state.ui.masteredModeActive) {
+                    state.ui.masteredModeActive = false;
+                    const masteredPill = document.getElementById('stat-mastered-pill');
+                    if (masteredPill) masteredPill.classList.remove('mastered-active');
+                }
                 state.pagination.currentPage = 1;
                 state.pagination.pageSize = 50;
                 renderAllQuestions();
                 showToast('已筛出 ' + due.length + ' 道待复习题；提交组卷后会自动同步复习计划', 'info');
+            }
+        };
+
+        const toggleMasteredMode = async function() {
+            const masteredPill = document.getElementById('stat-mastered-pill');
+            const reviewPill = document.getElementById('stat-review-due-pill');
+            if (state.ui.masteredModeActive) {
+                state.ui.masteredModeActive = false;
+                if (masteredPill) masteredPill.classList.remove('mastered-active');
+                state.pagination.pageSize = 9;
+                state.pagination.currentPage = 1;
+                renderAllQuestions();
+            } else {
+                state.ui.masteredModeActive = true;
+                if (masteredPill) masteredPill.classList.add('mastered-active');
+                // 与复习模式互斥
+                if (state.ui.reviewModeActive) {
+                    state.ui.reviewModeActive = false;
+                    if (reviewPill) reviewPill.classList.remove('review-active');
+                }
+                state.pagination.currentPage = 1;
+                state.pagination.pageSize = 50;
+                const masteredCount = state.questions.filter(q => q.bankId === state.currentBankId && q.reviewStatus === 'mastered').length;
+                renderAllQuestions();
+                if (masteredCount === 0) {
+                    showToast('当前题库无已掌握题目', 'info');
+                } else {
+                    showToast('已筛出 ' + masteredCount + ' 道已掌握题目', 'info');
+                }
             }
         };
 
@@ -8054,9 +8103,11 @@
             var totalPill = document.getElementById('stat-total-pill');
             var reviewPill = document.getElementById('stat-review-due-pill');
             var tagsPill = document.getElementById('stat-tags-pill');
+            var masteredPill = document.getElementById('stat-mastered-pill');
             if (totalPill) totalPill.addEventListener('click', function() { triggerHapticFeedback(); showPaperPreview({ dueOnly: state.ui.reviewModeActive }); });
             if (reviewPill) reviewPill.addEventListener('click', function() { triggerHapticFeedback(); toggleReviewMode(); });
             if (tagsPill) tagsPill.addEventListener('click', function() { triggerHapticFeedback(); openTagManager(); });
+            if (masteredPill) masteredPill.addEventListener('click', function() { triggerHapticFeedback(); toggleMasteredMode(); });
 
             // Wire mobile bottom bar buttons
             var mobReview = document.getElementById('mobile-review-btn');
