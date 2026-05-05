@@ -1149,6 +1149,19 @@
             background: #f5f5f4; padding: 1px 5px; border-radius: 3px;
             font-size: 10px; color: #1c1917;
         }
+        .search-syntax-chips {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+        }
+        .search-syntax-chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; padding: 4px 8px;
+            border-radius: 6px; cursor: pointer; border: 1px solid #e7e5e4;
+            background: #f5f5f4; color: #44403c;
+            transition: all 0.15s; white-space: nowrap;
+        }
+        .search-syntax-chip:hover {
+            background: #1c1917; color: #fafaf9; border-color: #1c1917;
+        }
 
         /* ── 间隔重复复习视图 ────────────────────────────────────────── */
         .review-stat-card {
@@ -6815,18 +6828,37 @@
             if (searchShell) {
                 const help = document.createElement('div');
                 help.className = 'search-syntax-help';
+                const filters = [
+                    { label: 'type:单选', hint: '按题型' },
+                    { label: 'type:多选', hint: '按题型' },
+                    { label: 'type:判断', hint: '按题型' },
+                    { label: 'status:新题', hint: '按状态' },
+                    { label: 'status:复习中', hint: '按状态' },
+                    { label: 'status:已掌握', hint: '按状态' },
+                    { label: 'has:解析', hint: '有解析' },
+                    { label: '-has:解析', hint: '无解析' },
+                    { label: 'has:标签', hint: '有标签' },
+                    { label: '-has:标签', hint: '无标签' },
+                ];
+                const chipsHtml = filters.map(f => `<button type="button" class="search-syntax-chip" data-filter="${f.label}">${f.label}</button>`).join('');
                 help.innerHTML = `
-                    <strong style="font-size:11px;">搜索语法</strong><br>
-                    <code>type:单选</code> 按题型 · <code>type:多选\|判断</code><br>
-                    <code>status:复习中</code> 按状态 · <code>tag:考点/微积分</code><br>
-                    <code>has:解析</code> 有解析 · <code>-has:解析</code> 无解析<br>
-                    <code>"精确匹配"</code> 完全匹配 · <code>before:2024-06</code>
+                    <strong style="font-size:11px;">点击快速输入筛选条件</strong>
+                    <div class="search-syntax-chips">${chipsHtml}</div>
                 `;
                 searchShell.appendChild(help);
                 const searchBox = document.getElementById('search-box');
                 if (searchBox) {
                     searchBox.addEventListener('focus', () => help.classList.add('visible'));
                     searchBox.addEventListener('blur', () => setTimeout(() => help.classList.remove('visible'), 200));
+                    help.addEventListener('mousedown', (e) => {
+                        const chip = e.target.closest('.search-syntax-chip');
+                        if (chip) {
+                            e.preventDefault();
+                            searchBox.value = chip.dataset.filter;
+                            searchBox.focus();
+                            searchBox.dispatchEvent(new Event('input'));
+                        }
+                    });
                 }
             }
 
@@ -6973,7 +7005,7 @@
                 { key: 'type', pattern: /type:(\S+)/i },
                 { key: 'status', pattern: /status:(\S+)/i },
                 { key: 'tag', pattern: /tag:(\S+)/i },
-                { key: 'has', pattern: /has:(\S+)/i },
+                { key: 'has', pattern: /(?<!-)has:(\S+)/i },
                 { key: '-has', pattern: /-has:(\S+)/i },
                 { key: 'before', pattern: /before:(\S+)/i },
                 { key: 'after', pattern: /after:(\S+)/i },
@@ -7055,11 +7087,27 @@
             }
 
             // Has/not-has filter
+            const _hasField = (val) => {
+                switch ((val || '').toLowerCase()) {
+                    case '标签': case 'tag': case 'tags': return 'tags';
+                    default: return 'analysis';
+                }
+            };
             if (parsed.filters.has) {
-                questions = questions.filter(q => (q.analysis || '').trim().length > 0);
+                const field = _hasField(parsed.filters.has);
+                if (field === 'tags') {
+                    questions = questions.filter(q => (q.tags || []).length > 0);
+                } else {
+                    questions = questions.filter(q => (q.analysis || '').trim().length > 0);
+                }
             }
             if (parsed.filters['-has']) {
-                questions = questions.filter(q => !(q.analysis || '').trim());
+                const field = _hasField(parsed.filters['-has']);
+                if (field === 'tags') {
+                    questions = questions.filter(q => !(q.tags || []).length);
+                } else {
+                    questions = questions.filter(q => !(q.analysis || '').trim());
+                }
             }
 
             // Date filters
