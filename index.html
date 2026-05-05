@@ -495,6 +495,24 @@
             .type-seg-btn { padding: 5px 8px; font-size: 11px; }
         }
 
+        /* Mobile: swap segmented type control for native select */
+        @media (max-width: 640px) {
+            #question-type-segmented { display: none; }
+            #question-type {
+                position: static;
+                width: auto;
+                height: auto;
+                margin: 0;
+                overflow: visible;
+                clip: auto;
+                white-space: normal;
+                font-size: 12px;
+                font-weight: 500;
+                padding: 4px 32px 4px 8px;
+                border-radius: 8px;
+            }
+        }
+
         /* Mobile full-screen editor modal */
         @media (max-width: 640px) {
             #question-modal {
@@ -1455,7 +1473,7 @@
                 <h2 id="modal-title" class="text-xl font-bold text-gray-900">录入题目</h2>
                 <div class="flex items-center gap-2 flex-wrap">
                     <!-- Hidden select keeps all existing JS (.value, .dataset, change event) working -->
-                    <select id="question-type" class="sr-only" aria-hidden="true" tabindex="-1">
+                    <select id="question-type" class="sr-only app-select">
                         <option value="standard">标准题</option><option value="single-choice">单选题</option><option value="multi-choice">多选题</option><option value="judgment">判断题</option><option value="material">材料题</option>
                     </select>
                     <!-- Segmented control -->
