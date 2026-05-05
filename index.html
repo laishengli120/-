@@ -3581,7 +3581,9 @@
             // 增量拉取：全量 ID（检测删除，轻量）+ 仅变更数据（updated_at > lastPullAt）
             const fullFields = 'id, user_id, bank_id, type, stem, answer, analysis, tags, review_status, sm_ef, sm_reps, sm_interval, sm_next_review, sm_last_review, options, sub_questions, created_at, updated_at';
             let dataQuery = client.from('qbank_questions').select(fullFields).eq('user_id', userId);
-            if (lastPullAt) dataQuery = dataQuery.gt('updated_at', lastPullAt);
+            // 回退 2 分钟以抵消设备间 / 客户端与服务器间的时钟偏差，
+            // 避免 lastPullAt（客户端时间）快于云端 updated_at 而漏拉数据
+            if (lastPullAt) dataQuery = dataQuery.gt('updated_at', new Date(new Date(lastPullAt).getTime() - 120000).toISOString());
             const [{ data: allIds, error: idError }, { data: remoteChanged, error }] = await Promise.all([
                 client.from('qbank_questions').select('id').eq('user_id', userId),
                 dataQuery
