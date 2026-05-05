@@ -4989,12 +4989,28 @@
         };
 
         DOMElements.saveAndAddAnotherBtn.addEventListener('click', async () => {
-            const currentType = DOMElements.questionTypeSelect.value;
+            const currentId = DOMElements.questionIdInput.value;
+            const isEdit = !!currentId;
             if (await saveQuestionData()) {
-                resetModalForNewQuestion(currentType);
-                setModalReviewStatus('new');
-                await fetchAndRender();
-                showToast('已保存，可继续录入', 'success');
+                if (isEdit) {
+                    await fetchAndRender();
+                    const filtered = getFilteredQuestions();
+                    const curIdx = filtered.findIndex(q => q.id === parseInt(currentId));
+                    const next = curIdx >= 0 && curIdx < filtered.length - 1 ? filtered[curIdx + 1] : filtered[0];
+                    if (next) {
+                        openModal(next);
+                        showToast('已保存，进入下一题', 'success');
+                    } else {
+                        resetModalForNewQuestion(DOMElements.questionTypeSelect.value);
+                        setModalReviewStatus('new');
+                        showToast('已保存，可继续录入', 'success');
+                    }
+                } else {
+                    resetModalForNewQuestion(DOMElements.questionTypeSelect.value);
+                    setModalReviewStatus('new');
+                    await fetchAndRender();
+                    showToast('已保存，可继续录入', 'success');
+                }
             }
         });
         
