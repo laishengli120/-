@@ -556,6 +556,11 @@
                 padding: 10px !important;
                 margin-bottom: 10px !important;
             }
+
+            /* Prevent iOS auto-zoom on input focus (requires font-size >= 16px) */
+            input, textarea, select {
+                font-size: 16px !important;
+            }
         }
 
         /* Preview tabs for material questions */
@@ -1687,21 +1692,6 @@
                             </button>
                         </div>
                     </div>
-                    <!-- Share link (moved here from separate section) -->
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <h4 class="font-semibold text-blue-800 mb-2">生成分享链接</h4>
-                        <p class="text-xs text-blue-600 mb-3">生成纯前端解析的URL链接，适合分享少量题目。</p>
-                        <div class="flex gap-2">
-                            <button id="generate-share-link-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">生成</button>
-                            <div class="flex-1 flex hidden" id="share-link-container">
-                                <input type="text" id="share-link-input" readonly class="flex-1 bg-white border border-blue-200 rounded-l-lg px-3 text-sm focus:outline-none" onclick="this.select()">
-                                <button id="copy-share-link-btn" class="bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 rounded-r-lg text-sm font-medium transition">复制</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap gap-2 pt-1">
-                        <button id="io-open-tag-manager-btn" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 py-2 px-3 rounded-lg text-sm font-medium transition shadow-sm">标签管理</button>
-                    </div>
                 </div>
 
                 <!-- Panel: 危险操作 -->
@@ -2092,7 +2082,6 @@
             authStatusText: document.getElementById('auth-status-text'),
             ioModal: document.getElementById('io-modal'),
             ioCloseBtn: document.getElementById('io-close-btn'),
-            ioOpenTagManagerBtn: document.getElementById('io-open-tag-manager-btn'),
             clearSyncLogBtn: document.getElementById('clear-sync-log-btn'),
             importJsonInput: document.getElementById('import-json-input'),
             importDocxInput: document.getElementById('import-docx-input'),
@@ -2117,10 +2106,6 @@
             mobileIoBtn: document.getElementById('mobile-io-btn'),
             pasteAndParseBtn: document.getElementById('paste-and-parse-btn'),
             parseStemBtn: document.getElementById('parse-stem-btn'),
-            generateShareLinkBtn: document.getElementById('generate-share-link-btn'),
-            shareLinkContainer: document.getElementById('share-link-container'),
-            shareLinkInput: document.getElementById('share-link-input'),
-            copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
             toastContainer: document.getElementById('toast-container'),
             cloudModal: document.getElementById('cloud-modal'),
             cloudModalPanel: document.getElementById('cloud-modal-panel'),
@@ -2362,11 +2347,22 @@
             var existing = getEditorTags();
             var localTags = suggestAutoTags(text).filter(function(t) { return !existing.includes(t); });
             var activeAccount = getActiveAiAccount();
-            var hasAI = !!(activeAccount && activeAccount.url && activeAccount.key && stemText.trim().length >= 10);
+            var hasAiAccount = !!(activeAccount && activeAccount.url && activeAccount.key);
+            var hasAI = hasAiAccount && stemText.trim().length >= 10;
             var hasCachedAi = _cachedAiTags && _cachedAiTags.length > 0;
             var cachedFiltered = hasCachedAi ? _cachedAiTags.filter(function(t) { return !existing.includes(t) && !localTags.includes(t); }) : [];
 
-            if (localTags.length === 0 && !hasAI) { el.style.display = 'none'; return; }
+            if (localTags.length === 0 && !hasAI && !hasCachedAi && !hasAiAccount) {
+                el.style.display = 'block';
+                el.innerHTML = '<button type="button" id="ai-config-hint-btn" style="display:inline-flex;align-items:center;gap:4px;background:#fefce8;border:1px solid #fde68a;color:#a16207;border-radius:999px;padding:3px 10px;font-size:11px;cursor:pointer;margin:2px 0;transition:all 0.12s;" title="打开 AI 标签推荐配置">配置 AI 获取智能标签推荐 →</button>';
+                document.getElementById('ai-config-hint-btn').addEventListener('click', function() {
+                    openCloudModal();
+                    var aiTab = document.querySelector('#cloud-modal .cloud-tab[data-cloud-tab="ai"]');
+                    if (aiTab) aiTab.click();
+                });
+                return;
+            }
+            if (localTags.length === 0 && !hasAI && !hasCachedAi) { el.style.display = 'none'; return; }
 
             var renderId = ++_smartTagRenderId;
             el.style.display = 'block';
@@ -2389,6 +2385,8 @@
                 html += '<button type="button" class="smart-tag-chip add-all-ai" style="display:inline-flex;align-items:center;gap:3px;background:#7c3aed;color:#fff;border:none;border-radius:999px;padding:2px 8px;font-size:11px;cursor:pointer;margin:2px 3px;font-weight:500;" data-all-tags="' + allTagsData + '">全部添加</button>';
             } else if (hasAI) {
                 html += '<button type="button" id="ai-tag-trigger-btn" style="display:inline-flex;align-items:center;gap:3px;background:transparent;border:1px dashed #c4b5fd;color:#7c3aed;border-radius:999px;padding:2px 8px;font-size:11px;cursor:pointer;margin:2px 3px;transition:all 0.12s;" title="点击调用 AI 获取标签推荐">AI 推荐</button>';
+            } else if (!hasAiAccount) {
+                html += '<button type="button" id="ai-config-hint-btn" style="display:inline-flex;align-items:center;gap:4px;background:#fefce8;border:1px solid #fde68a;color:#a16207;border-radius:999px;padding:3px 10px;font-size:11px;cursor:pointer;margin:2px 3px;transition:all 0.12s;" title="打开 AI 标签推荐配置">配置 AI 获取智能标签推荐 →</button>';
             }
 
             el.innerHTML = html;
@@ -2441,6 +2439,16 @@
                 });
                 aiBtn.addEventListener('mouseenter', function() { if (!aiBtn.disabled) { aiBtn.style.background = '#f5f3ff'; } });
                 aiBtn.addEventListener('mouseleave', function() { if (!aiBtn.disabled) { aiBtn.style.background = 'transparent'; } });
+            }
+
+            // Wire AI config hint button (shown when no AI account configured)
+            var hintBtn = document.getElementById('ai-config-hint-btn');
+            if (hintBtn) {
+                hintBtn.addEventListener('click', function() {
+                    openCloudModal();
+                    var aiTab = document.querySelector('#cloud-modal .cloud-tab[data-cloud-tab="ai"]');
+                    if (aiTab) aiTab.click();
+                });
             }
         };
 
@@ -3240,6 +3248,7 @@
         const closeCloudModal = () => {
             DOMElements.cloudModalPanel.classList.remove('show');
             setTimeout(() => DOMElements.cloudModal.classList.add('hidden'), 200);
+            updateSmartTagSuggestions();
         };
         const createSupabaseIfReady = () => {
             if (!state.cloud.supabaseUrl || !state.cloud.supabaseAnonKey) {
@@ -5393,6 +5402,9 @@
                 const finalIndex = firstChecked === -1 ? 0 : firstChecked;
                 normalized.forEach((opt, idx) => { opt.isCorrect = idx === finalIndex; });
             }
+            if (type === 'multi-choice' && normalized.length > 0 && !normalized.some(opt => opt.isCorrect)) {
+                normalized[0].isCorrect = true;
+            }
             normalized.forEach((option, index) => appendMainOptionRow(type, option, index));
         };
 
@@ -5576,10 +5588,6 @@
         const mobileCloudBtn = document.getElementById('mobile-cloud-btn');
         if (mobileCloudBtn) mobileCloudBtn.addEventListener('click', openCloudModal);
         DOMElements.ioCloseBtn.addEventListener('click', closeIOModal);
-        DOMElements.ioOpenTagManagerBtn.addEventListener('click', () => {
-            closeIOModal();
-            openTagManager();
-        });
         DOMElements.cloudModalCloseBtn.addEventListener('click', closeCloudModal);
         DOMElements.cloudModal.addEventListener('click', (e) => {
             if (e.target === DOMElements.cloudModal) closeCloudModal();
